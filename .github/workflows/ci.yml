@@ -11,45 +11,43 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Cache Swift Package Manager artifacts
+    - name: Cache SPM & DerivedData
       uses: actions/cache@v3
       with:
         path: |
           ~/.swiftpm
           .build
           DerivedData
-        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        key: ${{ runner.os }}-cache-${{ hashFiles('**/Package.resolved','**/*.xcodeproj/***','**/*.xcworkspace/***') }}
         restore-keys: |
-          ${{ runner.os }}-spm-
-    # If you use CocoaPods, uncomment the next two steps
-    #- name: Set up Ruby
-    #  uses: ruby/setup-ruby@v1
-    #  with:
-    #    ruby-version: 2.7
-    #- name: Install CocoaPods dependencies
-    #  run: |
-    #    gem install cocoapods
-    #    cd src && pod install --repo-update
+          ${{ runner.os }}-cache-
 
-    - name: Build iOS App
+    - name: Install xcpretty
+      run: gem install xcpretty
+
+    - name: Build for testing
       run: |
+        set -o pipefail && \
         xcodebuild \
           -project src/rose.bud.thorn.xcodeproj \
           -scheme "rose.bud.thorn (iOS)" \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
-          clean build \
-          CODE_SIGNING_ALLOWED=NO
+          -derivedDataPath DerivedData \
+          clean build-for-testing CODE_SIGNING_ALLOWED=NO \
+        | xcpretty
 
-    - name: Run Unit Tests
+    - name: Run tests
       run: |
+        set -o pipefail && \
         xcodebuild \
           -project src/rose.bud.thorn.xcodeproj \
           -scheme "rose.bud.thorn (iOS)" \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
-          clean test \
-          CODE_SIGNING_ALLOWED=NO
+          -derivedDataPath DerivedData \
+          test-without-building CODE_SIGNING_ALLOWED=NO \
+        | xcpretty
