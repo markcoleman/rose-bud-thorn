@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test-ios:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # If you use CocoaPods, uncomment the next two steps
+    #- name: Set up Ruby
+    #  uses: ruby/setup-ruby@v1
+    #  with:
+    #    ruby-version: 2.7
+    #- name: Install CocoaPods dependencies
+    #  run: |
+    #    gem install cocoapods
+    #    cd src && pod install --repo-update
+
+    - name: Build iOS App
+      run: |
+        xcodebuild \
+          -project src/rose.bud.thorn.xcodeproj \
+          -scheme "Rose Bud Thorn" \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
+          clean build \
+          CODE_SIGNING_ALLOWED=NO
+
+    - name: Run Unit Tests
+      run: |
+        xcodebuild \
+          -project src/rose.bud.thorn.xcodeproj \
+          -scheme "Rose Bud Thorn" \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
+          clean test \
+          CODE_SIGNING_ALLOWED=NO
