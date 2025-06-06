@@ -12,27 +12,41 @@ struct ProfileView: View {
     @ObservedObject
     var viewModel: ProfileViewModel
     var body: some View {
-        VStack{
+        VStack(spacing: Spacing.large){
             Label{
-                Text(viewModel.model.familyName ?? "familyName")
-                        .font(.body)
-                        .foregroundColor(.primary)
-                Text(viewModel.model.email ?? "email")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-            }   icon: {
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    Text(viewModel.model.familyName ?? "Family Name")
+                        .font(.rbtBody)
+                        .foregroundColor(DesignTokens.primaryText)
+                    Text(viewModel.model.email ?? "Email")
+                        .font(.rbtSubheadline)
+                        .foregroundColor(DesignTokens.secondaryText)
+                }
+            } icon: {
                 Circle()
-                    .fill(Color.accentColor)
-                    .frame(width: 44, height: 44, alignment: .center)
-                    .overlay(Text(viewModel.model.givenName ?? "givenName"))
-            
-                Button("Sign Out", action: {
-                    viewModel.signOut()
-                    AppState.shared.gameID = UUID()
-                }).padding()
+                    .fill(DesignTokens.accentColor)
+                    .frame(width: DesignTokens.iconSize, height: DesignTokens.iconSize, alignment: .center)
+                    .overlay(
+                        Text(viewModel.model.givenName ?? "User")
+                            .font(.rbtHeadline)
+                            .foregroundColor(DesignTokens.primaryBackground)
+                    )
+                    .accessibilityLabel("Profile picture for \(viewModel.model.givenName ?? "user")")
             }
             
+            Button("Sign Out", action: {
+                viewModel.signOut()
+                AppState.shared.gameID = UUID()
+            })
+            .accessibleTouchTarget(label: "Sign Out", hint: "Sign out of your account")
+            .frame(height: DesignTokens.buttonHeight)
+            .padding(.horizontal, Spacing.large)
+            .background(DesignTokens.accentColor)
+            .foregroundColor(DesignTokens.primaryBackground)
+            .cornerRadius(DesignTokens.cornerRadiusMedium)
         }
+        .padding(Spacing.medium)
+        .background(DesignTokens.primaryBackground)
     }
 }
 

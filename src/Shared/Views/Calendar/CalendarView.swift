@@ -66,7 +66,10 @@ struct CalendarView: View {
                         }
                     }
                     else{
-                        Text("Loading....").foregroundColor(Color.white)
+                        Text("Loading....")
+                            .font(.rbtBody)
+                            .foregroundColor(DesignTokens.secondaryText)
+                            .accessibilityLabel("Loading calendar data")
                     }
                 }.onAppear{
                     scrollView.scrollTo(Calendar.current.dateComponents([.month], from: Date()).month)

@@ -34,9 +34,6 @@ struct WeekView: View {
     var body: some View {
         HStack {
             ForEach(days, id: \.self) { date in
-                
-                
-                
                 HStack {
                     if self.calendar.isDate(self.week, equalTo: date, toGranularity: .month) {
                         DayView(date: date)
@@ -46,5 +43,7 @@ struct WeekView: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Week of \(DateFormatter.monthAndYear.string(from: week))")
     }
 }

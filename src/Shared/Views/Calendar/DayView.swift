@@ -24,20 +24,30 @@ struct DayView: View {
         
         VStack{
             if(viewModel.loaded == false){
-               Text("....")
+               Text("Loading...")
+                   .font(.rbtCaption)
+                   .foregroundColor(DesignTokens.secondaryText)
+                   .accessibilityLabel("Loading day data")
             }
             else{
                 Button(action:{
                     showSheet = true
                 }, label:{
-                    Text(String(day)).foregroundColor(Color.white)
+                    Text(String(day))
+                        .font(.rbtBody)
+                        .foregroundColor(DesignTokens.primaryText)
                 })
-                    .sheet(isPresented: $showSheet, content: {
-                        AddNewRBTView(viewModel: self.viewModel)
-                    }).frame(width: 40, height: 40, alignment: .center)
-                    .background(self.viewModel.model!.hasEvent ?  Color.green : Color.blue)
-                    .clipShape(Circle())
-                    .padding(.vertical, 4)
+                .accessibleTouchTarget(
+                    label: "Day \(day)", 
+                    hint: self.viewModel.model!.hasEvent ? "Has events, tap to view or add new entry" : "No events, tap to add new entry"
+                )
+                .sheet(isPresented: $showSheet, content: {
+                    AddNewRBTView(viewModel: self.viewModel)
+                })
+                .frame(width: DesignTokens.iconSize, height: DesignTokens.iconSize, alignment: .center)
+                .background(self.viewModel.model!.hasEvent ? DesignTokens.successColor : DesignTokens.infoColor)
+                .clipShape(Circle())
+                .padding(.vertical, Spacing.xxSmall)
             }
         }.onAppear{
             self.viewModel.load()

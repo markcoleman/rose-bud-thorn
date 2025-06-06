@@ -16,14 +16,21 @@ struct SplashScreenView: View {
 
     
         var body: some View {
-            VStack {
+            VStack(spacing: Spacing.large) {
                 if model.isSignedIn == false {
-                    Text("🌹")
-                        .font(.system(size: 50)).padding()
-                    Text("🌱")
-                        .font(.system(size: 50)).padding()
-                    Text("🥀")
-                        .font(.system(size: 50)).padding()
+                    VStack(spacing: Spacing.medium) {
+                        Text("🌹")
+                            .font(.rbtLargeTitle)
+                            .decorativeAccessibility()
+                        Text("🌱")
+                            .font(.rbtLargeTitle)
+                            .decorativeAccessibility()
+                        Text("🥀")
+                            .font(.rbtLargeTitle)
+                            .decorativeAccessibility()
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Rose Bud Thorn app logo")
                     
                     SignInWithAppleButton(.signIn,              //1
                       onRequest: { (request) in             //2
@@ -44,7 +51,10 @@ struct SplashScreenView: View {
                             //Handle error
                             break
                         }
-                    }).frame(width: 200, height: 30).signInWithAppleButtonStyle(.black)
+                    }).frame(width: 200, height: DesignTokens.buttonHeight)
+                      .signInWithAppleButtonStyle(.black)
+                      .accessibilityLabel("Sign in with Apple")
+                      .accessibilityHint("Authenticate with your Apple ID to use the app")
                      
                     
                 }
@@ -53,7 +63,7 @@ struct SplashScreenView: View {
                 }
                 
             }
-
+            .background(DesignTokens.primaryBackground)
             .onAppear {
                
             }

@@ -22,62 +22,70 @@ struct ItemView: View {
         
         return VStack () {
                 if(self.edit == true){
-                    VStack{
+                    VStack(spacing: Spacing.medium){
                         Section(header: Text(self.viewModel.toTitle)
-                                    .font(.system(size: 50)) )
-                        {                            TextField(
-                                    "Note",
-                                    text: $viewModel.model.note
-                            ).padding()
-                            TextField(
-                                    "media url",
-                                    text: $viewModel.model.mediaUrl
-                            ).padding()
+                                    .font(.rbtLargeTitle) )
+                        {                            
+                            TextField("Note", text: $viewModel.model.note)
+                                .padding(Spacing.small)
+                                .accessibilityLabel("Note for \(self.viewModel.toTitle)")
+                            TextField("Media URL", text: $viewModel.model.mediaUrl)
+                                .padding(Spacing.small)
+                                .accessibilityLabel("Image URL for \(self.viewModel.toTitle)")
                         }.textFieldStyle(RoundedBorderTextFieldStyle())
-                        HStack{
+                        HStack(spacing: Spacing.medium){
                             Button(action:{
                                 edit = false
                             }, label: {
-                                Label("Cancel",
-                                      systemImage: "xmark.circle.fill")
+                                Label("Cancel", systemImage: "xmark.circle.fill")
                             })
+                            .accessibleTouchTarget(label: "Cancel editing", hint: "Discard changes and return to view mode")
                             Button(action:{
                                 edit = false
                                 viewModel.save()
                             }, label: {
-                                Label("Save",
-                                      systemImage: "checkmark.circle.fill")
+                                Label("Save", systemImage: "checkmark.circle.fill")
                             })
-                        }.padding()
+                            .accessibleTouchTarget(label: "Save changes", hint: "Save your edits and return to view mode")
+                        }.padding(Spacing.small)
                     }
                 }
                 else{
                     ZStack(){
                         Text(self.viewModel.toTitle)
-                                .font(.system(size: 50)).padding()
-                        AsyncImage(url: URL(string: viewModel.model.mediaUrl)).aspectRatio(contentMode: .fit)
+                                .font(.rbtLargeTitle)
+                                .padding(Spacing.medium)
+                                .decorativeAccessibility()
+                        AsyncImage(url: URL(string: viewModel.model.mediaUrl))
+                            .aspectRatio(contentMode: .fit)
+                            .accessibilityLabel(viewModel.model.mediaUrl.isEmpty ? "No image" : "Image for \(self.viewModel.toTitle)")
                     }.overlay(
                         HStack(alignment: .top){
                             Spacer()
                             Button(action:{
                                 edit = true
                             }, label: {
-                                Label("Edit",
-                                      systemImage: "pencil.circle.fill")
-                            }).padding()
+                                Label("Edit", systemImage: "pencil.circle.fill")
+                                    .labelStyle(.iconOnly)
+                            })
+                            .accessibleTouchTarget(label: "Edit \(self.viewModel.toTitle)", hint: "Tap to edit this item")
+                            .padding(Spacing.small)
                         }
                     , alignment: .top)
                     .overlay(
                         HStack{
-                            
                             VStack{
-                                Text(viewModel.model.note).padding()
+                                Text(viewModel.model.note)
+                                    .font(.rbtBody)
+                                    .foregroundColor(DesignTokens.primaryText)
+                                    .padding(Spacing.small)
+                                    .accessibilityLabel("Note: \(viewModel.model.note.isEmpty ? "No note added" : viewModel.model.note)")
                             }
                         }.frame(
                             minWidth: 0,
                             maxWidth: .infinity,
                             alignment: .topLeading
-                        ).background(Color.white.opacity(0.5))
+                        ).background(DesignTokens.secondaryBackground.opacity(0.8))
                     , alignment: .bottom)
                 }
         }
