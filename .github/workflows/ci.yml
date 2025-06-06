@@ -28,7 +28,7 @@ jobs:
       run: |
         xcodebuild \
           -project src/rose.bud.thorn.xcodeproj \
-          -scheme "Rose Bud Thorn" \
+          -scheme "rose.bud.thorn" \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
           clean build \
@@ -38,7 +38,7 @@ jobs:
       run: |
         xcodebuild \
           -project src/rose.bud.thorn.xcodeproj \
-          -scheme "Rose Bud Thorn" \
+          -scheme "rose.bud.thorn" \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
           clean test \
