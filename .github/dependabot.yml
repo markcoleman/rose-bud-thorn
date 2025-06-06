@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Swift Package Manager
+  - package-ecosystem: "swift"
+    directory: "/"               # location of Package.swift
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"               # location of your workflows
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
