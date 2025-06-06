@@ -1,0 +1,42 @@
+# Code Owners
+# This file defines who should review code changes in different parts of the repository.
+# Learn more: https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
+
+# Global owners - these users will be requested for review on all PRs
+* @markcoleman
+
+# Documentation
+*.md @markcoleman
+docs/ @markcoleman
+
+# Configuration files
+.github/ @markcoleman
+.gitignore @markcoleman
+.gitattributes @markcoleman
+
+# Source code
+src/ @markcoleman
+
+# SwiftUI Views
+src/Shared/Views/ @markcoleman
+
+# Core Models and Business Logic
+src/Shared/Models/ @markcoleman
+src/Shared/ViewModels/ @markcoleman
+src/Shared/Services/ @markcoleman
+
+# Platform-specific code
+src/macOS/ @markcoleman
+
+# Tests
+src/Tests* @markcoleman
+
+# Build and deployment
+src/fastlane/ @markcoleman
+src/Gemfile* @markcoleman
+*.entitlements @markcoleman
+*.xcodeproj/ @markcoleman
+
+# App Store assets and metadata
+src/Shared/*.png @markcoleman
+src/AppStore* @markcoleman
