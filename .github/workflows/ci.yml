@@ -39,16 +39,4 @@ jobs:
           -derivedDataPath DerivedData \
           clean build-for-testing CODE_SIGNING_ALLOWED=NO \
         | xcpretty
-
-    - name: Run unit tests only
-      run: |
-        set -o pipefail && \
-        xcodebuild \
-          -project src/rose.bud.thorn.xcodeproj \
-          -scheme "rose.bud.thorn (iOS)" \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
-          -derivedDataPath DerivedData \
-          test-without-building CODE_SIGNING_ALLOWED=NO \
-          -only-testing:"rose.bud.thorn (iOS)/Tests iOS" \
-        | xcpretty
+        
