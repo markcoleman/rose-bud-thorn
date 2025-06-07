@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:/Users/markcoleman/Development/com.gitlab-markcoleman/rost-bud-thorn/rost.bud.thorn/rose.bud.thorn.xcodeproj">
+      location = "self:">
    </FileRef>
 </Workspace>

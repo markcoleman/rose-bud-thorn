@@ -57,19 +57,23 @@ extension Font {
     static let rbtCaption2 = Font.caption2
 }
 
-// MARK: - Accessibility Helpers
+// File: `src/Shared/Extensions/View+Accessibility.swift`
+import SwiftUI
+
 extension View {
-    /// Adds accessibility support with proper minimum touch target
-    func accessibleTouchTarget(label: String, hint: String? = nil, role: AccessibilityRole? = nil) -> some View {
-        self
-            .frame(minWidth: DesignTokens.minimumTouchTarget, minHeight: DesignTokens.minimumTouchTarget)
-            .accessibilityLabel(label)
-            .accessibilityAddTraits(role == .button ? .isButton : [])
-            .accessibilityHint(hint ?? "")
-    }
-    
-    /// Marks decorative elements as hidden from accessibility
-    func decorativeAccessibility() -> some View {
-        self.accessibilityHidden(true)
-    }
+  /// Adds a minimum touch target and VoiceOver accessibility info.
+  func accessibleTouchTarget(
+    label: String,
+    hint: String? = nil,
+    traits: AccessibilityTraits = []
+  ) -> some View {
+    self
+      .frame(
+        minWidth: DesignTokens.minimumTouchTarget,
+        minHeight: DesignTokens.minimumTouchTarget
+      )
+      .accessibilityLabel(label)
+      .accessibilityAddTraits(traits)
+      .accessibilityHint(hint ?? "")
+  }
 }
