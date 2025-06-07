@@ -54,7 +54,9 @@
 		ABF6302F2DF3D931004FE057 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF6302D2DF3D931004FE057 /* DesignSystem.swift */; };
 		ABF630332DF3DA0D004FE057 /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF630312DF3DA0D004FE057 /* Assets.swift */; };
 		ABF630342DF3DA0D004FE057 /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF630312DF3DA0D004FE057 /* Assets.swift */; };
+		ABF630382DF3DA61004FE057 /* SnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF630362DF3DA61004FE057 /* SnapshotTests.swift */; };
 		ABF630392DF3DA61004FE057 /* DesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF630352DF3DA61004FE057 /* DesignSystemTests.swift */; };
+		ABF6303A2DF3DA61004FE057 /* SnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF630362DF3DA61004FE057 /* SnapshotTests.swift */; };
 		ABF6303B2DF3DA61004FE057 /* DesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF630352DF3DA61004FE057 /* DesignSystemTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -109,6 +111,7 @@
 		ABF6302D2DF3D931004FE057 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		ABF630312DF3DA0D004FE057 /* Assets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Assets.swift; sourceTree = "<group>"; };
 		ABF630352DF3DA61004FE057 /* DesignSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemTests.swift; sourceTree = "<group>"; };
+		ABF630362DF3DA61004FE057 /* SnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -274,6 +277,7 @@
 			isa = PBXGroup;
 			children = (
 				ABF630352DF3DA61004FE057 /* DesignSystemTests.swift */,
+				ABF630362DF3DA61004FE057 /* SnapshotTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -494,6 +498,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB171CEF275D9B52008C19BB /* Tests_iOSLaunchTests.swift in Sources */,
+				ABF630382DF3DA61004FE057 /* SnapshotTests.swift in Sources */,
 				ABF630392DF3DA61004FE057 /* DesignSystemTests.swift in Sources */,
 				AB171CED275D9B52008C19BB /* Tests_iOS.swift in Sources */,
 			);
@@ -504,6 +509,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB171CFB275D9B52008C19BB /* Tests_macOSLaunchTests.swift in Sources */,
+				ABF6303A2DF3DA61004FE057 /* SnapshotTests.swift in Sources */,
 				ABF6303B2DF3DA61004FE057 /* DesignSystemTests.swift in Sources */,
 				AB171CF9275D9B52008C19BB /* Tests_macOS.swift in Sources */,
 			);
