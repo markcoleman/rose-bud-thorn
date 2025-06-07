@@ -12,21 +12,23 @@ import SwiftUI
 class DesignSystemTests: XCTestCase {
     
     func testAllColorsHaveLightAndDarkVariants() {
-        // Test that all our design tokens have both light and dark mode variants
-        let colorNames = [
-            "PrimaryBackground",
-            "SecondaryBackground", 
-            "PrimaryText",
-            "SecondaryText",
-            "SuccessColor",
-            "InfoColor",
-            "AccentColor"
-        ]
+        // Test that all our design tokens are properly accessible via generated assets
+        XCTAssertNotNil(Asset.Colors.primaryBackground)
+        XCTAssertNotNil(Asset.Colors.secondaryBackground)
+        XCTAssertNotNil(Asset.Colors.primaryText)
+        XCTAssertNotNil(Asset.Colors.secondaryText)
+        XCTAssertNotNil(Asset.Colors.successColor)
+        XCTAssertNotNil(Asset.Colors.infoColor)
+        XCTAssertNotNil(Asset.Colors.accentColor)
         
-        for colorName in colorNames {
-            let color = Color(colorName)
-            XCTAssertNotNil(color, "Color \(colorName) should exist in Assets.xcassets")
-        }
+        // Test that design tokens are accessible
+        XCTAssertNotNil(DesignTokens.primaryBackground)
+        XCTAssertNotNil(DesignTokens.secondaryBackground)
+        XCTAssertNotNil(DesignTokens.primaryText)
+        XCTAssertNotNil(DesignTokens.secondaryText)
+        XCTAssertNotNil(DesignTokens.successColor)
+        XCTAssertNotNil(DesignTokens.infoColor)
+        XCTAssertNotNil(DesignTokens.accentColor)
     }
     
     func testSpacingConstants() {

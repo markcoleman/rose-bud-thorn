@@ -21,14 +21,14 @@ enum Spacing {
 
 // MARK: - Design Tokens
 enum DesignTokens {
-    // Colors - using centralized color assets
-    static let primaryBackground = Color("PrimaryBackground")
-    static let secondaryBackground = Color("SecondaryBackground")
-    static let primaryText = Color("PrimaryText")
-    static let secondaryText = Color("SecondaryText")
-    static let successColor = Color("SuccessColor")
-    static let infoColor = Color("InfoColor")
-    static let accentColor = Color.accentColor
+    // Colors - using type-safe generated assets
+    static let primaryBackground = Asset.Colors.primaryBackground
+    static let secondaryBackground = Asset.Colors.secondaryBackground
+    static let primaryText = Asset.Colors.primaryText
+    static let secondaryText = Asset.Colors.secondaryText
+    static let successColor = Asset.Colors.successColor
+    static let infoColor = Asset.Colors.infoColor
+    static let accentColor = Asset.Colors.accentColor
     
     // Corner Radius
     static let cornerRadiusSmall: CGFloat = 8
