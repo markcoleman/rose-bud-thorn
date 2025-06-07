@@ -8,6 +8,16 @@
 import SwiftUI
 import AuthenticationServices
 
+// File: View+Accessibility.swift
+import SwiftUI
+
+extension View {
+  /// Marks this view as decorative and hides it from accessibility.
+  func decorativeAccessibility() -> some View {
+    self.accessibilityHidden(true)
+  }
+}
+
 struct SplashScreenView: View {
     @ObservedObject
     var model: AuthViewModel
