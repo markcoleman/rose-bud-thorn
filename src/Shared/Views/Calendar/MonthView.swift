@@ -29,8 +29,10 @@ struct MonthView: View {
         let component = calendar.component(.month, from: viewModel.theMonth)
         let formatter = component == 1 ? DateFormatter.monthAndYear : .month
         return Text(formatter.string(from: viewModel.theMonth))
-            .font(.title)
-            .padding()
+            .font(.rbtTitle)
+            .foregroundColor(DesignTokens.primaryText)
+            .padding(Spacing.medium)
+            .accessibilityAddTraits(.isHeader)
     }
 
     var body: some View {

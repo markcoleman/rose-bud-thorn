@@ -23,18 +23,23 @@ struct ContentView: View {
     
     
     var body: some View {
-
         TabView {
-            CalendarView(interval: year).tabItem {
-                        Image(systemName: "calendar.circle.fill")
-                        Text("All RBT")
+            CalendarView(interval: year)
+                .tabItem {
+                    Image(systemName: "calendar.circle.fill")
+                    Text("All RBT")
                 }
+                .accessibilityLabel("Calendar view")
+                .accessibilityHint("View all your Rose, Bud, and Thorn entries")
             ProfileView(viewModel: ProfileViewModel(model: ProfileModel()))
-                    .tabItem {
-                        Image(systemName: "person.fill")
-                        Text("Profile")
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("Profile")
                 }
-            }
+                .accessibilityLabel("Profile view")
+                .accessibilityHint("View and manage your profile")
+        }
+        .background(DesignTokens.primaryBackground)
     }
 }
 
