@@ -44,6 +44,12 @@ class DayViewModel: ObservableObject {
             self.model!.rose.id = UUID()
         }
         itemService.saveDay(dayModel: self.model!)
+        
+        // Update Live Activity if this is today's entry
+        let calendar = Calendar.current
+        if calendar.isDate(self.date, inSameDayAs: Date()) {
+            DailySummaryService.shared.updateLiveActivityIfNeeded()
+        }
     }
     
 }
