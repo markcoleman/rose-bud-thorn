@@ -105,8 +105,8 @@
 		ABLIVEACT001 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		ABLIVEACT003 /* DailySummaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryService.swift; sourceTree = "<group>"; };
 		ABLIVEACT005 /* DailySummaryAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryAttributes.swift; sourceTree = "<group>"; };
-		ABLIVEACT007 /* DailySummaryLiveActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivity/DailySummaryLiveActivityView.swift; sourceTree = "<group>"; };
-		ABLIVEACT009 /* LiveActivityControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivity/LiveActivityControl.swift; sourceTree = "<group>"; };
+		ABLIVEACT007 /* DailySummaryLiveActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryLiveActivityView.swift; sourceTree = "<group>"; };
+		ABLIVEACT009 /* LiveActivityControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityControl.swift; sourceTree = "<group>"; };
 		ABCC971027716B13005475A7 /* DayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayViewModel.swift; sourceTree = "<group>"; };
 		ABCC97132772BF68005475A7 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		ABCC97162772C27B005475A7 /* ItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemView.swift; sourceTree = "<group>"; };
