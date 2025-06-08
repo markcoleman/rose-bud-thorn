@@ -98,7 +98,6 @@ class PromptsViewModel: ObservableObject {
     
     private func fetchPrompts() async {
         isLoading = true
-        errorMessage = nil
         
         if #available(iOS 18.0, *), let service = journalService {
             await service.fetchPrompts()
