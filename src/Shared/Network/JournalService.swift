@@ -40,17 +40,11 @@ class JournalService: ObservableObject {
     /// Request authorization for JournalKit access
     func requestAuthorization() async {
         #if canImport(JournalKit)
-        do {
-            let status = try await JournalKit.requestAuthorization()
-            await MainActor.run {
-                self.authorizationStatus = status
-                self.logger.info("JournalKit authorization status: \(String(describing: status))")
-            }
-        } catch {
-            await MainActor.run {
-                self.authorizationStatus = .denied
-                self.logger.error("Failed to request JournalKit authorization: \(error.localizedDescription)")
-            }
+        // NOTE: iOS 18 beta - actual JournalKit API may differ
+        // This is a placeholder implementation
+        await MainActor.run {
+            self.authorizationStatus = .authorized
+            self.logger.info("JournalKit authorization granted (placeholder implementation)")
         }
         #else
         await MainActor.run {
@@ -63,7 +57,8 @@ class JournalService: ObservableObject {
     /// Check current authorization status
     private func checkAuthorizationStatus() {
         #if canImport(JournalKit)
-        authorizationStatus = JournalKit.authorizationStatus()
+        // NOTE: iOS 18 beta - actual JournalKit API may differ
+        authorizationStatus = .notDetermined
         #else
         authorizationStatus = .denied
         #endif
@@ -84,29 +79,18 @@ class JournalService: ObservableObject {
         }
         
         #if canImport(JournalKit)
-        do {
-            let suggestions = try await JournalKit.fetchPrompts(limit: 3)
-            let promptTexts = suggestions.compactMap { suggestion in
-                // Extract meaningful text from JournalKit suggestions
-                return extractPromptText(from: suggestion)
-            }
-            
-            await MainActor.run {
-                if promptTexts.isEmpty {
-                    self.prompts = [self.fallbackPrompt]
-                } else {
-                    self.prompts = Array(promptTexts.prefix(3)) // Ensure we have at most 3 prompts
-                }
-                self.isLoading = false
-                self.logger.info("Successfully fetched \(promptTexts.count) prompts from JournalKit")
-            }
-        } catch {
-            await MainActor.run {
-                self.prompts = [self.fallbackPrompt]
-                self.errorMessage = "Failed to fetch prompts"
-                self.isLoading = false
-                self.logger.error("Failed to fetch JournalKit prompts: \(error.localizedDescription)")
-            }
+        // NOTE: iOS 18 beta - actual JournalKit API may differ
+        // This is a placeholder implementation using mock prompts
+        let mockPrompts = [
+            "What made you feel proud today?",
+            "Describe a moment of connection you experienced.",
+            "What are you looking forward to tomorrow?"
+        ]
+        
+        await MainActor.run {
+            self.prompts = mockPrompts
+            self.isLoading = false
+            self.logger.info("Using mock prompts for JournalKit (placeholder implementation)")
         }
         #else
         await showFallbackPrompt()
@@ -123,24 +107,6 @@ class JournalService: ObservableObject {
     }
     
     // MARK: - Helper Methods
-    
-    #if canImport(JournalKit)
-    /// Extract meaningful prompt text from JournalKit suggestion
-    private func extractPromptText(from suggestion: JournalPrompt) -> String? {
-        // JournalKit suggestions may have different formats
-        // This implementation assumes the suggestion has a content property
-        // In actual implementation, this would depend on the JournalKit API structure
-        
-        // NOTE: iOS 18 beta - JournalKit API may still be evolving
-        // This implementation will need to be updated based on final Apple documentation
-        if let content = suggestion.content as? String {
-            return content
-        }
-        
-        // Fallback to a generic prompt based on suggestion type or content
-        return "What made this moment meaningful to you?"
-    }
-    #endif
     
     /// Clear error state
     func clearError() {
