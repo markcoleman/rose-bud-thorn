@@ -35,8 +35,7 @@ struct SocialAuthButtonStyle: ButtonStyle {
             }
             
             configuration.label
-                .font(.rbtBody)
-                .fontWeight(.medium)
+                .font(.rbtBody.weight(.medium)) // iOS 15 compatible font weight
         }
         .frame(width: 200, height: DesignTokens.buttonHeight)
         .background(backgroundColor)
@@ -71,8 +70,7 @@ struct FacebookButtonStyle: View {
                 HStack(spacing: Spacing.small) {
                     // Facebook "f" icon
                     Text("f")
-                        .font(.rbtHeadline)
-                        .fontWeight(.bold)
+                        .font(.rbtHeadline.weight(.bold)) // iOS 15 compatible font weight
                         .foregroundColor(.white)
                         .frame(width: 20, height: 20)
                         .background(Color.white.opacity(0.1))
@@ -80,8 +78,7 @@ struct FacebookButtonStyle: View {
                         .accessibilityHidden(true)
                     
                     Text("Continue with Facebook")
-                        .font(.rbtBody)
-                        .fontWeight(.medium)
+                        .font(.rbtBody.weight(.medium)) // iOS 15 compatible font weight
                 }
             }
             .buttonStyle(SocialAuthButtonStyle(
@@ -91,7 +88,7 @@ struct FacebookButtonStyle: View {
             ))
             .accessibilityLabel("Continue with Facebook")
             .accessibilityHint("Sign in or create an account using your Facebook credentials")
-            .accessibilityAddTraits(isLoading ? [.notEnabled] : [])
+            .disabled(isLoading) // Use disabled instead of accessibility trait
             
             // Privacy notice as per requirements
             Text("We'll never post to Facebook without your permission.")
