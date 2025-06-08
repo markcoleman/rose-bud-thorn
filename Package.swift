@@ -17,11 +17,17 @@ let package = Package(
         .package(url: "https://github.com/SwiftGen/SwiftGen", from: "6.6.0"),
         .package(url: "https://github.com/SwiftUIX/SwiftUIX", from: "0.1.0"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.10.0"),
+        .package(url: "https://github.com/facebook/facebook-ios-sdk", from: "17.0.0"),
+        .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.0"),
     ],
     targets: [
         .target(
             name: "RoseBudThorn",
-            dependencies: ["SwiftUIX"],
+            dependencies: [
+                "SwiftUIX",
+                .product(name: "FacebookLogin", package: "facebook-ios-sdk"),
+                .product(name: "KeychainAccess", package: "KeychainAccess"),
+            ],
             path: "src/Shared"
         ),
         .testTarget(

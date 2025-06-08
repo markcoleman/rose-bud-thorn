@@ -66,6 +66,18 @@ struct SplashScreenView: View {
                       .accessibilityLabel("Sign in with Apple")
                       .accessibilityHint("Authenticate with your Apple ID to use the app")
                      
+                    // Facebook Login Button
+                    FacebookButtonStyle(
+                        action: {
+                            Task {
+                                await model.loginWithFacebook()
+                            }
+                        },
+                        isLoading: model.isLoading,
+                        errorMessage: model.errorMessage
+                    )
+                    .padding(.top, Spacing.medium)
+                     
                     
                 }
                 else{
