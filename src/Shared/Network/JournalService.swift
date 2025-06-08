@@ -128,8 +128,11 @@ class JournalService: ObservableObject {
     /// Extract meaningful prompt text from JournalKit suggestion
     private func extractPromptText(from suggestion: JournalPrompt) -> String? {
         // JournalKit suggestions may have different formats
-        // This implementation assumes the suggestion has a text property
+        // This implementation assumes the suggestion has a content property
         // In actual implementation, this would depend on the JournalKit API structure
+        
+        // NOTE: iOS 18 beta - JournalKit API may still be evolving
+        // This implementation will need to be updated based on final Apple documentation
         if let content = suggestion.content as? String {
             return content
         }

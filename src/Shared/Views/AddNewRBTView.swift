@@ -115,6 +115,9 @@ struct AddNewRBTView: View {
         else {
             viewModel.model!.rose.note = prompt
         }
+        
+        // Trigger UI update by calling objectWillChange
+        viewModel.objectWillChange.send()
     }
 }
 
