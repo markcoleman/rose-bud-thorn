@@ -114,8 +114,7 @@ struct FacebookButtonStyle: View {
     }
 }
 
-// File: View+Accessibility.swift
-import SwiftUI
+// MARK: - View Extensions
 
 extension View {
   /// Marks this view as decorative and hides it from accessibility.
