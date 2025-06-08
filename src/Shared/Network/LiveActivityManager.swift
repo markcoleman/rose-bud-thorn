@@ -21,6 +21,11 @@ class LiveActivityManager: ObservableObject {
         // Check if there's an existing activity
         currentActivity = Activity<DailySummaryAttributes>.activities.first
         isLiveActivityRunning = currentActivity != nil
+        
+        // If there's an existing activity, schedule cleanup for it
+        if isLiveActivityRunning {
+            scheduleAutomaticCleanup()
+        }
     }
     
     /// Start a Live Activity with initial counts
@@ -60,6 +65,7 @@ class LiveActivityManager: ObservableObject {
             return
         }
         
+        // Throttle updates to avoid overwhelming the system
         let updatedState = DailySummaryAttributes.ContentState(
             roses: roses,
             buds: buds,
@@ -67,8 +73,12 @@ class LiveActivityManager: ObservableObject {
         )
         
         Task {
-            await activity.update(using: updatedState)
-            print("Live Activity updated with roses: \(roses), buds: \(buds), thorns: \(thorns)")
+            do {
+                await activity.update(using: updatedState)
+                print("Live Activity updated with roses: \(roses), buds: \(buds), thorns: \(thorns)")
+            } catch {
+                print("Failed to update Live Activity: \(error)")
+            }
         }
     }
     

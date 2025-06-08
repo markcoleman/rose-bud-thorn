@@ -23,6 +23,6 @@ struct DayModel {
     }
     
     var hasEvent: Bool{
-        return bud.id != nil || rose.id != nil || bud.id != nil
+        return bud.id != nil || rose.id != nil || thorn.id != nil
     }
 }

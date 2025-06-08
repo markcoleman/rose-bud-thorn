@@ -21,9 +21,9 @@ class DailySummaryService {
         
         let todayModel = itemService.getItem(id: todayKey)
         
-        let roses = (todayModel.rose.id != nil && !todayModel.rose.note.isEmpty) ? 1 : 0
-        let buds = (todayModel.bud.id != nil && !todayModel.bud.note.isEmpty) ? 1 : 0
-        let thorns = (todayModel.thorn.id != nil && !todayModel.thorn.note.isEmpty) ? 1 : 0
+        let roses = (todayModel.rose.id != nil && !todayModel.rose.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ? 1 : 0
+        let buds = (todayModel.bud.id != nil && !todayModel.bud.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ? 1 : 0
+        let thorns = (todayModel.thorn.id != nil && !todayModel.thorn.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ? 1 : 0
         
         return (roses: roses, buds: buds, thorns: thorns)
     }
