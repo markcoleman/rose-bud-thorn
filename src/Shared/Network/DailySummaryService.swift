@@ -31,29 +31,25 @@ class DailySummaryService {
     /// Update Live Activity with current counts
     func updateLiveActivityIfNeeded() {
         #if os(iOS)
-        if #available(iOS 16.1, *) {
-            let counts = getTodayCounts()
-            LiveActivityManager.shared.updateLiveActivity(
-                roses: counts.roses,
-                buds: counts.buds,
-                thorns: counts.thorns
-            )
-        }
+        let counts = getTodayCounts()
+        LiveActivityManager.shared.updateLiveActivity(
+            roses: counts.roses,
+            buds: counts.buds,
+            thorns: counts.thorns
+        )
         #endif
     }
     
     /// Start Live Activity with current counts
     func startLiveActivityWithCurrentCounts() {
         #if os(iOS)
-        if #available(iOS 16.1, *) {
-            let counts = getTodayCounts()
-            LiveActivityManager.shared.startLiveActivity(
-                roses: counts.roses,
-                buds: counts.buds,
-                thorns: counts.thorns
-            )
-            LiveActivityManager.shared.scheduleAutomaticCleanup()
-        }
+        let counts = getTodayCounts()
+        LiveActivityManager.shared.startLiveActivity(
+            roses: counts.roses,
+            buds: counts.buds,
+            thorns: counts.thorns
+        )
+        LiveActivityManager.shared.scheduleAutomaticCleanup()
         #endif
     }
 }

@@ -42,15 +42,10 @@ class LiveActivityTests: XCTestCase {
     }
     
     #if os(iOS)
-    @available(iOS 16.1, *)
     func testLiveActivityManagerSupport() {
         // Test static support method
         let isSupported = LiveActivityManager.isSupported()
-        if #available(iOS 16.1, *) {
-            XCTAssertTrue(isSupported)
-        } else {
-            XCTAssertFalse(isSupported)
-        }
+        XCTAssertTrue(isSupported)
     }
     #endif
     

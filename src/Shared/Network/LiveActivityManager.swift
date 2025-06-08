@@ -10,7 +10,6 @@ import Foundation
 #if os(iOS)
 import ActivityKit
 
-@available(iOS 16.1, *)
 class LiveActivityManager: ObservableObject {
     static let shared = LiveActivityManager()
     
@@ -98,11 +97,7 @@ class LiveActivityManager: ObservableObject {
     
     /// Check if Live Activities are supported on this device
     static func isSupported() -> Bool {
-        if #available(iOS 16.1, *) {
-            return true
-        } else {
-            return false
-        }
+        return true
     }
     
     /// Schedule automatic cleanup at midnight

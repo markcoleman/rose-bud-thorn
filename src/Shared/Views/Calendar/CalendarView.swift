@@ -76,14 +76,12 @@ struct CalendarView: View {
                     
                     // Auto-start Live Activity if it's not running and user hasn't explicitly disabled it
                     #if os(iOS)
-                    if #available(iOS 16.1, *) {
-                        if !LiveActivityManager.shared.isLiveActivityRunning {
-                            // Check if user has interacted with Live Activity before (stored in UserDefaults)
-                            let hasSeenLiveActivity = UserDefaults.standard.bool(forKey: "HasSeenLiveActivity")
-                            if !hasSeenLiveActivity {
-                                UserDefaults.standard.set(true, forKey: "HasSeenLiveActivity")
-                                DailySummaryService.shared.startLiveActivityWithCurrentCounts()
-                            }
+                    if !LiveActivityManager.shared.isLiveActivityRunning {
+                        // Check if user has interacted with Live Activity before (stored in UserDefaults)
+                        let hasSeenLiveActivity = UserDefaults.standard.bool(forKey: "HasSeenLiveActivity")
+                        if !hasSeenLiveActivity {
+                            UserDefaults.standard.set(true, forKey: "HasSeenLiveActivity")
+                            DailySummaryService.shared.startLiveActivityWithCurrentCounts()
                         }
                     }
                     #endif
