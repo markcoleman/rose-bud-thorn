@@ -7,12 +7,12 @@
 
 import Foundation
 import AuthenticationServices
-import KeychainAccess
+import Security
 
 class AuthViewModel: ObservableObject {
     
     private let defaults = UserDefaults.standard
-    private let keychain = Keychain(service: "com.eweandme.rose-bud-thorn.facebook")
+    private let keychainService = "com.eweandme.rose-bud-thorn.facebook"
 
     @Published
     var model: ProfileModel
@@ -147,7 +147,7 @@ class AuthViewModel: ObservableObject {
         let accessToken = try await exchangeCodeForToken(authCode: authCode, appId: facebookAppId, redirectURI: redirectURI)
         
         // Store token securely in keychain
-        try keychain.set(accessToken, key: "access_token")
+        saveToKeychain(key: "access_token", data: accessToken.data(using: .utf8)!)
         
         // Fetch user profile data
         let userData = try await fetchFacebookUserProfile(token: accessToken)
@@ -237,8 +237,47 @@ class AuthViewModel: ObservableObject {
     
     // MARK: - Facebook Token Management
     
+    private func saveToKeychain(key: String, data: Data) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: key,
+            kSecValueData as String: data
+        ]
+        
+        // Delete any existing item
+        SecItemDelete(query as CFDictionary)
+        
+        // Add the new item
+        SecItemAdd(query as CFDictionary, nil)
+    }
+    
+    private func loadFromKeychain(key: String) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        
+        if status == errSecSuccess {
+            return result as? Data
+        }
+        return nil
+    }
+    
     private func clearFacebookToken() {
-        try? keychain.remove("access_token")
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: "access_token"
+        ]
+        
+        SecItemDelete(query as CFDictionary)
     }
 }
 
