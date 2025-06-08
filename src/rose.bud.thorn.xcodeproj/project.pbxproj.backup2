@@ -38,11 +38,6 @@
 		AB7F6C172762EC1E0093F12C /* MonthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7F6C162762EC1E0093F12C /* MonthViewModel.swift */; };
 		AB7F6C182762EC1E0093F12C /* MonthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7F6C162762EC1E0093F12C /* MonthViewModel.swift */; };
 		AB97A4EF27852BF20073B099 /* ItemsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB97A4EE27852BF20073B099 /* ItemsService.swift */; };
-		ABLIVEACT002 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT001 /* LiveActivityManager.swift */; };
-		ABLIVEACT004 /* DailySummaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT003 /* DailySummaryService.swift */; };
-		ABLIVEACT006 /* DailySummaryAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT005 /* DailySummaryAttributes.swift */; };
-		ABLIVEACT008 /* DailySummaryLiveActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT007 /* DailySummaryLiveActivityView.swift */; };
-		ABLIVEACT010 /* LiveActivityControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT009 /* LiveActivityControl.swift */; };
 		ABCC971127716B13005475A7 /* DayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCC971027716B13005475A7 /* DayViewModel.swift */; };
 		ABCC971227716B13005475A7 /* DayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCC971027716B13005475A7 /* DayViewModel.swift */; };
 		ABCC97142772BF68005475A7 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCC97132772BF68005475A7 /* SplashScreenView.swift */; };
@@ -102,11 +97,6 @@
 		AB7F6C13276046BB0093F12C /* MonthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthView.swift; sourceTree = "<group>"; };
 		AB7F6C162762EC1E0093F12C /* MonthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthViewModel.swift; sourceTree = "<group>"; };
 		AB97A4EE27852BF20073B099 /* ItemsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsService.swift; sourceTree = "<group>"; };
-		ABLIVEACT001 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
-		ABLIVEACT003 /* DailySummaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryService.swift; sourceTree = "<group>"; };
-		ABLIVEACT005 /* DailySummaryAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryAttributes.swift; sourceTree = "<group>"; };
-		ABLIVEACT007 /* DailySummaryLiveActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryLiveActivityView.swift; sourceTree = "<group>"; };
-		ABLIVEACT009 /* LiveActivityControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityControl.swift; sourceTree = "<group>"; };
 		ABCC971027716B13005475A7 /* DayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayViewModel.swift; sourceTree = "<group>"; };
 		ABCC97132772BF68005475A7 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		ABCC97162772C27B005475A7 /* ItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemView.swift; sourceTree = "<group>"; };
@@ -233,7 +223,6 @@
 				AB7F6C0C275EF6560093F12C /* DayModel.swift */,
 				AB720C622776BC2100BE7210 /* ProfileModel.swift */,
 				ABF41430277D497F00AD2596 /* Item.swift */,
-				ABLIVEACT005 /* DailySummaryAttributes.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -259,26 +248,14 @@
 				AB02CEBC275DA4B9000C011D /* AddNewRBTView.swift */,
 				ABCC97132772BF68005475A7 /* SplashScreenView.swift */,
 				ABCC97162772C27B005475A7 /* ItemView.swift */,
-				ABLIVEACT011 /* LiveActivity */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		ABLIVEACT011 /* LiveActivity */ = {
-			isa = PBXGroup;
-			children = (
-				ABLIVEACT007 /* DailySummaryLiveActivityView.swift */,
-				ABLIVEACT009 /* LiveActivityControl.swift */,
-			);
-			path = LiveActivity;
 			sourceTree = "<group>";
 		};
 		AB97A4ED27852BDC0073B099 /* Network */ = {
 			isa = PBXGroup;
 			children = (
 				AB97A4EE27852BF20073B099 /* ItemsService.swift */,
-				ABLIVEACT001 /* LiveActivityManager.swift */,
-				ABLIVEACT003 /* DailySummaryService.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -476,11 +453,6 @@
 				ABCC97172772C27B005475A7 /* ItemView.swift in Sources */,
 				ABEA37BD2777AEB9006390C7 /* AuthViewModel.swift in Sources */,
 				AB97A4EF27852BF20073B099 /* ItemsService.swift in Sources */,
-				ABLIVEACT002 /* LiveActivityManager.swift in Sources */,
-				ABLIVEACT004 /* DailySummaryService.swift in Sources */,
-				ABLIVEACT006 /* DailySummaryAttributes.swift in Sources */,
-				ABLIVEACT008 /* DailySummaryLiveActivityView.swift in Sources */,
-				ABLIVEACT010 /* LiveActivityControl.swift in Sources */,
 				ABF6302E2DF3D931004FE057 /* DesignSystem.swift in Sources */,
 				AB7F6C14276046BB0093F12C /* MonthView.swift in Sources */,
 				AB171CFC275D9B52008C19BB /* rose_bud_thornApp.swift in Sources */,
@@ -684,7 +656,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -715,7 +687,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -795,7 +767,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 10;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -818,7 +790,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 10;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -1,0 +1,11 @@
+/* 
+  Localizable.strings
+  rose.bud.thorn
+
+  Created by Copilot for Live Activity localization
+*/
+
+/* Live Activity Labels */
+"roses" = "roses";
+"buds" = "buds";
+"thorns" = "thorns";

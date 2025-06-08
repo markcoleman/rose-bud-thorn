@@ -34,6 +34,8 @@ struct ProfileView: View {
                     .accessibilityLabel("Profile picture for \(viewModel.model.givenName ?? "user")")
             }
             
+            LiveActivityControl()
+            
             Button("Sign Out", action: {
                 viewModel.signOut()
                 AppState.shared.gameID = UUID()
