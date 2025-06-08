@@ -20,13 +20,23 @@ class ProfileViewModel: ObservableObject {
     
     func signOut(){
         if let bundleID = Bundle.main.bundleIdentifier {
+            // Clear Apple Sign-In data
             self.model.userId = nil
             self.model.identityToken = nil
             self.model.authCode = nil
+            self.model.state = nil
+            
+            // Clear Facebook data
+            self.model.facebookUserId = nil
+            self.model.facebookAccessToken = nil
+            self.model.profilePictureURL = nil
+            
+            // Clear common data
             self.model.email = nil
             self.model.givenName = nil
             self.model.familyName = nil
-            self.model.state = nil
+            self.model.authProvider = nil
+            
             UserDefaults.standard.removePersistentDomain(forName: bundleID)
         }
     }

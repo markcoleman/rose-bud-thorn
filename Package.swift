@@ -21,7 +21,9 @@ let package = Package(
     targets: [
         .target(
             name: "RoseBudThorn",
-            dependencies: ["SwiftUIX"],
+            dependencies: [
+                "SwiftUIX",
+            ],
             path: "src/Shared"
         ),
         .testTarget(

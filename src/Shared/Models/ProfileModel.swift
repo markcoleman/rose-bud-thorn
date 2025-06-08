@@ -72,5 +72,43 @@ struct ProfileModel{
         }
     }
     
+    // MARK: - Facebook Authentication Properties
+    
+    var facebookAccessToken: String?{
+        get{
+            return self.defaults.string(forKey: "facebookAccessToken")
+        }
+        set(facebookAccessToken){
+            defaults.set(facebookAccessToken, forKey: "facebookAccessToken")
+        }
+    }
+    
+    var facebookUserId: String?{
+        get{
+            return self.defaults.string(forKey: "facebookUserId")
+        }
+        set(facebookUserId){
+            defaults.set(facebookUserId, forKey: "facebookUserId")
+        }
+    }
+    
+    var profilePictureURL: String?{
+        get{
+            return self.defaults.string(forKey: "profilePictureURL")
+        }
+        set(profilePictureURL){
+            defaults.set(profilePictureURL, forKey: "profilePictureURL")
+        }
+    }
+    
+    var authProvider: String?{
+        get{
+            return self.defaults.string(forKey: "authProvider")
+        }
+        set(authProvider){
+            defaults.set(authProvider, forKey: "authProvider")
+        }
+    }
+    
 }
 
