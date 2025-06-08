@@ -73,57 +73,7 @@ class SnapshotTests: XCTestCase {
         assertSnapshot(matching: hostingController, as: .image)
     }
     
-    // MARK: - Prompts View Snapshot Tests
-    
-    func testPromptsViewLightMode() {
-        let promptsViewModel = createMockPromptsViewModel(withPrompts: true)
-        let view = PromptsView(viewModel: promptsViewModel) { _ in }
-            .frame(width: 375, height: 200)
-            .padding()
-        
-        let hostingController = UIHostingController(rootView: view)
-        hostingController.overrideUserInterfaceStyle = .light
-        
-        assertSnapshot(matching: hostingController, as: .image)
-    }
-    
-    func testPromptsViewDarkMode() {
-        let promptsViewModel = createMockPromptsViewModel(withPrompts: true)
-        let view = PromptsView(viewModel: promptsViewModel) { _ in }
-            .frame(width: 375, height: 200)
-            .padding()
-        
-        let hostingController = UIHostingController(rootView: view)
-        hostingController.overrideUserInterfaceStyle = .dark
-        
-        assertSnapshot(matching: hostingController, as: .image)
-    }
-    
-    func testPromptsViewLoadingState() {
-        let promptsViewModel = createMockPromptsViewModel(loading: true)
-        let view = PromptsView(viewModel: promptsViewModel) { _ in }
-            .frame(width: 375, height: 100)
-            .padding()
-        
-        let hostingController = UIHostingController(rootView: view)
-        hostingController.overrideUserInterfaceStyle = .light
-        
-        assertSnapshot(matching: hostingController, as: .image)
-    }
-    
-    func testPromptsViewDynamicType() {
-        let promptsViewModel = createMockPromptsViewModel(withPrompts: true)
-        let view = PromptsView(viewModel: promptsViewModel) { _ in }
-            .frame(width: 375, height: 300)
-            .padding()
-            .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
-        
-        let hostingController = UIHostingController(rootView: view)
-        
-        assertSnapshot(matching: hostingController, as: .image)
-    }
-    
-    func testAddNewRBTViewWithPrompts() {
+    func testAddNewRBTViewLightMode() {
         let dayViewModel = DayViewModel(date: Date())
         let view = AddNewRBTView(viewModel: dayViewModel)
             .frame(width: 375, height: 800)
@@ -134,7 +84,7 @@ class SnapshotTests: XCTestCase {
         assertSnapshot(matching: hostingController, as: .image)
     }
     
-    func testAddNewRBTViewWithPromptsDarkMode() {
+    func testAddNewRBTViewDarkMode() {
         let dayViewModel = DayViewModel(date: Date())
         let view = AddNewRBTView(viewModel: dayViewModel)
             .frame(width: 375, height: 800)
@@ -143,24 +93,5 @@ class SnapshotTests: XCTestCase {
         hostingController.overrideUserInterfaceStyle = .dark
         
         assertSnapshot(matching: hostingController, as: .image)
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func createMockPromptsViewModel(withPrompts: Bool = false, loading: Bool = false) -> PromptsViewModel {
-        let viewModel = PromptsViewModel()
-        viewModel.authorizationStatus = .authorized
-        
-        if loading {
-            viewModel.isLoading = true
-        } else if withPrompts {
-            viewModel.prompts = [
-                "What made you smile today?",
-                "Describe a moment when you felt grateful.",
-                "What's one thing you learned about yourself recently?"
-            ]
-        }
-        
-        return viewModel
     }
 }
