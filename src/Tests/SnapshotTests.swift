@@ -72,4 +72,26 @@ class SnapshotTests: XCTestCase {
         
         assertSnapshot(matching: hostingController, as: .image)
     }
+    
+    func testAddNewRBTViewLightMode() {
+        let dayViewModel = DayViewModel(date: Date())
+        let view = AddNewRBTView(viewModel: dayViewModel)
+            .frame(width: 375, height: 800)
+        
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.overrideUserInterfaceStyle = .light
+        
+        assertSnapshot(matching: hostingController, as: .image)
+    }
+    
+    func testAddNewRBTViewDarkMode() {
+        let dayViewModel = DayViewModel(date: Date())
+        let view = AddNewRBTView(viewModel: dayViewModel)
+            .frame(width: 375, height: 800)
+        
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.overrideUserInterfaceStyle = .dark
+        
+        assertSnapshot(matching: hostingController, as: .image)
+    }
 }
