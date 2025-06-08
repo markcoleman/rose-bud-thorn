@@ -8,6 +8,112 @@
 import SwiftUI
 import AuthenticationServices
 
+// MARK: - Social Auth Button Styles
+
+struct SocialAuthButtonStyle: ButtonStyle {
+    let backgroundColor: Color
+    let foregroundColor: Color
+    let isLoading: Bool
+    
+    init(
+        backgroundColor: Color,
+        foregroundColor: Color = .white,
+        isLoading: Bool = false
+    ) {
+        self.backgroundColor = backgroundColor
+        self.foregroundColor = foregroundColor
+        self.isLoading = isLoading
+    }
+    
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: Spacing.small) {
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: foregroundColor))
+                    .scaleEffect(0.8)
+                    .accessibilityHidden(true)
+            }
+            
+            configuration.label
+                .font(.rbtBody)
+                .fontWeight(.medium)
+        }
+        .frame(width: 200, height: DesignTokens.buttonHeight)
+        .background(backgroundColor)
+        .foregroundColor(foregroundColor)
+        .cornerRadius(DesignTokens.cornerRadiusMedium)
+        .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+        .opacity(configuration.isPressed ? 0.9 : 1.0)
+        .opacity(isLoading ? 0.8 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+        .disabled(isLoading)
+    }
+}
+
+struct FacebookButtonStyle: View {
+    let action: () -> Void
+    let isLoading: Bool
+    let errorMessage: String?
+    
+    init(
+        action: @escaping () -> Void,
+        isLoading: Bool = false,
+        errorMessage: String? = nil
+    ) {
+        self.action = action
+        self.isLoading = isLoading
+        self.errorMessage = errorMessage
+    }
+    
+    var body: some View {
+        VStack(spacing: Spacing.small) {
+            Button(action: action) {
+                HStack(spacing: Spacing.small) {
+                    // Facebook "f" icon
+                    Text("f")
+                        .font(.rbtHeadline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .frame(width: 20, height: 20)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(4)
+                        .accessibilityHidden(true)
+                    
+                    Text("Continue with Facebook")
+                        .font(.rbtBody)
+                        .fontWeight(.medium)
+                }
+            }
+            .buttonStyle(SocialAuthButtonStyle(
+                backgroundColor: Color(red: 0.094, green: 0.467, blue: 0.949), // #1877F2
+                foregroundColor: .white,
+                isLoading: isLoading
+            ))
+            .accessibilityLabel("Continue with Facebook")
+            .accessibilityHint("Sign in or create an account using your Facebook credentials")
+            .accessibilityAddTraits(isLoading ? [.notEnabled] : [])
+            
+            // Privacy notice as per requirements
+            Text("We'll never post to Facebook without your permission.")
+                .font(.rbtCaption)
+                .foregroundColor(DesignTokens.secondaryText)
+                .multilineTextAlignment(.center)
+                .accessibilityLabel("Privacy notice: We'll never post to Facebook without your permission")
+            
+            // Error message display
+            if let errorMessage = errorMessage {
+                Text(errorMessage)
+                    .font(.rbtCaption)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.medium)
+                    .accessibilityLabel("Error: \(errorMessage)")
+                    .accessibilityAddTraits(.isStaticText)
+            }
+        }
+    }
+}
+
 // File: View+Accessibility.swift
 import SwiftUI
 
