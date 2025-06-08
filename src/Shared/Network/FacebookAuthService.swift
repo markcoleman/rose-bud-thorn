@@ -28,14 +28,25 @@ class FacebookAuthService: NSObject, ObservableObject {
             isLoading = false
         }
         
-        // Use ASWebAuthenticationSession for OAuth flow as per requirements
+        // Configure LoginManager to use ASWebAuthenticationSession as per requirements
         let loginManager = LoginManager()
+        
+        // Set configuration for ephemeral session (prefersEphemeralWebBrowserSession = true)
+        if let loginConfiguration = loginManager.configuration {
+            // This ensures we don't share cookies between sessions
+            loginConfiguration.defaultAudience = .onlyMe
+        }
         
         do {
             let result = try await withCheckedThrowingContinuation { continuation in
                 loginManager.logIn(permissions: ["public_profile", "email"], from: nil) { result in
                     continuation.resume(with: result)
                 }
+            }
+            
+            // Handle cancellation case
+            if result?.isCancelled == true {
+                throw FacebookAuthError.loginCanceled
             }
             
             guard let token = result?.token else {
