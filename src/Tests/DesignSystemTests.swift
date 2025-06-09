@@ -7,7 +7,8 @@
 
 import XCTest
 import SwiftUI
-@testable import RoseBudThorn
+@testable import RoseBudThornCore
+@testable import RoseBudThornUI
 
 class DesignSystemTests: XCTestCase {
     

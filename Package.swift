@@ -8,9 +8,17 @@ let package = Package(
         .macOS(.v12)
     ],
     products: [
+        .executable(
+            name: "RoseBudThornApp",
+            targets: ["RoseBudThornApp"]
+        ),
         .library(
-            name: "RoseBudThorn",
-            targets: ["RoseBudThorn"]
+            name: "RoseBudThornCore",
+            targets: ["RoseBudThornCore"]
+        ),
+        .library(
+            name: "RoseBudThornUI",
+            targets: ["RoseBudThornUI"]
         ),
     ],
     dependencies: [
@@ -21,17 +29,36 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "RoseBudThorn",
+            name: "RoseBudThornCore",
             dependencies: [
-                "SwiftUIX",
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS", condition: .when(platforms: [.iOS, .macCatalyst])),
             ],
-            path: "src/Shared"
+            path: "Sources/RoseBudThornCore"
+        ),
+        .target(
+            name: "RoseBudThornUI",
+            dependencies: [
+                "RoseBudThornCore",
+                "SwiftUIX",
+            ],
+            path: "Sources/RoseBudThornUI",
+            resources: [
+                .process("Resources")
+            ]
+        ),
+        .executableTarget(
+            name: "RoseBudThornApp",
+            dependencies: [
+                "RoseBudThornCore",
+                "RoseBudThornUI",
+            ],
+            path: "Sources/RoseBudThornApp"
         ),
         .testTarget(
             name: "RoseBudThornTests",
             dependencies: [
-                "RoseBudThorn",
+                "RoseBudThornCore",
+                "RoseBudThornUI",
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
             ],
             path: "src/Tests"

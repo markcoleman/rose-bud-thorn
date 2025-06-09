@@ -8,7 +8,8 @@
 import XCTest
 import SwiftUI
 import SnapshotTesting
-@testable import RoseBudThorn
+@testable import RoseBudThornCore
+@testable import RoseBudThornUI
 
 class SnapshotTests: XCTestCase {
     

@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import RoseBudThorn
+@testable import RoseBudThornCore
 
 class GoogleAuthTests: XCTestCase {
     

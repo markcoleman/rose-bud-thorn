@@ -7,7 +7,32 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test-ios:
+  build-and-test-spm:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Cache SPM dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.swiftpm
+          .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+
+    - name: Build with Swift Package Manager
+      run: |
+        swift build --configuration release
+
+    - name: Test with Swift Package Manager
+      run: |
+        swift test --configuration release
+
+  build-and-test-xcode:
     runs-on: macos-latest
 
     steps:
@@ -28,15 +53,15 @@ jobs:
     - name: Install xcpretty
       run: gem install xcpretty
 
-    - name: Build for testing
+    - name: Build and test with Xcode
       run: |
         set -o pipefail && \
         xcodebuild \
-          -project src/rose.bud.thorn.xcodeproj \
-          -scheme "rose.bud.thorn (iOS)" \
+          -workspace RoseBudThorn.xcworkspace \
+          -scheme RoseBudThornApp \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
           -derivedDataPath DerivedData \
-          clean build-for-testing CODE_SIGNING_ALLOWED=NO \
+          clean build test CODE_SIGNING_ALLOWED=NO \
         | xcpretty
         

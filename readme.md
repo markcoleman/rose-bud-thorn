@@ -1,6 +1,6 @@
 # 🌹 Rose Bud Thorn
 
-Rose Bud Thorn is a cross-platform (iOS & macOS) journaling app that helps you reflect on your day by recording your "Rose" (highlight), "Bud" (something you're looking forward to), and "Thorn" (challenge). Built with SwiftUI and supporting Sign in with Apple, it provides a simple, beautiful, and secure way to track your daily thoughts.
+Rose Bud Thorn is a cross-platform (iOS & macOS) journaling app that helps you reflect on your day by recording your "Rose" (highlight), "Bud" (something you're looking forward to), and "Thorn" (challenge). Built with SwiftUI and Swift Package Manager, it provides a simple, beautiful, and secure way to track your daily thoughts.
 
 ## Features
 
@@ -20,9 +20,9 @@ Rose Bud Thorn is a cross-platform (iOS & macOS) journaling app that helps you r
 
 ### Prerequisites
 
-- Xcode 13.1 or later
-- Swift 5.0+
-- macOS 12.0+ or iOS 15.0+
+- Xcode 15.0 or later
+- Swift 5.7+
+- macOS 12.0+ or iOS 16.0+
 
 ### Installation
 
@@ -32,40 +32,68 @@ Rose Bud Thorn is a cross-platform (iOS & macOS) journaling app that helps you r
    cd rose-bud-thorn
    ```
 
-2. **Open the project in Xcode:**
+2. **Open the workspace in Xcode:**
    ```sh
-   open src/rose.bud.thorn.xcodeproj
+   open RoseBudThorn.xcworkspace
    ```
 
 3. **Build and run:**
    - Select your target device (iOS Simulator or Mac)
+   - Select the `RoseBudThornApp` scheme
    - Press `Cmd + R` to build and run the app
+
+### Command Line Development
+
+The project supports Swift Package Manager for command-line development:
+
+```sh
+# Build the project
+swift build --configuration release
+
+# Run tests
+swift test
+
+# Add a new dependency
+swift package update
+```
 
 ## Architecture
 
-The app is built using SwiftUI and follows the MVVM (Model-View-ViewModel) pattern:
+The app is built using SwiftUI with a modular Swift Package Manager structure:
 
-- **Models**: Data structures for Rose, Bud, and Thorn entries
-- **Views**: SwiftUI views for the user interface
-- **ViewModels**: Business logic and data management
-- **Services**: Authentication, data persistence, and cloud sync
+### Package Structure
 
-## Development
+- **RoseBudThornCore**: Business logic, models, and services
+- **RoseBudThornUI**: SwiftUI views, design system, and view models
+- **RoseBudThornApp**: The executable iOS/macOS app
 
 ### Project Structure
 
 ```
-src/
-├── Shared/              # Shared code between iOS and macOS
-│   ├── Models/         # Data models
-│   ├── Views/          # SwiftUI views
-│   ├── ViewModels/     # View models
-│   └── Services/       # Business logic services
-├── macOS/              # macOS-specific code
-├── Tests iOS/          # iOS unit tests
-├── Tests macOS/        # macOS unit tests
-└── fastlane/           # CI/CD automation
+Sources/
+├── RoseBudThornCore/     # Core business logic
+│   ├── Models/          # Data models
+│   ├── Services/        # Business services
+│   └── Network/         # Networking layer
+├── RoseBudThornUI/       # User interface
+│   ├── Views/           # SwiftUI views
+│   ├── ViewModels/      # View models
+│   ├── Resources/       # Assets and localizations
+│   └── DesignSystem.swift
+└── RoseBudThornApp/      # App entry point
+    └── rose_bud_thornApp.swift
 ```
+
+### Adding New Features
+
+To add a new feature module:
+
+1. Create a new target in `Package.swift`
+2. Add source files under `Sources/YourFeature/`
+3. Import the module where needed
+4. Update dependencies as needed
+
+## Development
 
 ### Building for Production
 
@@ -77,6 +105,64 @@ bundle install
 bundle exec fastlane ios beta    # Deploy iOS beta
 bundle exec fastlane mac beta    # Deploy macOS beta
 ```
+
+### Testing
+
+Run tests using either method:
+
+```sh
+# Swift Package Manager
+swift test
+
+# Xcode
+cmd + U (in Xcode with RoseBudThornApp scheme selected)
+```
+
+### Adding Dependencies
+
+Add new Swift Package dependencies in `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/example/package", from: "1.0.0"),
+],
+targets: [
+    .target(
+        name: "YourTarget",
+        dependencies: [
+            .product(name: "ExamplePackage", package: "package"),
+        ]
+    ),
+]
+```
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
+
+## Security
+
+If you discover a security vulnerability, please see our [Security Policy](SECURITY.md) for information on how to report it responsibly.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📧 Email: [Insert contact email]
+- 🐛 Bug reports: [Create an issue](https://github.com/markcoleman/rose-bud-thorn/issues/new/choose)
+- 💬 Discussions: [GitHub Discussions](https://github.com/markcoleman/rose-bud-thorn/discussions)
+
+## Acknowledgments
+
+- Built with ❤️ using SwiftUI and Swift Package Manager
+- Icons and design inspired by the Rose, Bud, Thorn reflection framework
+- Thanks to all contributors who help improve this app
+
+---
+
+**Rose Bud Thorn** - Reflect. Grow. Thrive. 🌹
 
 ## Contributing
 
