@@ -17,7 +17,7 @@ let package = Package(
         .package(url: "https://github.com/SwiftGen/SwiftGen", from: "6.6.0"),
         .package(url: "https://github.com/SwiftUIX/SwiftUIX", from: "0.1.0"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.10.0"),
-        .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "7.0.0"),
+        .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "8.0.0"),
     ],
     targets: [
         .target(
