@@ -2,12 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:Package.swift">
-   </FileRef>
-   <FileRef
-      location = "group:Sources">
-   </FileRef>
-   <FileRef
-      location = "group:README.md">
+      location = "group:.">
    </FileRef>
 </Workspace>
