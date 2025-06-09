@@ -8,15 +8,12 @@
 import Foundation
 import AuthenticationServices
 import Security
-import KeychainAccess
 
 class AuthViewModel: ObservableObject {
     
     private let defaults = UserDefaults.standard
     private let keychainService = "com.eweandme.rose-bud-thorn.facebook"
     private let googleKeychainService = "com.eweandme.rose-bud-thorn.google"
-    private let keychain: Keychain
-    private let googleKeychain: Keychain
     private let googleAuthService: GoogleAuthService
 
     @Published
@@ -35,8 +32,6 @@ class AuthViewModel: ObservableObject {
     init(model: ProfileModel, googleAuthService: GoogleAuthService = DefaultGoogleAuthService()){
         self.model = model
         self.googleAuthService = googleAuthService
-        self.keychain = Keychain(service: keychainService)
-        self.googleKeychain = Keychain(service: googleKeychainService)
         
         // Configure Google Sign-In
         self.googleAuthService.configure()
@@ -107,12 +102,12 @@ class AuthViewModel: ObservableObject {
             
             // Store tokens securely in keychain
             if let accessToken = userData.accessToken {
-                try googleKeychain.set(accessToken, key: "access_token")
+                saveToGoogleKeychain(key: "access_token", data: accessToken.data(using: .utf8)!)
                 self.model.googleAccessToken = accessToken
             }
             
             if let idToken = userData.idToken {
-                try googleKeychain.set(idToken, key: "id_token")
+                saveToGoogleKeychain(key: "id_token", data: idToken.data(using: .utf8)!)
                 self.model.googleIdToken = idToken
             }
             
@@ -337,9 +332,52 @@ class AuthViewModel: ObservableObject {
     
     // MARK: - Google Token Management
     
+    private func saveToGoogleKeychain(key: String, data: Data) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: googleKeychainService,
+            kSecAttrAccount as String: key,
+            kSecValueData as String: data
+        ]
+        
+        // Delete any existing item
+        SecItemDelete(query as CFDictionary)
+        
+        // Add the new item
+        SecItemAdd(query as CFDictionary, nil)
+    }
+    
+    private func loadFromGoogleKeychain(key: String) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: googleKeychainService,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        
+        if status == errSecSuccess {
+            return result as? Data
+        }
+        return nil
+    }
+    
     private func clearGoogleTokens() {
-        try? googleKeychain.remove("access_token")
-        try? googleKeychain.remove("id_token")
+        clearGoogleToken(key: "access_token")
+        clearGoogleToken(key: "id_token")
+    }
+    
+    private func clearGoogleToken(key: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: googleKeychainService,
+            kSecAttrAccount as String: key
+        ]
+        
+        SecItemDelete(query as CFDictionary)
     }
 }
 
