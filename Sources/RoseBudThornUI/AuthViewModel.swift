@@ -8,6 +8,7 @@
 import Foundation
 import AuthenticationServices
 import Security
+import RoseBudThornCore
 
 class AuthViewModel: ObservableObject {
     

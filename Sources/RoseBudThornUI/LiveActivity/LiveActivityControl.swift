@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import RoseBudThornCore
 
 struct LiveActivityControl: View {
     #if os(iOS)

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RoseBudThornCore
 
 class ItemViewModel: ObservableObject {
     
