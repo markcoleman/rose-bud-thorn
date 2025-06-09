@@ -29,13 +29,13 @@ struct itemData: Decodable{
     var note: String? = ""
 }
 
-class ItemService{
-    init(){
+public class ItemService{
+    public init(){
         
     }
     static var month: [String: DayModel] = [:]
     
-    func getItem(id: String) -> DayModel{
+    public func getItem(id: String) -> DayModel{
         let dateFormatter = DateFormatter()
         let dateFormat: String = "YYYY-MM-dd"
         dateFormatter.dateFormat = dateFormat
@@ -45,7 +45,7 @@ class ItemService{
         return dayModel
     }
     
-    func saveDay(dayModel: DayModel){
+    public func saveDay(dayModel: DayModel){
         
         let dateFormat: String = "YYYY-MM-dd"
         let dateFormatter = DateFormatter()
@@ -54,7 +54,7 @@ class ItemService{
         ItemService.month[date1Key] = dayModel
     }
     
-    func saveItem(item: Item){
+    public func saveItem(item: Item){
         var theKey = ""
         ItemService.month.forEach { (key: String, value: DayModel) in
             

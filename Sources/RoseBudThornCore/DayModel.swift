@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct DayModel {
+public struct DayModel {
     var date: Date
     var id: UUID?
     var bud: Item
     var rose: Item
     var thorn: Item
     
-    init(date: Date, rose: Item?, bud: Item?, thorn: Item?) {
+    public init(date: Date, rose: Item?, bud: Item?, thorn: Item?) {
         self.date = date
         self.id = UUID()
         self.rose = rose ?? Item(id: nil, mediaUrl: "", type: .Rose, note: "")

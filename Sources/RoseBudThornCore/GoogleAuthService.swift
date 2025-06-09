@@ -14,7 +14,7 @@ import UIKit
 
 // MARK: - Google Auth Service Protocol
 
-protocol GoogleAuthService {
+public protocol GoogleAuthService {
     func signIn() async throws -> GoogleUserData
     func signOut() throws
     func configure()
@@ -22,7 +22,7 @@ protocol GoogleAuthService {
 
 // MARK: - Google User Data Model
 
-struct GoogleUserData {
+public struct GoogleUserData {
     let id: String
     let email: String?
     let givenName: String?
@@ -35,9 +35,9 @@ struct GoogleUserData {
 // MARK: - Default Implementation
 
 #if canImport(GoogleSignIn) && canImport(UIKit)
-class DefaultGoogleAuthService: GoogleAuthService {
+public class DefaultGoogleAuthService: GoogleAuthService {
     
-    func configure() {
+    public func configure() {
         // First try to load configuration from GoogleService-Info.plist
         guard let configPath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
               let plist = NSDictionary(contentsOfFile: configPath),
@@ -58,7 +58,7 @@ class DefaultGoogleAuthService: GoogleAuthService {
         print("Google Sign-In configured successfully with client ID: \(String(config.clientID.prefix(12)))...")
     }
     
-    func signIn() async throws -> GoogleUserData {
+    public func signIn() async throws -> GoogleUserData {
         guard let presentingViewController = await UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first?.windows
@@ -99,22 +99,22 @@ class DefaultGoogleAuthService: GoogleAuthService {
         }
     }
     
-    func signOut() throws {
+    public func signOut() throws {
         GIDSignIn.sharedInstance.signOut()
     }
 }
 #else
 // Fallback implementation for platforms that don't support GoogleSignIn
-class DefaultGoogleAuthService: GoogleAuthService {
-    func configure() {
+public class DefaultGoogleAuthService: GoogleAuthService {
+    public func configure() {
         print("Google Sign-In not available on this platform")
     }
     
-    func signIn() async throws -> GoogleUserData {
+    public func signIn() async throws -> GoogleUserData {
         throw GoogleAuthError.signInFailed("Google Sign-In not available on this platform")
     }
     
-    func signOut() throws {
+    public func signOut() throws {
         // No-op for unsupported platforms
     }
 }
@@ -122,18 +122,18 @@ class DefaultGoogleAuthService: GoogleAuthService {
 
 // MARK: - Mock Implementation for Testing
 
-class MockGoogleAuthService: GoogleAuthService {
+public class MockGoogleAuthService: GoogleAuthService {
     var shouldSucceed = true
     var mockUserData: GoogleUserData?
     var configureCallCount = 0
     var signInCallCount = 0
     var signOutCallCount = 0
     
-    func configure() {
+    public func configure() {
         configureCallCount += 1
     }
     
-    func signIn() async throws -> GoogleUserData {
+    public func signIn() async throws -> GoogleUserData {
         signInCallCount += 1
         
         if shouldSucceed {
@@ -151,14 +151,14 @@ class MockGoogleAuthService: GoogleAuthService {
         }
     }
     
-    func signOut() throws {
+    public func signOut() throws {
         signOutCallCount += 1
     }
 }
 
 // MARK: - Error Handling
 
-enum GoogleAuthError: LocalizedError {
+public enum GoogleAuthError: LocalizedError {
     case signInCanceled
     case signInFailed(String)
     case noUserProfile
@@ -167,7 +167,7 @@ enum GoogleAuthError: LocalizedError {
     case networkError
     case invalidCredentials
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .signInCanceled:
             return "Google sign-in failed or was canceled. Please try again."
@@ -186,7 +186,7 @@ enum GoogleAuthError: LocalizedError {
         }
     }
     
-    var recoverySuggestion: String? {
+    public var recoverySuggestion: String? {
         switch self {
         case .signInCanceled:
             return "Tap the Google sign-in button to try again."

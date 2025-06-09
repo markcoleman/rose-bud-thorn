@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct Item{
+public struct Item{
     var id: UUID?
     var mediaUrl: String
     var type: ItemType
     var note: String = ""
 }
 
-enum ItemType {
+public enum ItemType {
     case Rose
     case Bud
     case Thorn

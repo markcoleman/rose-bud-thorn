@@ -7,8 +7,8 @@
 
 import Foundation
 
-class DailySummaryService {
-    static let shared = DailySummaryService()
+public class DailySummaryService {
+    public static let shared = DailySummaryService()
     private let itemService = ItemService()
     
     private init() {}
@@ -29,7 +29,7 @@ class DailySummaryService {
     }
     
     /// Update Live Activity with current counts
-    func updateLiveActivityIfNeeded() {
+    public func updateLiveActivityIfNeeded() {
         #if os(iOS)
         let counts = getTodayCounts()
         LiveActivityManager.shared.updateLiveActivity(

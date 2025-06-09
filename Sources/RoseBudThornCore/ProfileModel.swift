@@ -7,11 +7,11 @@
 
 import Foundation
 
-struct ProfileModel{
+public struct ProfileModel{
     
     private let defaults = UserDefaults.standard
     
-    init(){
+    public init(){
 
     }
     
