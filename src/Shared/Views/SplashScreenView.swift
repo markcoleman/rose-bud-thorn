@@ -134,17 +134,32 @@ struct GoogleButtonStyle: View {
         VStack(spacing: Spacing.small) {
             Button(action: action) {
                 HStack(spacing: Spacing.small) {
-                    // Google "G" icon with colors
+                    // Google "G" icon with accurate colors and styling
                     ZStack {
-                        // White background circle
-                        Circle()
+                        // White background circle for contrast
+                        RoundedRectangle(cornerRadius: 2)
                             .fill(Color.white)
-                            .frame(width: 20, height: 20)
+                            .frame(width: 22, height: 22)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 2)
+                                    .stroke(Color(red: 0.859, green: 0.859, blue: 0.859), lineWidth: 1)
+                            )
                         
-                        // Simplified Google "G" using text
+                        // Google "G" with multicolor styling
                         Text("G")
-                            .font(.rbtHeadline.weight(.bold))
-                            .foregroundColor(Color(red: 0.259, green: 0.522, blue: 0.957)) // Google Blue
+                            .font(.rbtHeadline.weight(.medium))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.259, green: 0.522, blue: 0.957), // Google Blue
+                                        Color(red: 0.208, green: 0.686, blue: 0.376), // Google Green
+                                        Color(red: 0.984, green: 0.737, blue: 0.020), // Google Yellow
+                                        Color(red: 0.918, green: 0.263, blue: 0.208)  // Google Red
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                     }
                     .accessibilityHidden(true)
                     

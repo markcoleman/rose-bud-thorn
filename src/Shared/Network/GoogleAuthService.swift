@@ -38,13 +38,25 @@ struct GoogleUserData {
 class DefaultGoogleAuthService: GoogleAuthService {
     
     func configure() {
-        guard let configPath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
-              let config = GIDConfiguration(contentsOfFile: configPath) else {
+        // First try to load configuration from GoogleService-Info.plist
+        guard let configPath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") else {
             print("Warning: GoogleService-Info.plist not found. Google Sign-In will not work properly.")
+            print("Please add GoogleService-Info.plist to your app bundle with your OAuth client configuration.")
             return
         }
         
+        guard let config = GIDConfiguration(contentsOfFile: configPath) else {
+            print("Warning: Failed to load Google Sign-In configuration from GoogleService-Info.plist")
+            return
+        }
+        
+        // Validate that required configuration is present
+        if config.clientID.isEmpty {
+            print("Warning: Google Sign-In client ID is missing or empty in configuration")
+        }
+        
         GIDSignIn.sharedInstance.configuration = config
+        print("Google Sign-In configured successfully with client ID: \(String(config.clientID.prefix(12)))...")
     }
     
     func signIn() async throws -> GoogleUserData {
@@ -152,6 +164,9 @@ enum GoogleAuthError: LocalizedError {
     case signInFailed(String)
     case noUserProfile
     case noPresentingViewController
+    case configurationMissing
+    case networkError
+    case invalidCredentials
     
     var errorDescription: String? {
         switch self {
@@ -163,6 +178,25 @@ enum GoogleAuthError: LocalizedError {
             return "Failed to retrieve user profile from Google."
         case .noPresentingViewController:
             return "Unable to present Google sign-in interface."
+        case .configurationMissing:
+            return "Google Sign-In is not properly configured. Please contact support."
+        case .networkError:
+            return "Network error during Google sign-in. Please check your connection and try again."
+        case .invalidCredentials:
+            return "Invalid Google credentials. Please try signing in again."
+        }
+    }
+    
+    var recoverySuggestion: String? {
+        switch self {
+        case .signInCanceled:
+            return "Tap the Google sign-in button to try again."
+        case .networkError:
+            return "Check your internet connection and try again."
+        case .configurationMissing:
+            return "Contact the app developer to resolve this configuration issue."
+        default:
+            return "Please try again or contact support if the problem persists."
         }
     }
 }
