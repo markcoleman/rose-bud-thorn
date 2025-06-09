@@ -25,10 +25,10 @@ Thank you for your interest in contributing to Rose Bud Thorn! We welcome contri
 
 #### Prerequisites
 
-- Xcode 13.1 or later
-- Swift 5.0+
-- macOS 12.0+ or iOS 15.0+
-- Basic knowledge of SwiftUI and iOS/macOS development
+- Xcode 15.0 or later
+- Swift 5.7+
+- macOS 12.0+ or iOS 16.0+
+- Basic knowledge of SwiftUI and Swift Package Manager development
 
 #### Development Setup
 
@@ -42,10 +42,22 @@ Thank you for your interest in contributing to Rose Bud Thorn! We welcome contri
    ```bash
    git checkout -b feature/your-feature-name
    ```
-4. Open the project in Xcode:
+4. Open the workspace in Xcode:
    ```bash
-   open src/rose.bud.thorn.xcodeproj
+   open RoseBudThorn.xcworkspace
    ```
+
+#### Development Workflow
+
+The project uses Swift Package Manager with a modular architecture:
+
+- **RoseBudThornCore**: Business logic and models
+- **RoseBudThornUI**: SwiftUI views and design system  
+- **RoseBudThornApp**: Executable application
+
+You can develop using either:
+- **Xcode**: Open `RoseBudThorn.xcworkspace` and select the `RoseBudThornApp` scheme
+- **Command Line**: Use `swift build` and `swift test` for development
 
 #### Making Changes
 
