@@ -6,9 +6,11 @@
 //
 
 import XCTest
-import SwiftUI
 import SnapshotTesting
 @testable import RoseBudThornCore
+
+#if canImport(SwiftUI) && (os(iOS) || os(macOS) || os(macCatalyst) || os(tvOS) || os(watchOS) || os(visionOS))
+import SwiftUI
 @testable import RoseBudThornUI
 
 class LiveActivityTests: XCTestCase {
@@ -113,3 +115,5 @@ class LiveActivityTests: XCTestCase {
         })
     }
 }
+
+#endif

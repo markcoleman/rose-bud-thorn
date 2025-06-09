@@ -39,16 +39,15 @@ class DefaultGoogleAuthService: GoogleAuthService {
     
     func configure() {
         // First try to load configuration from GoogleService-Info.plist
-        guard let configPath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") else {
-            print("Warning: GoogleService-Info.plist not found. Google Sign-In will not work properly.")
+        guard let configPath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+              let plist = NSDictionary(contentsOfFile: configPath),
+              let clientID = plist["CLIENT_ID"] as? String else {
+            print("Warning: GoogleService-Info.plist not found or CLIENT_ID missing. Google Sign-In will not work properly.")
             print("Please add GoogleService-Info.plist to your app bundle with your OAuth client configuration.")
             return
         }
         
-        guard let config = GIDConfiguration(contentsOfFile: configPath) else {
-            print("Warning: Failed to load Google Sign-In configuration from GoogleService-Info.plist")
-            return
-        }
+        let config = GIDConfiguration(clientID: clientID)
         
         // Validate that required configuration is present
         if config.clientID.isEmpty {

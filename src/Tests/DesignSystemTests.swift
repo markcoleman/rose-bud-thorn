@@ -6,8 +6,10 @@
 //
 
 import XCTest
-import SwiftUI
 @testable import RoseBudThornCore
+
+#if canImport(SwiftUI) && (os(iOS) || os(macOS) || os(macCatalyst) || os(tvOS) || os(watchOS) || os(visionOS))
+import SwiftUI
 @testable import RoseBudThornUI
 
 class DesignSystemTests: XCTestCase {
@@ -79,3 +81,5 @@ class DesignSystemTests: XCTestCase {
         XCTAssertNotNil(Font.rbtCaption2)
     }
 }
+
+#endif

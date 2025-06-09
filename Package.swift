@@ -1,26 +1,54 @@
 // swift-tools-version:5.7
 import PackageDescription
 
+#if os(iOS) || os(macOS) || os(macCatalyst) || os(tvOS) || os(watchOS) || os(visionOS)
+let uiProducts: [Product] = [
+    .executable(
+        name: "RoseBudThornApp",
+        targets: ["RoseBudThornApp"]
+    ),
+    .library(
+        name: "RoseBudThornUI",
+        targets: ["RoseBudThornUI"]
+    ),
+]
+let uiTargets: [Target] = [
+    .target(
+        name: "RoseBudThornUI",
+        dependencies: [
+            "RoseBudThornCore",
+        ],
+        path: "Sources/RoseBudThornUI",
+        resources: [
+            .process("Resources")
+        ]
+    ),
+    .executableTarget(
+        name: "RoseBudThornApp",
+        dependencies: [
+            "RoseBudThornCore",
+            "RoseBudThornUI",
+        ],
+        path: "Sources/RoseBudThornApp"
+    ),
+]
+#else
+let uiProducts: [Product] = []
+let uiTargets: [Target] = []
+#endif
+
 let package = Package(
     name: "RoseBudThorn",
     platforms: [
-        .iOS(.v16),
+        .iOS("16.1"),
         .macOS(.v12)
     ],
     products: [
-        .executable(
-            name: "RoseBudThornApp",
-            targets: ["RoseBudThornApp"]
-        ),
         .library(
             name: "RoseBudThornCore",
             targets: ["RoseBudThornCore"]
         ),
-        .library(
-            name: "RoseBudThornUI",
-            targets: ["RoseBudThornUI"]
-        ),
-    ],
+    ] + uiProducts,
     dependencies: [
         .package(url: "https://github.com/SwiftGen/SwiftGen", from: "6.6.0"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.10.0"),
@@ -34,32 +62,14 @@ let package = Package(
             ],
             path: "Sources/RoseBudThornCore"
         ),
-        .target(
-            name: "RoseBudThornUI",
-            dependencies: [
-                "RoseBudThornCore",
-            ],
-            path: "Sources/RoseBudThornUI",
-            resources: [
-                .process("Resources")
-            ]
-        ),
-        .executableTarget(
-            name: "RoseBudThornApp",
-            dependencies: [
-                "RoseBudThornCore",
-                "RoseBudThornUI",
-            ],
-            path: "Sources/RoseBudThornApp"
-        ),
         .testTarget(
             name: "RoseBudThornTests",
             dependencies: [
                 "RoseBudThornCore",
-                "RoseBudThornUI",
+            ] + (uiTargets.isEmpty ? [] : ["RoseBudThornUI"]) + [
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
             ],
             path: "src/Tests"
         ),
-    ]
+    ] + uiTargets
 )

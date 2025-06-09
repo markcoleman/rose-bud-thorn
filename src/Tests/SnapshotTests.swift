@@ -6,9 +6,11 @@
 //
 
 import XCTest
-import SwiftUI
 import SnapshotTesting
 @testable import RoseBudThornCore
+
+#if canImport(SwiftUI) && (os(iOS) || os(macOS) || os(macCatalyst) || os(tvOS) || os(watchOS) || os(visionOS))
+import SwiftUI
 @testable import RoseBudThornUI
 
 class SnapshotTests: XCTestCase {
@@ -96,3 +98,5 @@ class SnapshotTests: XCTestCase {
         assertSnapshot(matching: hostingController, as: .image)
     }
 }
+
+#endif

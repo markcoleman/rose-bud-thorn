@@ -7,6 +7,8 @@
 
 import XCTest
 
+#if canImport(XCTest) && (os(iOS) || os(macOS) || os(macCatalyst) || os(tvOS) || os(watchOS) || os(visionOS))
+
 class GoogleSignInUITests: XCTestCase {
 
     override func setUpWithError() throws {
@@ -164,3 +166,5 @@ extension XCUIApplication {
         launchArguments.contains("--simulate-google-auth-loading")
     }
 }
+
+#endif

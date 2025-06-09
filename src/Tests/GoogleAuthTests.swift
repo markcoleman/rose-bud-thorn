@@ -8,6 +8,9 @@
 import XCTest
 @testable import RoseBudThornCore
 
+#if canImport(SwiftUI) && (os(iOS) || os(macOS) || os(macCatalyst) || os(tvOS) || os(watchOS) || os(visionOS))
+@testable import RoseBudThornUI
+
 class GoogleAuthTests: XCTestCase {
     
     var authViewModel: AuthViewModel!
@@ -155,3 +158,5 @@ class GoogleAuthTests: XCTestCase {
         )
     }
 }
+
+#endif
