@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import RoseBudThornCore
 
 #if os(iOS)
 import ActivityKit
