@@ -9,10 +9,6 @@ import SwiftUI
 import AuthenticationServices
 import RoseBudThornCore
 
-#if canImport(GoogleSignIn)
-import GoogleSignIn
-#endif
-
 // MARK: - Social Auth Button Styles
 
 struct SocialAuthButtonStyle: ButtonStyle {
