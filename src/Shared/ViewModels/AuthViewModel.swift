@@ -8,11 +8,16 @@
 import Foundation
 import AuthenticationServices
 import Security
+import KeychainAccess
 
 class AuthViewModel: ObservableObject {
     
     private let defaults = UserDefaults.standard
     private let keychainService = "com.eweandme.rose-bud-thorn.facebook"
+    private let googleKeychainService = "com.eweandme.rose-bud-thorn.google"
+    private let keychain: Keychain
+    private let googleKeychain: Keychain
+    private let googleAuthService: GoogleAuthService
 
     @Published
     var model: ProfileModel
@@ -24,11 +29,17 @@ class AuthViewModel: ObservableObject {
     var errorMessage: String?
     
     var isSignedIn: Bool{
-        model.identityToken != nil || model.facebookAccessToken != nil
+        model.identityToken != nil || model.facebookAccessToken != nil || model.googleAccessToken != nil
     }
     
-    init(model: ProfileModel){
+    init(model: ProfileModel, googleAuthService: GoogleAuthService = DefaultGoogleAuthService()){
         self.model = model
+        self.googleAuthService = googleAuthService
+        self.keychain = Keychain(service: keychainService)
+        self.googleKeychain = Keychain(service: googleKeychainService)
+        
+        // Configure Google Sign-In
+        self.googleAuthService.configure()
     }
     
     // MARK: - Apple Sign-In
@@ -69,6 +80,41 @@ class AuthViewModel: ObservableObject {
             self.model.familyName = userData.familyName
             self.model.profilePictureURL = userData.profilePictureURL
             self.model.authProvider = "facebook"
+            
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        
+        isLoading = false
+    }
+    
+    // MARK: - Google Sign-In
+    
+    func loginWithGoogle() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let userData = try await googleAuthService.signIn()
+            
+            // Save Google user data to profile model
+            self.model.googleUserId = userData.id
+            self.model.email = userData.email
+            self.model.givenName = userData.givenName
+            self.model.familyName = userData.familyName
+            self.model.profilePictureURL = userData.profilePictureURL
+            self.model.authProvider = "google"
+            
+            // Store tokens securely in keychain
+            if let accessToken = userData.accessToken {
+                try googleKeychain.set(accessToken, key: "access_token")
+                self.model.googleAccessToken = accessToken
+            }
+            
+            if let idToken = userData.idToken {
+                try googleKeychain.set(idToken, key: "id_token")
+                self.model.googleIdToken = idToken
+            }
             
         } catch {
             errorMessage = error.localizedDescription
@@ -220,16 +266,25 @@ class AuthViewModel: ObservableObject {
             // Clear Facebook data
             self.model.facebookUserId = nil
             self.model.facebookAccessToken = nil
-            self.model.profilePictureURL = nil
+            
+            // Clear Google data
+            self.model.googleUserId = nil
+            self.model.googleAccessToken = nil
+            self.model.googleIdToken = nil
             
             // Clear common data
             self.model.email = nil
             self.model.givenName = nil
             self.model.familyName = nil
+            self.model.profilePictureURL = nil
             self.model.authProvider = nil
             
-            // Clear Facebook token from keychain
+            // Clear tokens from keychain
             clearFacebookToken()
+            clearGoogleTokens()
+            
+            // Sign out from Google
+            try? googleAuthService.signOut()
             
             UserDefaults.standard.removePersistentDomain(forName: bundleID)
         }
@@ -278,6 +333,13 @@ class AuthViewModel: ObservableObject {
         ]
         
         SecItemDelete(query as CFDictionary)
+    }
+    
+    // MARK: - Google Token Management
+    
+    private func clearGoogleTokens() {
+        try? googleKeychain.remove("access_token")
+        try? googleKeychain.remove("id_token")
     }
 }
 
