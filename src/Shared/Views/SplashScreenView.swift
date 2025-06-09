@@ -8,6 +8,10 @@
 import SwiftUI
 import AuthenticationServices
 
+#if canImport(GoogleSignIn)
+import GoogleSignIn
+#endif
+
 // MARK: - Social Auth Button Styles
 
 struct SocialAuthButtonStyle: ButtonStyle {
@@ -111,6 +115,81 @@ struct FacebookButtonStyle: View {
     }
 }
 
+struct GoogleButtonStyle: View {
+    let action: () -> Void
+    let isLoading: Bool
+    let errorMessage: String?
+    
+    init(
+        action: @escaping () -> Void,
+        isLoading: Bool = false,
+        errorMessage: String? = nil
+    ) {
+        self.action = action
+        self.isLoading = isLoading
+        self.errorMessage = errorMessage
+    }
+    
+    var body: some View {
+        VStack(spacing: Spacing.small) {
+            Button(action: action) {
+                HStack(spacing: Spacing.small) {
+                    // Google "G" icon with accurate colors and styling
+                    ZStack {
+                        // White background circle for contrast
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(Color.white)
+                            .frame(width: 22, height: 22)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 2)
+                                    .stroke(Color(red: 0.859, green: 0.859, blue: 0.859), lineWidth: 1)
+                            )
+                        
+                        // Google "G" with multicolor styling
+                        Text("G")
+                            .font(.rbtHeadline.weight(.medium))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.259, green: 0.522, blue: 0.957), // Google Blue
+                                        Color(red: 0.208, green: 0.686, blue: 0.376), // Google Green
+                                        Color(red: 0.984, green: 0.737, blue: 0.020), // Google Yellow
+                                        Color(red: 0.918, green: 0.263, blue: 0.208)  // Google Red
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    }
+                    .accessibilityHidden(true)
+                    
+                    Text("Sign in with Google")
+                        .font(.rbtBody.weight(.medium))
+                }
+            }
+            .buttonStyle(SocialAuthButtonStyle(
+                backgroundColor: .white,
+                foregroundColor: Color(red: 0.259, green: 0.259, blue: 0.259), // Google Gray
+                isLoading: isLoading
+            ))
+            .accessibilityLabel("Sign in with Google")
+            .accessibilityHint("Sign in or create an account using your Google credentials")
+            .disabled(isLoading)
+            
+            // Error message display
+            if let errorMessage = errorMessage {
+                Text(errorMessage)
+                    .font(.rbtCaption)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.medium)
+                    .accessibilityLabel("Error: \(errorMessage)")
+                    .accessibilityAddTraits(.isStaticText)
+            }
+        }
+    }
+}
+
 // MARK: - View Extensions
 
 extension View {
@@ -173,6 +252,18 @@ struct SplashScreenView: View {
                         action: {
                             Task {
                                 await model.loginWithFacebook()
+                            }
+                        },
+                        isLoading: model.isLoading,
+                        errorMessage: model.errorMessage
+                    )
+                    .padding(.top, Spacing.medium)
+                    
+                    // Google Login Button
+                    GoogleButtonStyle(
+                        action: {
+                            Task {
+                                await model.loginWithGoogle()
                             }
                         },
                         isLoading: model.isLoading,

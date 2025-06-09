@@ -40,6 +40,8 @@
 		AB97A4EF27852BF20073B099 /* ItemsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB97A4EE27852BF20073B099 /* ItemsService.swift */; };
 		ABLIVEACT002 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT001 /* LiveActivityManager.swift */; };
 		ABLIVEACT004 /* DailySummaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT003 /* DailySummaryService.swift */; };
+		ABGOOGLE002 /* GoogleAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABGOOGLE001 /* GoogleAuthService.swift */; };
+		ABGOOGLE003 /* GoogleAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABGOOGLE001 /* GoogleAuthService.swift */; };
 		ABLIVEACT006 /* DailySummaryAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT005 /* DailySummaryAttributes.swift */; };
 		ABLIVEACT008 /* DailySummaryLiveActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT007 /* DailySummaryLiveActivityView.swift */; };
 		ABLIVEACT010 /* LiveActivityControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABLIVEACT009 /* LiveActivityControl.swift */; };
@@ -104,6 +106,7 @@
 		AB97A4EE27852BF20073B099 /* ItemsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsService.swift; sourceTree = "<group>"; };
 		ABLIVEACT001 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		ABLIVEACT003 /* DailySummaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryService.swift; sourceTree = "<group>"; };
+		ABGOOGLE001 /* GoogleAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleAuthService.swift; sourceTree = "<group>"; };
 		ABLIVEACT005 /* DailySummaryAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryAttributes.swift; sourceTree = "<group>"; };
 		ABLIVEACT007 /* DailySummaryLiveActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySummaryLiveActivityView.swift; sourceTree = "<group>"; };
 		ABLIVEACT009 /* LiveActivityControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityControl.swift; sourceTree = "<group>"; };
@@ -279,6 +282,7 @@
 				AB97A4EE27852BF20073B099 /* ItemsService.swift */,
 				ABLIVEACT001 /* LiveActivityManager.swift */,
 				ABLIVEACT003 /* DailySummaryService.swift */,
+				ABGOOGLE001 /* GoogleAuthService.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -478,6 +482,7 @@
 				AB97A4EF27852BF20073B099 /* ItemsService.swift in Sources */,
 				ABLIVEACT002 /* LiveActivityManager.swift in Sources */,
 				ABLIVEACT004 /* DailySummaryService.swift in Sources */,
+				ABGOOGLE002 /* GoogleAuthService.swift in Sources */,
 				ABLIVEACT006 /* DailySummaryAttributes.swift in Sources */,
 				ABLIVEACT008 /* DailySummaryLiveActivityView.swift in Sources */,
 				ABLIVEACT010 /* LiveActivityControl.swift in Sources */,
@@ -508,6 +513,7 @@
 				AB02CEB8275DA45B000C011D /* CalendarView.swift in Sources */,
 				ABCC97182772C27B005475A7 /* ItemView.swift in Sources */,
 				ABEA37BE2777AEB9006390C7 /* AuthViewModel.swift in Sources */,
+				ABGOOGLE003 /* GoogleAuthService.swift in Sources */,
 				AB7F6C15276046BB0093F12C /* MonthView.swift in Sources */,
 				AB171CFD275D9B52008C19BB /* rose_bud_thornApp.swift in Sources */,
 				ABF630342DF3DA0D004FE057 /* Assets.swift in Sources */,

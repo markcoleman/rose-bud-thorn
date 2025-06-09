@@ -110,5 +110,34 @@ struct ProfileModel{
         }
     }
     
+    // MARK: - Google Authentication Properties
+    
+    var googleAccessToken: String?{
+        get{
+            return self.defaults.string(forKey: "googleAccessToken")
+        }
+        set(googleAccessToken){
+            defaults.set(googleAccessToken, forKey: "googleAccessToken")
+        }
+    }
+    
+    var googleIdToken: String?{
+        get{
+            return self.defaults.string(forKey: "googleIdToken")
+        }
+        set(googleIdToken){
+            defaults.set(googleIdToken, forKey: "googleIdToken")
+        }
+    }
+    
+    var googleUserId: String?{
+        get{
+            return self.defaults.string(forKey: "googleUserId")
+        }
+        set(googleUserId){
+            defaults.set(googleUserId, forKey: "googleUserId")
+        }
+    }
+    
 }
 
