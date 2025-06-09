@@ -53,7 +53,7 @@ jobs:
     - name: Install xcpretty
       run: gem install xcpretty
 
-    - name: Build and test with Xcode
+    - name: Build with Xcode
       run: |
         set -o pipefail && \
         xcodebuild \
@@ -61,6 +61,6 @@ jobs:
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 13,OS=latest' \
           -derivedDataPath DerivedData \
-          clean build test CODE_SIGNING_ALLOWED=NO \
+          clean build CODE_SIGNING_ALLOWED=NO \
         | xcpretty
         

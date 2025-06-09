@@ -24,13 +24,15 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/SwiftGen/SwiftGen", from: "6.6.0"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.10.0"),
-        .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "7.0.0"),
+        .package(url: "https://github.com/google/GoogleSignIn-iOS", exact: "6.2.4"),
+        .package(url: "https://github.com/google/gtm-session-fetcher", from: "3.4.0"),
     ],
     targets: [
         .target(
             name: "RoseBudThornCore",
             dependencies: [
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS", condition: .when(platforms: [.iOS, .macCatalyst])),
+                .product(name: "GTMSessionFetcher", package: "gtm-session-fetcher", condition: .when(platforms: [.iOS, .macCatalyst])),
             ],
             path: "Sources/RoseBudThornCore"
         ),
