@@ -31,7 +31,8 @@ let package = Package(
         ),
         .target(
             name: "SearchIndex",
-            dependencies: ["CoreModels", "CoreDate", "DocumentStore"]
+            dependencies: ["CoreModels", "CoreDate", "DocumentStore"],
+            exclude: ["IndexSchema.sql"]
         ),
         .target(
             name: "Summaries",

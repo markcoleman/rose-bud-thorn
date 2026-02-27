@@ -45,7 +45,13 @@ public struct PeriodKeyCalculator: Sendable {
             return nil
         }
 
-        let comps = DateComponents(calendar: calendar, timeZone: calendar.timeZone, yearForWeekOfYear: year, weekOfYear: week, weekday: calendar.firstWeekday)
+        var comps = DateComponents()
+        comps.calendar = calendar
+        comps.timeZone = calendar.timeZone
+        comps.yearForWeekOfYear = year
+        comps.weekOfYear = week
+        comps.weekday = calendar.firstWeekday
+
         guard let start = calendar.date(from: comps) else {
             return nil
         }

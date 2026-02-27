@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:rose-bud-thorn}",
+            "name": "Debug RoseBudThornApp",
+            "target": "RoseBudThornApp",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug RoseBudThornApp"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:rose-bud-thorn}",
+            "name": "Release RoseBudThornApp",
+            "target": "RoseBudThornApp",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release RoseBudThornApp"
+        }
+    ]
+}
