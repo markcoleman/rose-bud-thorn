@@ -6,6 +6,7 @@ public struct TodayCaptureView: View {
     @State private var viewModel: TodayViewModel
     @State private var importerType: EntryType?
     @State private var tagsText = ""
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public init(environment: AppEnvironment) {
         _viewModel = State(initialValue: TodayViewModel(environment: environment))
@@ -16,7 +17,7 @@ public struct TodayCaptureView: View {
 
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 18 : 14) {
                     header
 
                     ForEach(EntryType.allCases, id: \.self) { type in
@@ -92,11 +93,11 @@ public struct TodayCaptureView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Rose, Bud, Thorn")
-                .font(.system(.largeTitle, design: .rounded, weight: .bold))
+        VStack(alignment: .leading, spacing: 10) {
+            BrandMarkView()
             Text(Date.now.formatted(date: .complete, time: .omitted))
                 .foregroundStyle(.secondary)
+                .accessibilityLabel("Today, \(Date.now.formatted(date: .complete, time: .omitted))")
         }
     }
 
@@ -108,7 +109,8 @@ public struct TodayCaptureView: View {
                     model.setTags(from: tagsText)
                 }
 
-            HStack(spacing: 12) {
+            ViewThatFits {
+                HStack(spacing: 12) {
                 Picker("Mood", selection: Binding(
                     get: { model.entry.mood ?? 0 },
                     set: { newValue in model.setMood(newValue == 0 ? nil : newValue) }
@@ -126,6 +128,27 @@ public struct TodayCaptureView: View {
                     Label("Favorite", systemImage: model.entry.favorite ? "star.fill" : "star")
                 }
                 .buttonStyle(.bordered)
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Picker("Mood", selection: Binding(
+                        get: { model.entry.mood ?? 0 },
+                        set: { newValue in model.setMood(newValue == 0 ? nil : newValue) }
+                    )) {
+                        Text("Mood").tag(0)
+                        ForEach(1...5, id: \.self) { value in
+                            Text("\(value)").tag(value)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Button {
+                        model.toggleFavorite()
+                    } label: {
+                        Label("Favorite", systemImage: model.entry.favorite ? "star.fill" : "star")
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
         }
         .padding(14)

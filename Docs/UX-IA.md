@@ -24,3 +24,11 @@
 - Semantic labels for category/photo actions.
 - Reduced-motion safe transitions.
 - Minimum 44pt target for primary actions.
+
+## 2026 UX Design Alignment
+- **Clarity first (Apple HIG):** high-contrast typography, visible hierarchy, and direct language on every capture surface.
+- **Adaptive layouts by default:** `ViewThatFits` patterns for compact width, split-view support for iPad/macOS, and resilience at accessibility Dynamic Type sizes.
+- **Accessible interactions:** 44pt minimum touch targets, grouped accessibility labels for brand header, and explicit hints for progressive disclosure actions.
+- **Comfortable color system:** brand palette with automatic light/dark adaptations for surfaces and gradients.
+- **Visual identity assets:** reusable app logo (`RoseBudLogo`) and branded header treatment for recognition across app layouts.
+- **Calm motion:** preserve subtle transitions while ensuring reduced cognitive load in expanded editor states.
