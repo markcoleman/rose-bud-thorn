@@ -33,6 +33,7 @@ public struct RootAppView: View {
                 lockOverlay
             }
         }
+        .tint(DesignTokens.accent)
         .onChange(of: scenePhase) { _, newValue in
             if newValue != .active {
                 lockManager.lockIfNeeded()
@@ -66,6 +67,11 @@ public struct RootAppView: View {
                     .tag(section)
             }
             .navigationTitle("Rose, Bud, Thorn")
+            .safeAreaInset(edge: .top) {
+                BrandMarkView()
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+            }
         } detail: {
             sectionView(selectedSection ?? .today)
         }

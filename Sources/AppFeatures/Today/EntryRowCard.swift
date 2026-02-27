@@ -2,6 +2,8 @@ import SwiftUI
 import CoreModels
 
 public struct EntryRowCard: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     public let type: EntryType
     public let shortText: String
     public let journalText: String
@@ -42,21 +44,26 @@ public struct EntryRowCard: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Text(type.title)
-                    .font(.headline)
-                    .foregroundStyle(color(for: type))
-                    .frame(width: 56, alignment: .leading)
+            ViewThatFits {
+                HStack(spacing: 10) {
+                    titleBadge
 
-                TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
-                    .textFieldStyle(.roundedBorder)
+                    TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
+                        .textFieldStyle(.roundedBorder)
 
-                Button(action: onAddPhoto) {
-                    Image(systemName: "camera.fill")
-                        .imageScale(.medium)
+                    addPhotoButton
                 }
-                .buttonStyle(.bordered)
-                .accessibilityLabel("Add photo to \(type.title)")
+
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        titleBadge
+                        Spacer()
+                        addPhotoButton
+                    }
+
+                    TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
+                        .textFieldStyle(.roundedBorder)
+                }
             }
 
             if !photos.isEmpty {
@@ -83,10 +90,11 @@ public struct EntryRowCard: View {
             Button(isExpanded ? "Done" : "More…", action: onToggleExpanded)
                 .font(.subheadline.weight(.semibold))
                 .buttonStyle(.plain)
+                .accessibilityHint("Shows additional journal details for \(type.title)")
 
             if isExpanded {
                 TextEditor(text: Binding(get: { journalText }, set: onJournalTextChange))
-                    .frame(minHeight: 120)
+                    .frame(minHeight: dynamicTypeSize.isAccessibilitySize ? 160 : 120)
                     .padding(8)
                     .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.1)))
                     .transition(.move(edge: .top).combined(with: .opacity))
@@ -102,6 +110,27 @@ public struct EntryRowCard: View {
                 .stroke(color(for: type).opacity(0.25), lineWidth: 1)
         }
         .animation(MotionTokens.smooth, value: isExpanded)
+    }
+
+
+    private var addPhotoButton: some View {
+        Button(action: onAddPhoto) {
+            Image(systemName: "camera.fill")
+                .imageScale(.medium)
+                .frame(minWidth: 44, minHeight: 44)
+        }
+        .buttonStyle(.bordered)
+        .accessibilityLabel("Add photo to \(type.title)")
+    }
+
+    private var titleBadge: some View {
+        Text(type.title)
+            .font(.headline)
+            .foregroundStyle(color(for: type))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(color(for: type).opacity(0.15)))
+            .accessibilityAddTraits(.isHeader)
     }
 
     private func color(for type: EntryType) -> Color {
