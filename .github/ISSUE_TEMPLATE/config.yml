@@ -1,8 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: General Discussion
-    url: https://github.com/markcoleman/rose-bud-thorn/discussions
-    about: Use GitHub Discussions for questions and general discussion
-  - name: Security Issues
-    url: https://github.com/markcoleman/rose-bud-thorn/security/advisories/new
-    about: Please report security vulnerabilities privately

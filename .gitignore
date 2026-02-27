@@ -1,3 +1,4 @@
+.build
 # Created by https://www.toptal.com/developers/gitignore/api/macos,xcode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,xcode
 
@@ -52,7 +53,3 @@ xcuserdata/
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,xcode
-
-# Swift Package Manager
-.build/
-.swiftpm/

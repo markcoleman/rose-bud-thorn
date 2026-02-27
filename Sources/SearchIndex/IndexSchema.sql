@@ -1,0 +1,4 @@
+-- Placeholder schema for future SQLite FTS migration.
+-- MVP uses a file-backed derivative index (index.json).
+-- Planned upgrade path:
+-- CREATE VIRTUAL TABLE entry_fts USING fts5(day_key, rose_text, bud_text, thorn_text);
