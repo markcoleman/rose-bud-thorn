@@ -40,9 +40,11 @@ swift run RoseBudThornApp
 ```
 
 In Xcode:
-1. Open `/Users/markcoleman/Development/github/rose-bud-thorn/Package.swift`.
-2. Run `RoseBudThornApp` on macOS.
-3. For iOS/iPadOS destinations, reuse `RootAppView(environment:)` from `AppFeatures` in an Xcode App target.
+1. Open [`RoseBudThorn.xcworkspace`](/Users/markcoleman/Development/github/rose-bud-thorn/RoseBudThorn.xcworkspace).
+2. Choose target/scheme:
+   - `RoseBudThorn iOS` for iPhone/iPad
+   - `RoseBudThorn macOS` for Mac
+3. In `Signing & Capabilities`, set your Apple Team and keep automatic signing enabled.
 
 ## Data Storage
 Canonical store:
@@ -83,5 +85,4 @@ Current state:
 
 ## Known Gaps
 - UI tests in `UITests/` are provided as XCUITest stubs and are not executed by SwiftPM.
-- The app runs directly on macOS via executable target; iOS/iPadOS use the same SwiftUI code paths but require an Xcode app target wrapper when running from this package repository.
-
+- You must set a valid Apple Team + provisioning for physical iPhone deployment.
