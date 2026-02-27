@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "dayKey": {
+    "isoDate": "2026-02-27",
+    "timeZoneID": "America/Los_Angeles"
+  },
+  "roseItem": {
+    "type": "rose",
+    "shortText": "Great team lunch",
+    "journalTextMarkdown": "Talked through launch ideas.",
+    "photos": [],
+    "metadata": {},
+    "updatedAt": "2026-02-27T20:00:00Z"
+  },
+  "budItem": {
+    "type": "bud",
+    "shortText": "Prototype review",
+    "journalTextMarkdown": "I am excited for next week.",
+    "photos": [],
+    "metadata": {},
+    "updatedAt": "2026-02-27T20:00:00Z"
+  },
+  "thornItem": {
+    "type": "thorn",
+    "shortText": "Late commute",
+    "journalTextMarkdown": "Need to leave earlier.",
+    "photos": [],
+    "metadata": {},
+    "updatedAt": "2026-02-27T20:00:00Z"
+  },
+  "tags": ["work"],
+  "mood": 4,
+  "favorite": false,
+  "createdAt": "2026-02-27T20:00:00Z",
+  "updatedAt": "2026-02-27T20:00:00Z"
+}

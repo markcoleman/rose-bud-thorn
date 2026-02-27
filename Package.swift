@@ -1,40 +1,74 @@
-// swift-tools-version:5.7
+// swift-tools-version: 5.10
 import PackageDescription
 
 let package = Package(
     name: "RoseBudThorn",
+    defaultLocalization: "en",
     platforms: [
-        .iOS(.v16),
-        .macOS(.v12)
+        .iOS(.v17),
+        .macOS(.v14)
     ],
     products: [
-        .library(
-            name: "RoseBudThorn",
-            targets: ["RoseBudThorn"]
-        ),
-    ],
-    dependencies: [
-        .package(url: "https://github.com/SwiftGen/SwiftGen", from: "6.6.0"),
-        .package(url: "https://github.com/SwiftUIX/SwiftUIX", from: "0.1.0"),
-        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.10.0"),
-        .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "9.0.0"),
+        .library(name: "CoreModels", targets: ["CoreModels"]),
+        .library(name: "CoreDate", targets: ["CoreDate"]),
+        .library(name: "DocumentStore", targets: ["DocumentStore"]),
+        .library(name: "SearchIndex", targets: ["SearchIndex"]),
+        .library(name: "Summaries", targets: ["Summaries"]),
+        .library(name: "AppFeatures", targets: ["AppFeatures"]),
+        .executable(name: "RoseBudThornApp", targets: ["RoseBudThornApp"])
     ],
     targets: [
         .target(
-            name: "RoseBudThorn",
-            dependencies: [
-                "SwiftUIX",
-                .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS", condition: .when(platforms: [.iOS, .macCatalyst])),
-            ],
-            path: "src/Shared"
+            name: "CoreModels"
+        ),
+        .target(
+            name: "CoreDate",
+            dependencies: ["CoreModels"]
+        ),
+        .target(
+            name: "DocumentStore",
+            dependencies: ["CoreModels", "CoreDate"]
+        ),
+        .target(
+            name: "SearchIndex",
+            dependencies: ["CoreModels", "CoreDate", "DocumentStore"],
+            exclude: ["IndexSchema.sql"]
+        ),
+        .target(
+            name: "Summaries",
+            dependencies: ["CoreModels", "CoreDate", "DocumentStore"]
+        ),
+        .target(
+            name: "AppFeatures",
+            dependencies: ["CoreModels", "CoreDate", "DocumentStore", "SearchIndex", "Summaries"]
+        ),
+        .executableTarget(
+            name: "RoseBudThornApp",
+            dependencies: ["AppFeatures"]
         ),
         .testTarget(
-            name: "RoseBudThornTests",
-            dependencies: [
-                "RoseBudThorn",
-                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
-            ],
-            path: "src/Tests"
+            name: "CoreModelsTests",
+            dependencies: ["CoreModels"]
         ),
+        .testTarget(
+            name: "CoreDateTests",
+            dependencies: ["CoreDate", "CoreModels"]
+        ),
+        .testTarget(
+            name: "DocumentStoreTests",
+            dependencies: ["DocumentStore", "CoreModels", "CoreDate"]
+        ),
+        .testTarget(
+            name: "SearchIndexTests",
+            dependencies: ["SearchIndex", "DocumentStore", "CoreModels", "CoreDate"]
+        ),
+        .testTarget(
+            name: "SummariesTests",
+            dependencies: ["Summaries", "DocumentStore", "CoreModels", "CoreDate"]
+        ),
+        .testTarget(
+            name: "AppFeaturesTests",
+            dependencies: ["AppFeatures", "DocumentStore", "SearchIndex", "Summaries", "CoreModels", "CoreDate"]
+        )
     ]
 )

@@ -1,107 +1,88 @@
-# 🌹 Rose Bud Thorn
+# Rose, Bud, Thorn
 
-Rose Bud Thorn is a cross-platform (iOS & macOS) journaling app that helps you reflect on your day by recording your "Rose" (highlight), "Bud" (something you're looking forward to), and "Thorn" (challenge). Built with SwiftUI and supporting Sign in with Apple, it provides a simple, beautiful, and secure way to track your daily thoughts.
+Rose, Bud, Thorn is a local-first daily reflection app for iOS, iPadOS, and macOS built with Swift + SwiftUI.
 
 ## Features
+- Fast daily capture for Rose, Bud, Thorn with quick text + optional photo.
+- Expanded journal text per item.
+- Browse past entries with calendar and timeline flows.
+- Search across text with category and photo filters.
+- Weekly/monthly/yearly summary generation and regeneration.
+- Local document-store persistence in `Documents` with iCloud Drive container fallback support.
+- Optional biometric/device authentication lock.
 
-- 📅 Calendar view to browse daily entries
-- 🌹 Add a Rose, Bud, and Thorn for each day
-- 📷 Attach media to your entries
-- 🔒 Sign in with Apple for privacy and security
-- ☁️ Sync data across devices (if backend is enabled)
-- 🖥️ Native support for both iOS and macOS
+## Repository Structure
+- `Package.swift`: multi-module Swift package.
+- `Sources/CoreModels`: canonical domain types and protocols.
+- `Sources/CoreDate`: day/period key logic and timezone-safe date helpers.
+- `Sources/DocumentStore`: file layout, CRUD, atomic write, attachments, conflict archive.
+- `Sources/SearchIndex`: derivative searchable index.
+- `Sources/Summaries`: deterministic summary generation and persistence.
+- `Sources/AppFeatures`: SwiftUI feature screens and view models.
+- `Sources/RoseBudThornApp`: app entry point.
+- `Tests/*`: unit and integration tests.
+- `Docs/*`: PRD, UX, ADR, QA plan, brand, and migration strategy.
 
-## Screenshots
+## Build and Test
+Requirements:
+- Xcode 26 toolchain (Swift 5.10+)
+- macOS 14+
 
-![App Store](src/Shared/appstore.png)
-![Play Store](src/Shared/playstore.png)
-
-## Getting Started
-
-### Prerequisites
-
-- Xcode 13.1 or later
-- Swift 5.0+
-- macOS 12.0+ or iOS 15.0+
-
-### Installation
-
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/markcoleman/rose-bud-thorn.git
-   cd rose-bud-thorn
-   ```
-
-2. **Open the project in Xcode:**
-   ```sh
-   open src/rose.bud.thorn.xcodeproj
-   ```
-
-3. **Build and run:**
-   - Select your target device (iOS Simulator or Mac)
-   - Press `Cmd + R` to build and run the app
-
-## Architecture
-
-The app is built using SwiftUI and follows the MVVM (Model-View-ViewModel) pattern:
-
-- **Models**: Data structures for Rose, Bud, and Thorn entries
-- **Views**: SwiftUI views for the user interface
-- **ViewModels**: Business logic and data management
-- **Services**: Authentication, data persistence, and cloud sync
-
-## Development
-
-### Project Structure
-
-```
-src/
-├── Shared/              # Shared code between iOS and macOS
-│   ├── Models/         # Data models
-│   ├── Views/          # SwiftUI views
-│   ├── ViewModels/     # View models
-│   └── Services/       # Business logic services
-├── macOS/              # macOS-specific code
-├── Tests iOS/          # iOS unit tests
-├── Tests macOS/        # macOS unit tests
-└── fastlane/           # CI/CD automation
+Commands:
+```bash
+swift build
+swift test
 ```
 
-### Building for Production
-
-The project uses Fastlane for automated builds and deployment:
-
-```sh
-cd src
-bundle install
-bundle exec fastlane ios beta    # Deploy iOS beta
-bundle exec fastlane mac beta    # Deploy macOS beta
+Run the app target (macOS):
+```bash
+swift run RoseBudThornApp
 ```
 
-## Contributing
+In Xcode:
+1. Open [`RoseBudThorn.xcworkspace`](/Users/markcoleman/Development/github/rose-bud-thorn/RoseBudThorn.xcworkspace).
+2. Choose target/scheme:
+   - `RoseBudThorn iOS` for iPhone/iPad
+   - `RoseBudThorn macOS` for Mac
+3. In `Signing & Capabilities`, set your Apple Team and keep automatic signing enabled.
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
+## Data Storage
+Canonical store:
+```text
+Documents/
+  Entries/YYYY/MM/DD/entry.json
+  Entries/YYYY/MM/DD/{rose|bud|thorn}/attachments/*
+  Summaries/{weekly|monthly|yearly}/{key}.md
+  Summaries/{weekly|monthly|yearly}/{key}.json
+  Index/index.json
+  Conflicts/YYYY-MM-DD/*.json
+  Exports/
+```
 
-## Security
+Notes:
+- Entries are canonical; summaries and index are derived.
+- Writes use temp + replace for atomicity.
+- Conflict snapshots are archived before merge overwrite.
 
-If you discover a security vulnerability, please see our [Security Policy](SECURITY.md) for information on how to report it responsibly.
+## Architecture Notes
+- Source of truth: document files in app storage.
+- Derivative search index: rebuildable from entries.
+- Async actor-based persistence services.
+- Deterministic summary generation from entry corpus only.
 
-## License
+See [`Docs/ADR-001-LocalDocumentStore.md`](Docs/ADR-001-LocalDocumentStore.md).
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Extending
+- Add new entry metadata fields by bumping `schemaVersion` and updating `MigrationManager`.
+- Swap search index storage by implementing `SearchIndex`.
+- Add richer summary templates in `SummaryMarkdownRenderer`.
 
-## Support
+## Quality Gates
+Current state:
+- `swift build`: passing.
+- `swift test`: passing (`15` tests).
+- Core modules covered: models, date keys/ranges, document CRUD, attachments, search, summaries, capture flow.
 
-- 📧 Email: [Insert contact email]
-- 🐛 Bug reports: [Create an issue](https://github.com/markcoleman/rose-bud-thorn/issues/new/choose)
-- 💬 Discussions: [GitHub Discussions](https://github.com/markcoleman/rose-bud-thorn/discussions)
-
-## Acknowledgments
-
-- Built with ❤️ using SwiftUI
-- Icons and design inspired by the Rose, Bud, Thorn reflection framework
-- Thanks to all contributors who help improve this app
-
----
-
-**Rose Bud Thorn** - Reflect. Grow. Thrive. 🌹
+## Known Gaps
+- UI tests in `UITests/` are provided as XCUITest stubs and are not executed by SwiftPM.
+- You must set a valid Apple Team + provisioning for physical iPhone deployment.

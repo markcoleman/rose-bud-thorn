@@ -1,0 +1,400 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* RoseBudThornAppleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000001 /* RoseBudThornAppleApp.swift */; };
+		A10000020000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000120000000000000001 /* Assets.xcassets */; };
+		A10000030000000000000001 /* AppFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = A10000310000000000000001 /* AppFeatures */; };
+		A10000040000000000000001 /* RoseBudThornAppleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000001 /* RoseBudThornAppleApp.swift */; };
+		A10000050000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000120000000000000001 /* Assets.xcassets */; };
+		A10000060000000000000001 /* AppFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = A10000320000000000000001 /* AppFeatures */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A10000110000000000000001 /* RoseBudThornAppleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoseBudThornAppleApp.swift; sourceTree = "<group>"; };
+		A10000120000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000130000000000000001 /* RoseBudThorn iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = "RoseBudThorn iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000140000000000000001 /* RoseBudThorn macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = "RoseBudThorn macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10000210000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000030000000000000001 /* AppFeatures in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000220000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000060000000000000001 /* AppFeatures in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000410000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A10000420000000000000001 /* Clients */,
+				A10000430000000000000001 /* App */,
+				A10000440000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10000420000000000000001 /* Clients */ = {
+			isa = PBXGroup;
+			children = (
+				A10000450000000000000001 /* Apple */,
+			);
+			path = Clients;
+			sourceTree = "<group>";
+		};
+		A10000430000000000000001 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A10000120000000000000001 /* Assets.xcassets */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A10000440000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A10000130000000000000001 /* RoseBudThorn iOS.app */,
+				A10000140000000000000001 /* RoseBudThorn macOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A10000450000000000000001 /* Apple */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000001 /* RoseBudThornAppleApp.swift */,
+			);
+			path = Apple;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A10000510000000000000001 /* RoseBudThorn iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000710000000000000001 /* Build configuration list for PBXNativeTarget "RoseBudThorn iOS" */;
+			buildPhases = (
+				A10000610000000000000001 /* Sources */,
+				A10000210000000000000001 /* Frameworks */,
+				A10000620000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RoseBudThorn iOS";
+			packageProductDependencies = (
+				A10000310000000000000001 /* AppFeatures */,
+			);
+			productName = "RoseBudThorn iOS";
+			productReference = A10000130000000000000001 /* RoseBudThorn iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A10000520000000000000001 /* RoseBudThorn macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000720000000000000001 /* Build configuration list for PBXNativeTarget "RoseBudThorn macOS" */;
+			buildPhases = (
+				A10000630000000000000001 /* Sources */,
+				A10000220000000000000001 /* Frameworks */,
+				A10000640000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RoseBudThorn macOS";
+			packageProductDependencies = (
+				A10000320000000000000001 /* AppFeatures */,
+			);
+			productName = "RoseBudThorn macOS";
+			productReference = A10000140000000000000001 /* RoseBudThorn macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A10000810000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A10000510000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					A10000520000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = A10000700000000000000001 /* Build configuration list for PBXProject "RoseBudThorn" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000410000000000000001;
+			packageReferences = (
+				A10000300000000000000001 /* XCLocalSwiftPackageReference "" */,
+			);
+			productRefGroup = A10000440000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A10000510000000000000001 /* RoseBudThorn iOS */,
+				A10000520000000000000001 /* RoseBudThorn macOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A10000620000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000020000000000000001 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000640000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000050000000000000001 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A10000610000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* RoseBudThornAppleApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000630000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000040000000000000001 /* RoseBudThornAppleApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A10000910000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A10000920000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		A10000A10000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CUUXST9H3K;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Rose Bud Thorn";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.rosebudthorn.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A10000A20000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CUUXST9H3K;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Rose Bud Thorn";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.rosebudthorn.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A10000B10000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Rose Bud Thorn";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.rosebudthorn.macos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A10000B20000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Rose Bud Thorn";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.rosebudthorn.macos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A10000700000000000000001 /* Build configuration list for PBXProject "RoseBudThorn" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000910000000000000001 /* Debug */,
+				A10000920000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000710000000000000001 /* Build configuration list for PBXNativeTarget "RoseBudThorn iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000A10000000000000001 /* Debug */,
+				A10000A20000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000720000000000000001 /* Build configuration list for PBXNativeTarget "RoseBudThorn macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000B10000000000000001 /* Debug */,
+				A10000B20000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A10000300000000000000001 /* XCLocalSwiftPackageReference "" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A10000310000000000000001 /* AppFeatures */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000300000000000000001 /* XCLocalSwiftPackageReference "" */;
+			productName = AppFeatures;
+		};
+		A10000320000000000000001 /* AppFeatures */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000300000000000000001 /* XCLocalSwiftPackageReference "" */;
+			productName = AppFeatures;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A10000810000000000000001 /* Project object */;
+}
