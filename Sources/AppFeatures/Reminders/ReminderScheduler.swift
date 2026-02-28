@@ -115,6 +115,16 @@ public actor ReminderScheduler {
         center ?? UNUserNotificationCenter.current()
     }
 
+        let processName = ProcessInfo.processInfo.processName.lowercased()
+        let executablePath = (ProcessInfo.processInfo.arguments.first ?? "").lowercased()
+
+        if processName.contains("xctest") || processName.contains("swift-test") {
+            return false
+        }
+
+        if executablePath.contains("/usr/bin/") {
+            return false
+        }
         if bundlePath.hasSuffix("/usr/bin") ||
             bundlePath.hasSuffix("/usr/bin/") ||
             bundlePath.contains("/usr/bin/") {
