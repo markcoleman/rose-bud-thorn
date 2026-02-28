@@ -16,37 +16,42 @@ public struct TodayCaptureView: View {
         @Bindable var bindable = viewModel
 
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 18 : 14) {
-                    header
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 18 : 14) {
+                        header
 
-                    ForEach(EntryType.allCases, id: \.self) { type in
-                        EntryRowCard(
-                            type: type,
-                            shortText: bindable.bindingText(for: type),
-                            journalText: bindable.bindingJournal(for: type),
-                            photos: bindable.photos(for: type),
-                            isExpanded: bindable.isExpanded(type),
-                            onShortTextChange: { bindable.updateShortText($0, for: type) },
-                            onJournalTextChange: { bindable.updateJournalText($0, for: type) },
-                            onToggleExpanded: { bindable.toggleExpanded(type) },
-                            onAddPhoto: { importerType = type },
-                            onRemovePhoto: { photo in
-                                Task { await bindable.removePhoto(photo, for: type) }
-                            },
-                            photoURL: { bindable.photoURL(for: $0) }
-                        )
-                    }
+                        ForEach(EntryType.allCases, id: \.self) { type in
+                            EntryRowCard(
+                                type: type,
+                                shortText: bindable.bindingText(for: type),
+                                journalText: bindable.bindingJournal(for: type),
+                                photos: bindable.photos(for: type),
+                                isExpanded: bindable.isExpanded(type),
+                                onShortTextChange: { bindable.updateShortText($0, for: type) },
+                                onJournalTextChange: { bindable.updateJournalText($0, for: type) },
+                                onToggleExpanded: { bindable.toggleExpanded(type) },
+                                onAddPhoto: { importerType = type },
+                                onRemovePhoto: { photo in
+                                    Task { await bindable.removePhoto(photo, for: type) }
+                                },
+                                photoURL: { bindable.photoURL(for: $0) }
+                            )
+                        }
 
-                    metadata(bindable)
+                        metadata(bindable)
 
-                    if let errorMessage = bindable.errorMessage {
-                        ErrorBanner(message: errorMessage) {
-                            bindable.errorMessage = nil
+                        if let errorMessage = bindable.errorMessage {
+                            ErrorBanner(message: errorMessage) {
+                                bindable.errorMessage = nil
+                            }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(minHeight: geometry.size.height, alignment: .topLeading)
+                    .padding(.horizontal, DesignTokens.contentHorizontalPadding(for: geometry.size.width))
+                    .padding(.vertical, 16)
                 }
-                .padding(16)
             }
             .background(DesignTokens.backgroundGradient.ignoresSafeArea())
             .navigationTitle("Today")
@@ -99,12 +104,19 @@ public struct TodayCaptureView: View {
                 .foregroundStyle(.secondary)
                 .accessibilityLabel("Today, \(Date.now.formatted(date: .complete, time: .omitted))")
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func metadata(_ model: TodayViewModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             TextField("Tags (comma separated)", text: $tagsText)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(DesignTokens.surface)
+                )
                 .onSubmit {
                     model.setTags(from: tagsText)
                 }
@@ -153,5 +165,6 @@ public struct TodayCaptureView: View {
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 14).fill(DesignTokens.surfaceElevated))
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

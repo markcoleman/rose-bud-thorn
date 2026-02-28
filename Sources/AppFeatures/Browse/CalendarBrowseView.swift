@@ -25,5 +25,6 @@ public struct CalendarBrowseView: View {
             }
         }
         .padding()
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 }

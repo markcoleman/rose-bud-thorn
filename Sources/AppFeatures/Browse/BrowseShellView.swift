@@ -51,6 +51,7 @@ public struct BrowseShellView: View {
                     .padding(.bottom, 14)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationTitle("Browse")
             .navigationDestination(for: LocalDayKey.self) { dayKey in
                 DayDetailView(environment: viewModel.environment, dayKey: dayKey)

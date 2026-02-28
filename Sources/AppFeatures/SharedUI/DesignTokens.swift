@@ -38,6 +38,19 @@ public enum DesignTokens {
         endPoint: .bottomTrailing
     )
 
+    public static func contentHorizontalPadding(for width: CGFloat) -> CGFloat {
+        switch width {
+        case ..<390:
+            return 12
+        case ..<500:
+            return 16
+        case ..<900:
+            return 20
+        default:
+            return 28
+        }
+    }
+
     private static func platformColor(
         light: (Double, Double, Double),
         dark: (Double, Double, Double),

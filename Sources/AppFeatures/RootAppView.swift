@@ -6,6 +6,7 @@ import UIKit
 
 public struct RootAppView: View {
     @State private var selectedSection: AppSection? = .today
+    @State private var selectedTab: AppSection = .today
     @State private var selectedDayKey: LocalDayKey?
     @Environment(\.scenePhase) private var scenePhase
 
@@ -39,24 +40,30 @@ public struct RootAppView: View {
                 lockManager.lockIfNeeded()
             }
         }
+        .onOpenURL(perform: handleDeepLink)
     }
 
     private var tabView: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             TodayCaptureView(environment: environment)
                 .tabItem { Label("Today", systemImage: AppSection.today.systemImage) }
+                .tag(AppSection.today)
 
             BrowseShellView(environment: environment, selectedDayKey: $selectedDayKey)
                 .tabItem { Label("Browse", systemImage: AppSection.browse.systemImage) }
+                .tag(AppSection.browse)
 
             SummaryListView(environment: environment)
                 .tabItem { Label("Summaries", systemImage: AppSection.summaries.systemImage) }
+                .tag(AppSection.summaries)
 
             SearchView(environment: environment, selectedDayKey: $selectedDayKey)
                 .tabItem { Label("Search", systemImage: AppSection.search.systemImage) }
+                .tag(AppSection.search)
 
             SettingsView(lockManager: lockManager)
                 .tabItem { Label("Settings", systemImage: AppSection.settings.systemImage) }
+                .tag(AppSection.settings)
         }
     }
 
@@ -115,6 +122,31 @@ public struct RootAppView: View {
             }
             .padding()
         }
+    }
+
+    private func handleDeepLink(_ url: URL) {
+        guard let scheme = url.scheme?.lowercased(), scheme == "rosebudthorn" else { return }
+
+        let route = (url.host?.lowercased() ?? url.pathComponents.dropFirst().first?.lowercased()) ?? ""
+        switch route {
+        case "capture", "today":
+            selectSection(.today)
+        case "browse":
+            selectSection(.browse)
+        case "summaries", "summary":
+            selectSection(.summaries)
+        case "search":
+            selectSection(.search)
+        case "settings":
+            selectSection(.settings)
+        default:
+            break
+        }
+    }
+
+    private func selectSection(_ section: AppSection) {
+        selectedSection = section
+        selectedTab = section
     }
 
     #if !os(macOS)

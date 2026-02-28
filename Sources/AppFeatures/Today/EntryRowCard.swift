@@ -49,7 +49,13 @@ public struct EntryRowCard: View {
                     titleBadge
 
                     TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.plain)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(DesignTokens.surface)
+                        )
 
                     addPhotoButton
                 }
@@ -62,7 +68,13 @@ public struct EntryRowCard: View {
                     }
 
                     TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.plain)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(DesignTokens.surface)
+                        )
                 }
             }
 
@@ -101,6 +113,7 @@ public struct EntryRowCard: View {
             }
         }
         .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(DesignTokens.surfaceElevated)

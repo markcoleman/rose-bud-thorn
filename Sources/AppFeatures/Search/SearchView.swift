@@ -16,7 +16,13 @@ public struct SearchView: View {
         NavigationStack {
             VStack(spacing: 12) {
                 TextField("Search text", text: $bindable.queryText)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(DesignTokens.surface)
+                    )
 
                 HStack {
                     Toggle("Rose", isOn: $bindable.includeRose)
@@ -64,6 +70,7 @@ public struct SearchView: View {
                 }
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationTitle("Search")
             .navigationDestination(for: LocalDayKey.self) { day in
                 DayDetailView(environment: bindable.environment, dayKey: day)
