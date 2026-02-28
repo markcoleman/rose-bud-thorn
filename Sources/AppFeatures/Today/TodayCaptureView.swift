@@ -38,6 +38,7 @@ public struct TodayCaptureView: View {
                                 type: type,
                                 shortText: bindable.bindingText(for: type),
                                 journalText: bindable.bindingJournal(for: type),
+                                promptSelection: bindable.prompt(for: type),
                                 photos: bindable.photos(for: type),
                                 videos: bindable.videos(for: type),
                                 isExpanded: bindable.isExpanded(type),

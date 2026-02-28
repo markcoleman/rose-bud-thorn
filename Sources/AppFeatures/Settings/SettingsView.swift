@@ -1,8 +1,10 @@
 import SwiftUI
+import CoreModels
 
 public struct SettingsView: View {
     @State private var viewModel: PrivacyLockViewModel
     @State private var reminderPreferences: ReminderPreferences
+    @State private var promptPreferences: PromptPreferences
 
     private let environment: AppEnvironment
 
@@ -10,6 +12,7 @@ public struct SettingsView: View {
         self.environment = environment
         _viewModel = State(initialValue: PrivacyLockViewModel(manager: lockManager))
         _reminderPreferences = State(initialValue: environment.reminderPreferencesStore.load())
+        _promptPreferences = State(initialValue: environment.promptPreferencesStore.load())
     }
 
     public var body: some View {
@@ -43,6 +46,31 @@ public struct SettingsView: View {
                 }
             }
 
+            Section("Reflection Prompts") {
+                Toggle("Enable prompts", isOn: promptEnabledBinding)
+
+                if promptPreferences.isEnabled {
+                    Picker("Theme", selection: $promptPreferences.themePreference) {
+                        ForEach(PromptThemePreference.allCases, id: \.self) { theme in
+                            Text(theme.title).tag(theme)
+                        }
+                    }
+
+                    Picker("Prompt mode", selection: $promptPreferences.selectionMode) {
+                        ForEach(PromptSelectionMode.allCases, id: \.self) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+
+                    ForEach(EntryType.allCases, id: \.self) { type in
+                        Toggle("Show \(type.title) prompts", isOn: showPromptTypeBinding(type))
+                    }
+                }
+            }
+            .onChange(of: promptPreferences) { _, newValue in
+                environment.promptPreferencesStore.save(newValue)
+            }
+
             Section("Privacy") {
                 Toggle("Enable Lock", isOn: $bindable.manager.isEnabled)
                 if bindable.manager.isEnabled {
@@ -62,6 +90,15 @@ public struct SettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+
+            Section("Shortcuts") {
+                if let shortcutsURL = URL(string: "shortcuts://") {
+                    Link("Open Shortcuts", destination: shortcutsURL)
+                }
+                Text("Add one-tap shortcuts for Rose, Bud, Thorn and weekly review actions.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .navigationTitle("Settings")
         #if !os(macOS)
@@ -75,6 +112,26 @@ public struct SettingsView: View {
         Binding(
             get: { reminderPreferences.isEnabled },
             set: { reminderPreferences.isEnabled = $0 }
+        )
+    }
+
+    private var promptEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { promptPreferences.isEnabled },
+            set: { promptPreferences.isEnabled = $0 }
+        )
+    }
+
+    private func showPromptTypeBinding(_ type: EntryType) -> Binding<Bool> {
+        Binding(
+            get: { !promptPreferences.hiddenTypes.contains(type) },
+            set: { isShown in
+                if isShown {
+                    promptPreferences.hiddenTypes.remove(type)
+                } else {
+                    promptPreferences.hiddenTypes.insert(type)
+                }
+            }
         )
     }
 

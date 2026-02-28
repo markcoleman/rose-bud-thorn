@@ -17,6 +17,7 @@ public final class TodayViewModel {
     public var errorMessage: String?
     public var lastSavedAt: Date?
     public var completionSummary = EntryCompletionSummary()
+    public var promptSelections: [EntryType: PromptSelection] = [:]
 
     private let environment: AppEnvironment
     private let dayCalculator: DayKeyCalculator
@@ -37,6 +38,7 @@ public final class TodayViewModel {
         do {
             dayKey = dayCalculator.dayKey(for: .now)
             entry = try await environment.entryStore.load(day: dayKey)
+            refreshPrompts()
             try await refreshCompletionSummary()
             await syncReminderSchedule()
         } catch {
@@ -208,6 +210,10 @@ public final class TodayViewModel {
         expandedTypes.contains(type)
     }
 
+    public func prompt(for type: EntryType) -> PromptSelection? {
+        promptSelections[type]
+    }
+
     public func saveNow() async throws {
         saveTask?.cancel()
         isSaving = true
@@ -232,6 +238,10 @@ public final class TodayViewModel {
         }
     }
 
+    private func refreshPrompts() {
+        let preferences = environment.promptPreferencesStore.load()
+        promptSelections = environment.promptSelector.prompts(for: dayKey, preferences: preferences)
+    }
 
     private func refreshCompletionSummary() async throws {
         completionSummary = try await environment.completionTracker.summary(for: .now, timeZone: .current)

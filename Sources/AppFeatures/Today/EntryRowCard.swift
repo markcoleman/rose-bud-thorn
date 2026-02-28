@@ -7,6 +7,7 @@ public struct EntryRowCard: View {
     public let type: EntryType
     public let shortText: String
     public let journalText: String
+    public let promptSelection: PromptSelection?
     public let photos: [PhotoRef]
     public let videos: [VideoRef]
     public let isExpanded: Bool
@@ -23,6 +24,7 @@ public struct EntryRowCard: View {
         type: EntryType,
         shortText: String,
         journalText: String,
+        promptSelection: PromptSelection? = nil,
         photos: [PhotoRef],
         videos: [VideoRef],
         isExpanded: Bool,
@@ -38,6 +40,7 @@ public struct EntryRowCard: View {
         self.type = type
         self.shortText = shortText
         self.journalText = journalText
+        self.promptSelection = promptSelection
         self.photos = photos
         self.videos = videos
         self.isExpanded = isExpanded
@@ -73,6 +76,20 @@ public struct EntryRowCard: View {
                     )
 
                 addCaptureButton
+            }
+
+            if let promptSelection {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(promptSelection.theme.title) prompt")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text(promptSelection.text)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Optional prompt. \(promptSelection.text)")
             }
 
             if !mediaItems.isEmpty {

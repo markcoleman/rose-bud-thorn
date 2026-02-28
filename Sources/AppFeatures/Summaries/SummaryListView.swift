@@ -3,10 +3,17 @@ import CoreModels
 
 public struct SummaryListView: View {
     @State private var viewModel: SummaryViewModel
+    @Binding private var summaryLaunchRequest: SummaryLaunchRequest?
+    @State private var isWeeklyReviewPresented = false
+    @State private var compactNavigationPath: [String] = []
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    public init(environment: AppEnvironment) {
+    public init(
+        environment: AppEnvironment,
+        summaryLaunchRequest: Binding<SummaryLaunchRequest?> = .constant(nil)
+    ) {
         _viewModel = State(initialValue: SummaryViewModel(environment: environment))
+        _summaryLaunchRequest = summaryLaunchRequest
     }
 
     public var body: some View {
@@ -14,7 +21,7 @@ public struct SummaryListView: View {
 
         Group {
             if horizontalSizeClass == .compact {
-                NavigationStack {
+                NavigationStack(path: $compactNavigationPath) {
                     compactSummaryList(bindable)
                         .navigationTitle("Summaries")
                         #if !os(macOS)
@@ -59,8 +66,19 @@ public struct SummaryListView: View {
                 }
             }
         }
+        .sheet(isPresented: $isWeeklyReviewPresented) {
+            WeeklyReviewFlowView(environment: bindable.environment) { artifact in
+                Task { await handleGeneratedArtifact(artifact, model: bindable) }
+            }
+        }
         .task(id: bindable.selectedPeriod) {
             await bindable.loadList()
+        }
+        .task {
+            consumeLaunchRequestIfNeeded(bindable)
+        }
+        .onChange(of: summaryLaunchRequest?.id) { _, _ in
+            consumeLaunchRequestIfNeeded(bindable)
         }
     }
 
@@ -121,6 +139,17 @@ public struct SummaryListView: View {
         .padding(.horizontal)
         .keyboardShortcut("g", modifiers: [.command, .shift])
 
+        if model.selectedPeriod == .week {
+            Button {
+                isWeeklyReviewPresented = true
+            } label: {
+                Label("Start Weekly Review", systemImage: "checklist")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .padding(.horizontal)
+        }
+
         if model.isGenerating {
             ProgressView()
         }
@@ -140,5 +169,47 @@ public struct SummaryListView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private func consumeLaunchRequestIfNeeded(_ model: SummaryViewModel) {
+        guard let request = summaryLaunchRequest else { return }
+        summaryLaunchRequest = nil
+
+        Task {
+            await handleLaunchRequest(request, model: model)
+        }
+    }
+
+    private func handleLaunchRequest(_ request: SummaryLaunchRequest, model: SummaryViewModel) async {
+        switch request.action {
+        case .openCurrentWeeklySummary:
+            model.selectedPeriod = .week
+            await model.loadList()
+
+            let currentKey = model.environment.periodCalculator.key(for: .now, period: .week, timeZone: .current)
+            if let existing = model.artifacts.first(where: { $0.key == currentKey }) {
+                model.selectedArtifact = existing
+                showDetailIfCompact(key: existing.key)
+            } else {
+                await model.generateCurrent()
+                if let generated = model.selectedArtifact {
+                    showDetailIfCompact(key: generated.key)
+                }
+            }
+        case .startWeeklyReview:
+            model.selectedPeriod = .week
+            isWeeklyReviewPresented = true
+        }
+    }
+
+    private func handleGeneratedArtifact(_ artifact: SummaryArtifact, model: SummaryViewModel) async {
+        model.selectedPeriod = artifact.period
+        model.selectedArtifact = artifact
+        await model.loadList()
+    }
+
+    private func showDetailIfCompact(key: String) {
+        guard horizontalSizeClass == .compact else { return }
+        compactNavigationPath = [key]
     }
 }
