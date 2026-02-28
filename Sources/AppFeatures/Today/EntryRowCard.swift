@@ -52,39 +52,27 @@ public struct EntryRowCard: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            ViewThatFits {
-                HStack(spacing: 10) {
-                    titleBadge
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 8) {
+                titleBadge
+                Spacer(minLength: 8)
+                Button(isExpanded ? "Done" : "More…", action: onToggleExpanded)
+                    .font(.subheadline.weight(.semibold))
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Shows additional journal details for \(type.title)")
+            }
 
-                    TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(DesignTokens.surface)
-                        )
+            HStack(alignment: .center, spacing: 10) {
+                TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 12)
+                    .frame(minHeight: 46)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(DesignTokens.surface)
+                    )
 
-                    addCaptureButton
-                }
-
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        titleBadge
-                        Spacer()
-                        addCaptureButton
-                    }
-
-                    TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(DesignTokens.surface)
-                        )
-                }
+                addCaptureButton
             }
 
             if !mediaItems.isEmpty {
@@ -107,11 +95,6 @@ public struct EntryRowCard: View {
                     .padding(.vertical, 2)
                 }
             }
-
-            Button(isExpanded ? "Done" : "More…", action: onToggleExpanded)
-                .font(.subheadline.weight(.semibold))
-                .buttonStyle(.plain)
-                .accessibilityHint("Shows additional journal details for \(type.title)")
 
             if isExpanded {
                 TextEditor(text: Binding(get: { journalText }, set: onJournalTextChange))
@@ -138,10 +121,15 @@ public struct EntryRowCard: View {
     private var addCaptureButton: some View {
         Button(action: onAddCapture) {
             Image(systemName: "camera.fill")
-                .imageScale(.medium)
-                .frame(minWidth: 44, minHeight: 44)
+                .font(.headline)
+                .foregroundStyle(color(for: type))
+                .frame(width: 46, height: 46)
+                .background(
+                    Circle()
+                        .fill(color(for: type).opacity(0.16))
+                )
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.plain)
         .accessibilityLabel("Capture media for \(type.title)")
     }
 
