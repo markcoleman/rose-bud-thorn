@@ -14,6 +14,10 @@ public struct AppEnvironment: Sendable {
     public let searchIndex: FileSearchIndex
     public let summaryService: SummaryServiceImpl
     public let entryStore: EntryStore
+    public let reminderPreferencesStore: ReminderPreferencesStore
+    public let reminderScheduler: ReminderScheduler
+    public let completionTracker: EntryCompletionTracker
+    public let featureFlags: AppFeatureFlags
 
     public init(configuration: DocumentStoreConfiguration) throws {
         self.configuration = configuration
@@ -25,12 +29,19 @@ public struct AppEnvironment: Sendable {
         let searchIndex = try FileSearchIndex(configuration: configuration, entryRepository: entryRepository)
         let summaryService = try SummaryServiceImpl(configuration: configuration, entryRepository: entryRepository)
         let entryStore = EntryStore(entries: entryRepository, attachments: attachmentRepository, index: searchIndex)
+        let reminderPreferencesStore = ReminderPreferencesStore()
+        let reminderScheduler = ReminderScheduler()
+        let completionTracker = EntryCompletionTracker(entryStore: entryStore, dayCalculator: dayCalculator)
 
         self.entryRepository = entryRepository
         self.attachmentRepository = attachmentRepository
         self.searchIndex = searchIndex
         self.summaryService = summaryService
         self.entryStore = entryStore
+        self.reminderPreferencesStore = reminderPreferencesStore
+        self.reminderScheduler = reminderScheduler
+        self.completionTracker = completionTracker
+        self.featureFlags = AppFeatureFlags()
     }
 
     public static func live() throws -> AppEnvironment {

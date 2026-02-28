@@ -2,15 +2,47 @@ import SwiftUI
 
 public struct SettingsView: View {
     @State private var viewModel: PrivacyLockViewModel
+    @State private var reminderPreferences: ReminderPreferences
 
-    public init(lockManager: PrivacyLockManager) {
+    private let environment: AppEnvironment
+
+    public init(lockManager: PrivacyLockManager, environment: AppEnvironment) {
+        self.environment = environment
         _viewModel = State(initialValue: PrivacyLockViewModel(manager: lockManager))
+        _reminderPreferences = State(initialValue: environment.reminderPreferencesStore.load())
     }
 
     public var body: some View {
         @Bindable var bindable = viewModel
 
         Form {
+            Section("Reminders") {
+                Toggle("Daily reminders", isOn: reminderEnabledBinding)
+
+                if reminderPreferences.isEnabled {
+                    Picker("Start time", selection: $reminderPreferences.startHour) {
+                        ForEach(6..<23, id: \.self) { hour in
+                            Text(timeLabel(hour)).tag(hour)
+                        }
+                    }
+
+                    Picker("Fallback time", selection: $reminderPreferences.endHour) {
+                        ForEach(12..<24, id: \.self) { hour in
+                            Text(timeLabel(hour)).tag(hour)
+                        }
+                    }
+
+                    Toggle("Include weekends", isOn: $reminderPreferences.includeWeekends)
+                    Toggle("End-of-day fallback", isOn: $reminderPreferences.allowsEndOfDayFallback)
+                }
+            }
+            .onChange(of: reminderPreferences) { _, newValue in
+                environment.reminderPreferencesStore.save(newValue)
+                Task {
+                    await applyReminderPreferences(newValue)
+                }
+            }
+
             Section("Privacy") {
                 Toggle("Enable Lock", isOn: $bindable.manager.isEnabled)
                 if bindable.manager.isEnabled {
@@ -37,5 +69,31 @@ public struct SettingsView: View {
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         #endif
+    }
+
+    private var reminderEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { reminderPreferences.isEnabled },
+            set: { reminderPreferences.isEnabled = $0 }
+        )
+    }
+
+    private func timeLabel(_ hour: Int) -> String {
+        var components = DateComponents()
+        components.hour = hour
+        let date = Calendar.current.date(from: components) ?? .now
+        return date.formatted(date: .omitted, time: .shortened)
+    }
+
+    private func applyReminderPreferences(_ preferences: ReminderPreferences) async {
+        let now = Date.now
+        let dayKey = environment.dayCalculator.dayKey(for: now)
+        let summary = (try? await environment.completionTracker.summary(for: now, timeZone: .current)) ?? EntryCompletionSummary()
+
+        await environment.reminderScheduler.updateNotifications(
+            for: dayKey,
+            isComplete: summary.isTodayComplete,
+            preferences: preferences
+        )
     }
 }

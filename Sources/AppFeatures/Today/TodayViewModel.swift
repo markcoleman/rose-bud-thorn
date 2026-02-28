@@ -2,6 +2,9 @@ import Foundation
 import Observation
 import CoreModels
 import CoreDate
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 @MainActor
 @Observable
@@ -13,6 +16,7 @@ public final class TodayViewModel {
     public var isSaving = false
     public var errorMessage: String?
     public var lastSavedAt: Date?
+    public var completionSummary = EntryCompletionSummary()
 
     private let environment: AppEnvironment
     private let dayCalculator: DayKeyCalculator
@@ -33,6 +37,8 @@ public final class TodayViewModel {
         do {
             dayKey = dayCalculator.dayKey(for: .now)
             entry = try await environment.entryStore.load(day: dayKey)
+            try await refreshCompletionSummary()
+            await syncReminderSchedule()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -208,6 +214,9 @@ public final class TodayViewModel {
         defer { isSaving = false }
         try await environment.entryStore.save(entry)
         lastSavedAt = .now
+        try await refreshCompletionSummary()
+        await syncReminderSchedule()
+        refreshWidgets()
     }
 
     private func scheduleAutosave() {
@@ -221,5 +230,31 @@ public final class TodayViewModel {
                 self.errorMessage = error.localizedDescription
             }
         }
+    }
+
+
+    private func refreshCompletionSummary() async throws {
+        completionSummary = try await environment.completionTracker.summary(for: .now, timeZone: .current)
+    }
+
+    private func syncReminderSchedule() async {
+        guard environment.featureFlags.remindersEnabled else { return }
+        let preferences = environment.reminderPreferencesStore.load()
+        await environment.reminderScheduler.updateNotifications(
+            for: dayKey,
+            isComplete: completionSummary.isTodayComplete,
+            preferences: preferences
+        )
+    }
+
+    private func refreshWidgets() {
+        let defaults = UserDefaults.standard
+        defaults.set(completionSummary.isTodayComplete, forKey: "widget.today.complete")
+
+        #if canImport(WidgetKit)
+        if environment.featureFlags.widgetsEnabled {
+            WidgetKit.WidgetCenter.shared.reloadAllTimelines()
+        }
+        #endif
     }
 }
