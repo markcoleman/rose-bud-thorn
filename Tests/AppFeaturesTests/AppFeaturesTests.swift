@@ -12,6 +12,14 @@ final class AppFeaturesTests: XCTestCase {
         return try AppEnvironment(configuration: DocumentStoreConfiguration(rootURL: root))
     }
 
+    private func makeInMemoryEntryStore() -> EntryStore {
+        EntryStore(
+            entries: InMemoryEntryRepository(),
+            attachments: NoopAttachmentRepository(),
+            index: NoopSearchIndex()
+        )
+    }
+
     func testTodayCaptureFlowPersistsEntry() async throws {
         let environment = try makeEnvironment()
         let fixedDate = Date(timeIntervalSince1970: 1_772_201_600) // 2026-03-05
@@ -92,12 +100,13 @@ final class AppFeaturesTests: XCTestCase {
     }
 
     func testCompletionTrackerUpdatesWhenTodayEntrySaved() async throws {
-        let environment = try makeEnvironment()
-        let tracker = EntryCompletionTracker(entryStore: environment.entryStore, dayCalculator: environment.dayCalculator)
+        let dayCalculator = DayKeyCalculator()
+        let entryStore = makeInMemoryEntryStore()
+        let tracker = EntryCompletionTracker(entryStore: entryStore, dayCalculator: dayCalculator)
 
-        var entry = EntryDay.empty(dayKey: environment.dayCalculator.dayKey(for: .now))
+        var entry = EntryDay.empty(dayKey: dayCalculator.dayKey(for: .now))
         entry.roseItem.shortText = "Done"
-        try await environment.entryStore.save(entry)
+        try await entryStore.save(entry)
 
         let summary = try await tracker.summary(for: .now, timeZone: .current)
         XCTAssertTrue(summary.isTodayComplete)
@@ -106,8 +115,7 @@ final class AppFeaturesTests: XCTestCase {
     }
 
     func testCompletionTrackerReturnsEmptySummaryWithoutEntries() async throws {
-        let environment = try makeEnvironment()
-        let tracker = EntryCompletionTracker(entryStore: environment.entryStore, dayCalculator: environment.dayCalculator)
+        let tracker = EntryCompletionTracker(entryStore: makeInMemoryEntryStore(), dayCalculator: DayKeyCalculator())
 
         let summary = try await tracker.summary(for: Date(timeIntervalSince1970: 1_772_201_600), timeZone: .current)
 
@@ -118,8 +126,9 @@ final class AppFeaturesTests: XCTestCase {
     }
 
     func testCompletionTrackerUsesProvidedTimezoneForConsecutiveDays() async throws {
-        let environment = try makeEnvironment()
-        let tracker = EntryCompletionTracker(entryStore: environment.entryStore, dayCalculator: environment.dayCalculator)
+        let dayCalculator = DayKeyCalculator()
+        let entryStore = makeInMemoryEntryStore()
+        let tracker = EntryCompletionTracker(entryStore: entryStore, dayCalculator: dayCalculator)
         let tz = TimeZone(identifier: "America/Los_Angeles")!
 
         var calendar = Calendar(identifier: .gregorian)
@@ -128,10 +137,10 @@ final class AppFeaturesTests: XCTestCase {
 
         for offset in 0..<3 {
             let date = calendar.date(byAdding: .day, value: -offset, to: now)!
-            let dayKey = environment.dayCalculator.dayKey(for: date, timeZone: tz)
+            let dayKey = dayCalculator.dayKey(for: date, timeZone: tz)
             var entry = EntryDay.empty(dayKey: dayKey)
             entry.budItem.shortText = "Day \(offset)"
-            try await environment.entryStore.save(entry)
+            try await entryStore.save(entry)
         }
 
         let summary = try await tracker.summary(for: now, timeZone: tz)
@@ -140,4 +149,52 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(summary.last7DaysCompleted.filter(\.self).count, 3)
     }
 
+}
+
+private actor InMemoryEntryRepository: EntryRepository {
+    private var entries: [LocalDayKey: EntryDay] = [:]
+
+    func load(day: LocalDayKey) async throws -> EntryDay? {
+        entries[day]
+    }
+
+    func save(_ entry: EntryDay) async throws {
+        entries[entry.dayKey] = entry
+    }
+
+    func delete(day: LocalDayKey) async throws {
+        entries.removeValue(forKey: day)
+    }
+
+    func list(range: DateInterval?) async throws -> [LocalDayKey] {
+        let dayCalculator = DayKeyCalculator()
+        return entries.keys
+            .filter { dayKey in
+                guard let range else { return true }
+                guard let date = dayCalculator.date(for: dayKey) else { return false }
+                return range.contains(date)
+            }
+            .sorted(by: >)
+    }
+}
+
+private actor NoopAttachmentRepository: AttachmentRepository {
+    func importImage(from sourceURL: URL, day: LocalDayKey, type: EntryType) async throws -> PhotoRef {
+        PhotoRef(id: UUID(), relativePath: sourceURL.path, createdAt: .now)
+    }
+
+    func importVideo(from sourceURL: URL, day: LocalDayKey, type: EntryType) async throws -> VideoRef {
+        VideoRef(id: UUID(), relativePath: sourceURL.path, createdAt: .now, durationSeconds: 1, hasAudio: false)
+    }
+
+    func remove(_ ref: PhotoRef, day: LocalDayKey) async throws {}
+
+    func removeVideo(_ ref: VideoRef, day: LocalDayKey) async throws {}
+}
+
+private actor NoopSearchIndex: SearchIndex {
+    func upsert(_ entry: EntryDay) async throws {}
+    func remove(day: LocalDayKey) async throws {}
+    func search(_ query: EntrySearchQuery) async throws -> [LocalDayKey] { [] }
+    func rebuildFromEntries() async throws {}
 }
