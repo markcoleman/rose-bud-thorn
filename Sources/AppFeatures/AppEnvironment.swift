@@ -20,6 +20,7 @@ public struct AppEnvironment: Sendable {
     public let promptSelector: PromptSelector
     public let weeklyIntentionStore: WeeklyIntentionStore
     public let completionTracker: EntryCompletionTracker
+    public let analyticsStore: LocalAnalyticsStore
     public let featureFlags: AppFeatureFlags
 
     public init(configuration: DocumentStoreConfiguration) throws {
@@ -39,6 +40,8 @@ public struct AppEnvironment: Sendable {
         let promptSelector = PromptSelector(preferencesStore: promptPreferencesStore)
         let weeklyIntentionStore = WeeklyIntentionStore(configuration: configuration)
         let completionTracker = EntryCompletionTracker(entryStore: entryStore, dayCalculator: dayCalculator)
+        let analyticsDefaults = Self.analyticsDefaults()
+        let analyticsStore = LocalAnalyticsStore(defaults: analyticsDefaults, dayCalculator: dayCalculator)
 
         self.entryRepository = entryRepository
         self.attachmentRepository = attachmentRepository
@@ -51,6 +54,7 @@ public struct AppEnvironment: Sendable {
         self.promptSelector = promptSelector
         self.weeklyIntentionStore = weeklyIntentionStore
         self.completionTracker = completionTracker
+        self.analyticsStore = analyticsStore
         self.featureFlags = featureFlags
     }
 
@@ -75,16 +79,24 @@ public struct AppEnvironment: Sendable {
 }
 
 private extension AppEnvironment {
-    static func defaultFeatureFlags() -> AppFeatureFlags {
+    static var isTestProcess: Bool {
         let env = ProcessInfo.processInfo.environment
         let processName = ProcessInfo.processInfo.processName.lowercased()
 
-        let isTestProcess =
-            env["XCTestConfigurationFilePath"] != nil ||
+        return env["XCTestConfigurationFilePath"] != nil ||
             processName.contains("xctest") ||
             processName.contains("swift-test") ||
             NSClassFromString("XCTestCase") != nil
+    }
 
+    static func analyticsDefaults() -> UserDefaults {
+        guard isTestProcess else {
+            return .standard
+        }
+        return UserDefaults(suiteName: "LocalAnalyticsStore.Tests.\(UUID().uuidString)") ?? .standard
+    }
+
+    static func defaultFeatureFlags() -> AppFeatureFlags {
         if isTestProcess {
             return AppFeatureFlags(remindersEnabled: false, streaksEnabled: true, widgetsEnabled: false)
         }

@@ -40,6 +40,10 @@ public final class TodayViewModel {
             entry = try await environment.entryStore.load(day: dayKey)
             refreshPrompts()
             try await refreshCompletionSummary()
+            await environment.analyticsStore.record(.todayScreenOpened)
+            if environment.featureFlags.streaksEnabled {
+                _ = await environment.analyticsStore.recordOncePerDay(.completionRingViewed, dayKey: dayKey)
+            }
             await syncReminderSchedule()
         } catch {
             errorMessage = error.localizedDescription
@@ -216,11 +220,15 @@ public final class TodayViewModel {
 
     public func saveNow() async throws {
         saveTask?.cancel()
+        let wasComplete = completionSummary.isTodayComplete
         isSaving = true
         defer { isSaving = false }
         try await environment.entryStore.save(entry)
         lastSavedAt = .now
         try await refreshCompletionSummary()
+        if !wasComplete && completionSummary.isTodayComplete {
+            _ = await environment.analyticsStore.recordOncePerDay(.dailyEntryCompleted, dayKey: dayKey)
+        }
         await syncReminderSchedule()
         refreshWidgets()
     }
@@ -250,6 +258,9 @@ public final class TodayViewModel {
     private func syncReminderSchedule() async {
         guard environment.featureFlags.remindersEnabled else { return }
         let preferences = environment.reminderPreferencesStore.load()
+        if preferences.isEnabled {
+            _ = await environment.analyticsStore.recordOncePerDay(.reminderScheduleEvaluated, dayKey: dayKey)
+        }
         await environment.reminderScheduler.updateNotifications(
             for: dayKey,
             isComplete: completionSummary.isTodayComplete,

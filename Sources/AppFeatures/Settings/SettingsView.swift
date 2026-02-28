@@ -42,6 +42,7 @@ public struct SettingsView: View {
             .onChange(of: reminderPreferences) { _, newValue in
                 environment.reminderPreferencesStore.save(newValue)
                 Task {
+                    await environment.analyticsStore.record(.reminderPreferencesUpdated)
                     await applyReminderPreferences(newValue)
                 }
             }
@@ -146,6 +147,9 @@ public struct SettingsView: View {
         let now = Date.now
         let dayKey = environment.dayCalculator.dayKey(for: now)
         let summary = (try? await environment.completionTracker.summary(for: now, timeZone: .current)) ?? EntryCompletionSummary()
+        if preferences.isEnabled {
+            _ = await environment.analyticsStore.recordOncePerDay(.reminderScheduleEvaluated, dayKey: dayKey)
+        }
 
         await environment.reminderScheduler.updateNotifications(
             for: dayKey,

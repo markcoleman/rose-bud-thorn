@@ -157,6 +157,7 @@ Based on current shipped capabilities (capture, browse, search, summaries), the 
 - ✅ `ReminderPreferences`, `ReminderPreferencesStore`, and `ReminderScheduler` are implemented in `AppFeatures` with persistence and scheduling checks tied to completion state.
 - ✅ `EntryCompletionTracker` and `EntryCompletionSummary` are implemented and used by Today UI and widget update flows.
 - ✅ Today screen now shows streak + 7-day completion ring with supportive copy variants.
+- ✅ Privacy-preserving local analytics counters now record reminder and completion-ring engagement events entirely on-device.
 - ✅ Widget small/medium behavior is aligned to Phase 1 scope (completion status + quick capture actions/deep links).
 - ✅ Reminder scheduler test/CLI stability was hardened to avoid `UNUserNotificationCenter.current()` crashes in package-test environments that have no app-bundle proxy.
 - ✅ AVFoundation metadata access in `AttachmentRepositoryImpl` was migrated to modern async loading APIs to remove deprecation warnings in CI.

@@ -252,6 +252,69 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(summary.last7DaysCompleted.filter(\.self).count, 3)
     }
 
+    func testLocalAnalyticsStorePersistsCountsAcrossReload() async {
+        let suite = "LocalAnalyticsStoreTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let dayCalculator = DayKeyCalculator()
+        let store = LocalAnalyticsStore(defaults: defaults, dayCalculator: dayCalculator)
+        let tz = TimeZone(identifier: "America/Los_Angeles")!
+        let date = Date(timeIntervalSince1970: 1_772_201_600)
+        let dayKey = dayCalculator.dayKey(for: date, timeZone: tz)
+
+        await store.record(.todayScreenOpened, at: date, timeZone: tz)
+        await store.record(.todayScreenOpened, count: 2, at: date, timeZone: tz)
+
+        let total = await store.totalCount(for: .todayScreenOpened)
+        let daily = await store.dayCount(for: .todayScreenOpened, dayKey: dayKey)
+        XCTAssertEqual(total, 3)
+        XCTAssertEqual(daily, 3)
+
+        let reloaded = LocalAnalyticsStore(defaults: defaults, dayCalculator: dayCalculator)
+        let reloadedTotal = await reloaded.totalCount(for: .todayScreenOpened)
+        let reloadedDaily = await reloaded.dayCount(for: .todayScreenOpened, dayKey: dayKey)
+        XCTAssertEqual(reloadedTotal, 3)
+        XCTAssertEqual(reloadedDaily, 3)
+    }
+
+    func testLocalAnalyticsStoreRecordOncePerDayIsDeduplicated() async {
+        let defaults = UserDefaults(suiteName: "LocalAnalyticsStoreTests.\(UUID().uuidString)")!
+        let store = LocalAnalyticsStore(defaults: defaults, dayCalculator: DayKeyCalculator())
+        let dayKey = LocalDayKey(isoDate: "2026-03-10", timeZoneID: "America/Los_Angeles")
+
+        let first = await store.recordOncePerDay(.completionRingViewed, dayKey: dayKey)
+        let second = await store.recordOncePerDay(.completionRingViewed, dayKey: dayKey)
+
+        XCTAssertTrue(first)
+        XCTAssertFalse(second)
+        let total = await store.totalCount(for: .completionRingViewed)
+        let daily = await store.dayCount(for: .completionRingViewed, dayKey: dayKey)
+        XCTAssertEqual(total, 1)
+        XCTAssertEqual(daily, 1)
+    }
+
+    func testTodayViewModelRecordsDailyCompletionOncePerDay() async throws {
+        let environment = try makeEnvironment()
+        let viewModel = TodayViewModel(environment: environment)
+
+        await viewModel.load()
+        let today = viewModel.dayKey
+
+        let openCount = await environment.analyticsStore.dayCount(for: .todayScreenOpened, dayKey: today)
+        let initialCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
+        XCTAssertEqual(openCount, 1)
+        XCTAssertEqual(initialCompletionCount, 0)
+
+        viewModel.updateShortText("Completed first item", for: .rose)
+        try await viewModel.saveNow()
+        let firstCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
+        XCTAssertEqual(firstCompletionCount, 1)
+
+        viewModel.updateShortText("Updated text only", for: .rose)
+        try await viewModel.saveNow()
+        let secondCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
+        XCTAssertEqual(secondCompletionCount, 1)
+    }
+
 }
 
 private actor InMemoryEntryRepository: EntryRepository {
