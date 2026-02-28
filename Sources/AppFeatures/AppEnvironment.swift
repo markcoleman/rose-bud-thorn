@@ -23,6 +23,7 @@ public struct AppEnvironment: Sendable {
         self.configuration = configuration
         self.dayCalculator = DayKeyCalculator()
         self.periodCalculator = PeriodKeyCalculator()
+        let featureFlags = Self.defaultFeatureFlags()
 
         let entryRepository = try EntryRepositoryImpl(configuration: configuration)
         let attachmentRepository = try AttachmentRepositoryImpl(configuration: configuration)
@@ -30,7 +31,7 @@ public struct AppEnvironment: Sendable {
         let summaryService = try SummaryServiceImpl(configuration: configuration, entryRepository: entryRepository)
         let entryStore = EntryStore(entries: entryRepository, attachments: attachmentRepository, index: searchIndex)
         let reminderPreferencesStore = ReminderPreferencesStore()
-        let reminderScheduler = ReminderScheduler()
+        let reminderScheduler = featureFlags.remindersEnabled ? ReminderScheduler.live() : ReminderScheduler()
         let completionTracker = EntryCompletionTracker(entryStore: entryStore, dayCalculator: dayCalculator)
 
         self.entryRepository = entryRepository
@@ -41,7 +42,7 @@ public struct AppEnvironment: Sendable {
         self.reminderPreferencesStore = reminderPreferencesStore
         self.reminderScheduler = reminderScheduler
         self.completionTracker = completionTracker
-        self.featureFlags = Self.defaultFeatureFlags()
+        self.featureFlags = featureFlags
     }
 
     public static func live() throws -> AppEnvironment {

@@ -5,10 +5,21 @@ import CoreModels
 import UserNotifications
 
 public actor ReminderScheduler {
-    private let center: UNUserNotificationCenter?
+    private let centerProvider: (@Sendable () -> UNUserNotificationCenter)?
 
-    public init(center: UNUserNotificationCenter? = nil) {
-        self.center = center
+    public init(
+        center: UNUserNotificationCenter? = nil,
+        centerProvider: (@Sendable () -> UNUserNotificationCenter)? = nil
+    ) {
+        if let center {
+            self.centerProvider = { center }
+        } else {
+            self.centerProvider = centerProvider
+        }
+    }
+
+    public static func live() -> ReminderScheduler {
+        ReminderScheduler(centerProvider: { UNUserNotificationCenter.current() })
     }
 
     public func updateNotifications(
@@ -16,7 +27,9 @@ public actor ReminderScheduler {
         isComplete: Bool,
         preferences: ReminderPreferences
     ) async {
-        guard !isRunningTests else {
+        guard let center = centerProvider?() else {
+            return
+        }
             return
         }
 
@@ -103,16 +116,14 @@ public actor ReminderScheduler {
     }
 
     private func submit(_ request: UNNotificationRequest) async {
-        let center = notificationCenter
+        guard let center = centerProvider?() else {
+            return
+        }
         do {
             try await center.add(request)
         } catch {
             // No-op; reminders are best effort.
         }
-    }
-
-    private var notificationCenter: UNUserNotificationCenter {
-        center ?? UNUserNotificationCenter.current()
     }
 
         let processName = ProcessInfo.processInfo.processName.lowercased()
@@ -133,6 +144,10 @@ public actor ReminderScheduler {
         if bundlePath.hasSuffix("/usr/bin") ||
             bundlePath.hasSuffix("/usr/bin/") ||
             bundlePath.contains("/usr/bin/") {
+    public static func live() -> ReminderScheduler {
+        ReminderScheduler()
+    }
+
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 }
