@@ -26,5 +26,6 @@ public struct TimelineBrowseView: View {
             }
             .buttonStyle(.plain)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }

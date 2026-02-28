@@ -13,31 +13,35 @@ public struct DayDetailView: View {
     public var body: some View {
         @Bindable var bindable = viewModel
 
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(EntryType.allCases, id: \.self) { type in
-                    EntryItemEditorView(
-                        type: type,
-                        shortText: bindable.entry.item(for: type).shortText,
-                        journalText: bindable.entry.item(for: type).journalTextMarkdown,
-                        photos: bindable.entry.item(for: type).photos,
-                        onShortText: { bindable.updateShortText($0, for: type) },
-                        onJournal: { bindable.updateJournal($0, for: type) },
-                        onAddPhoto: { importerType = type },
-                        onRemovePhoto: { ref in
-                            Task { await bindable.removePhoto(ref, for: type) }
-                        },
-                        photoURL: { bindable.photoURL(for: $0) }
-                    )
-                }
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(EntryType.allCases, id: \.self) { type in
+                        EntryItemEditorView(
+                            type: type,
+                            shortText: bindable.entry.item(for: type).shortText,
+                            journalText: bindable.entry.item(for: type).journalTextMarkdown,
+                            photos: bindable.entry.item(for: type).photos,
+                            onShortText: { bindable.updateShortText($0, for: type) },
+                            onJournal: { bindable.updateJournal($0, for: type) },
+                            onAddPhoto: { importerType = type },
+                            onRemovePhoto: { ref in
+                                Task { await bindable.removePhoto(ref, for: type) }
+                            },
+                            photoURL: { bindable.photoURL(for: $0) }
+                        )
+                    }
 
-                if let error = bindable.errorMessage {
-                    ErrorBanner(message: error) {
-                        bindable.errorMessage = nil
+                    if let error = bindable.errorMessage {
+                        ErrorBanner(message: error) {
+                            bindable.errorMessage = nil
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, DesignTokens.contentHorizontalPadding(for: geometry.size.width))
+                .padding(.vertical, 14)
             }
-            .padding()
         }
         .navigationTitle(bindable.dayKey.isoDate)
         .toolbar {

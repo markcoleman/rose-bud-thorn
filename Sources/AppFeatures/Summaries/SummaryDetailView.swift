@@ -31,6 +31,7 @@ public struct SummaryDetailView: View {
                 }
             }
             .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {

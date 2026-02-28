@@ -47,12 +47,18 @@ public struct EntryItemEditorView: View {
             }
 
             TextField("Short reflection", text: Binding(get: { shortText }, set: onShortText))
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(DesignTokens.surface)
+                )
 
             TextEditor(text: Binding(get: { journalText }, set: onJournal))
                 .frame(minHeight: 120)
                 .padding(8)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.1)))
+                .background(RoundedRectangle(cornerRadius: 10).fill(DesignTokens.surface))
 
             if !photos.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -74,6 +80,7 @@ public struct EntryItemEditorView: View {
             }
         }
         .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 12).fill(DesignTokens.surfaceElevated))
     }
 }

@@ -38,6 +38,47 @@ public enum DesignTokens {
         endPoint: .bottomTrailing
     )
 
+    public static func contentHorizontalPadding(for width: CGFloat) -> CGFloat {
+        switch width {
+        case ..<390:
+            return 12
+        case ..<500:
+            return 16
+        case ..<900:
+            return 20
+        default:
+            return 28
+        }
+    }
+
+    public static func contentTopPadding(for width: CGFloat) -> CGFloat {
+        switch width {
+        case ..<390:
+            return 8
+        case ..<500:
+            return 10
+        case ..<900:
+            return 12
+        default:
+            return 14
+        }
+    }
+
+    public static func contentBottomPadding(for width: CGFloat) -> CGFloat {
+        switch width {
+        case ..<390:
+            return 16
+        case ..<500:
+            return 18
+        default:
+            return 20
+        }
+    }
+
+    public static let tabSwipeHorizontalDominanceRatio: CGFloat = 1.3
+    public static let tabSwipeMinimumTranslation: CGFloat = 80
+    public static let tabSwipePredictedEndThreshold: CGFloat = 140
+
     private static func platformColor(
         light: (Double, Double, Double),
         dark: (Double, Double, Double),
