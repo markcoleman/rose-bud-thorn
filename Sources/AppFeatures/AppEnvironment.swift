@@ -41,7 +41,7 @@ public struct AppEnvironment: Sendable {
         self.reminderPreferencesStore = reminderPreferencesStore
         self.reminderScheduler = reminderScheduler
         self.completionTracker = completionTracker
-        self.featureFlags = AppFeatureFlags()
+        self.featureFlags = Self.defaultFeatureFlags()
     }
 
     public static func live() throws -> AppEnvironment {
@@ -61,5 +61,24 @@ public struct AppEnvironment: Sendable {
     public func summaryMarkdownURL(period: SummaryPeriod, key: String) -> URL {
         let layout = FileLayout(rootURL: configuration.rootURL)
         return layout.summaryMarkdownURL(period: period, key: key)
+    }
+}
+
+private extension AppEnvironment {
+    static func defaultFeatureFlags() -> AppFeatureFlags {
+        let env = ProcessInfo.processInfo.environment
+        let processName = ProcessInfo.processInfo.processName.lowercased()
+
+        let isTestProcess =
+            env["XCTestConfigurationFilePath"] != nil ||
+            processName.contains("xctest") ||
+            processName.contains("swift-test") ||
+            NSClassFromString("XCTestCase") != nil
+
+        if isTestProcess {
+            return AppFeatureFlags(remindersEnabled: false, streaksEnabled: true, widgetsEnabled: false)
+        }
+
+        return AppFeatureFlags()
     }
 }

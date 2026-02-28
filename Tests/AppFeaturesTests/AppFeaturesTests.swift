@@ -91,6 +91,11 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(store.load(), prefs)
     }
 
+    func testEnvironmentDisablesReminderSchedulingInTests() throws {
+        let environment = try makeEnvironment()
+        XCTAssertFalse(environment.featureFlags.remindersEnabled)
+    }
+
     func testCompletionTrackerUpdatesWhenTodayEntrySaved() async throws {
         let environment = try makeEnvironment()
         let tracker = EntryCompletionTracker(entryStore: environment.entryStore, dayCalculator: environment.dayCalculator)
