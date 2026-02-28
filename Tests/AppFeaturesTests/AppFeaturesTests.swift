@@ -52,4 +52,27 @@ final class AppFeaturesTests: XCTestCase {
 
         XCTAssertEqual(searchVM.results, [dayKey])
     }
+
+    func testTodayViewModelImportVideoPersistsEntry() async throws {
+        let environment = try makeEnvironment()
+        let viewModel = TodayViewModel(environment: environment, now: Date(timeIntervalSince1970: 1_772_201_600))
+        await viewModel.load()
+
+        let source = environment.configuration.rootURL.appendingPathComponent("captured.mov")
+        try Data("video-bytes".utf8).write(to: source)
+
+        try await viewModel.importVideoNow(from: source, for: .bud, targetDay: viewModel.dayKey)
+        let persisted = try await environment.entryStore.load(day: viewModel.dayKey)
+
+        XCTAssertEqual(persisted.budItem.videos.count, 1)
+        XCTAssertTrue(persisted.budItem.videos[0].relativePath.contains("bud/attachments"))
+    }
+
+    func testCaptureLaunchRequestParserParsesTypedDeepLink() {
+        let url = URL(string: "rosebudthorn://capture?source=widget&type=bud")!
+        let request = RootAppView.captureLaunchRequest(from: url)
+
+        XCTAssertEqual(request?.type, .bud)
+        XCTAssertEqual(request?.source, "widget")
+    }
 }

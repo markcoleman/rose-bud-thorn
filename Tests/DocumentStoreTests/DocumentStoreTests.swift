@@ -84,4 +84,23 @@ final class DocumentStoreTests: XCTestCase {
         try await attachments.remove(ref, day: dayKey)
         XCTAssertFalse(FileManager.default.fileExists(atPath: storedURL.path))
     }
+
+    func testVideoAttachmentImportAndRemove() async throws {
+        let root = try makeTempRoot()
+        let configuration = DocumentStoreConfiguration(rootURL: root)
+        let attachments = try AttachmentRepositoryImpl(configuration: configuration)
+
+        let source = root.appendingPathComponent("fixture.mov")
+        try Data("video-bytes".utf8).write(to: source)
+
+        let dayKey = LocalDayKey(isoDate: "2026-02-27", timeZoneID: "America/Los_Angeles")
+        let ref = try await attachments.importVideo(from: source, day: dayKey, type: .bud)
+
+        let storedURL = FileLayout(rootURL: root).dayDirectory(for: dayKey).appendingPathComponent(ref.relativePath)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: storedURL.path))
+        XCTAssertGreaterThanOrEqual(ref.durationSeconds, 0)
+
+        try await attachments.removeVideo(ref, day: dayKey)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: storedURL.path))
+    }
 }
