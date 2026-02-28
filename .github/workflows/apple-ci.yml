@@ -113,11 +113,11 @@ jobs:
       - name: Resolve package dependencies
         run: swift package resolve
 
-      - name: Build package and tests
-        run: swift build --build-tests --configuration release
+      - name: Build package (release)
+        run: swift build --configuration release
 
-      - name: Test package
-        run: swift test --parallel
+      - name: Build and test package (debug, testable)
+        run: swift test --configuration debug --parallel
 
   build-ios:
     name: Build iOS scheme
