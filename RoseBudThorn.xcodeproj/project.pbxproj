@@ -400,7 +400,18 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Rose Bud Thorn";
+				INFOPLIST_KEY_CFBundleURLTypes = (
+					{
+						CFBundleTypeRole = Editor;
+						CFBundleURLName = "com.example.rosebudthorn.ios";
+						CFBundleURLSchemes = (
+							rosebudthorn,
+						);
+					},
+				);
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Capture photos and short videos for your daily reflection.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record audio with your 3-second reflection videos.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -429,7 +440,18 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Rose Bud Thorn";
+				INFOPLIST_KEY_CFBundleURLTypes = (
+					{
+						CFBundleTypeRole = Editor;
+						CFBundleURLName = "com.example.rosebudthorn.ios";
+						CFBundleURLSchemes = (
+							rosebudthorn,
+						);
+					},
+				);
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Capture photos and short videos for your daily reflection.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record audio with your 3-second reflection videos.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

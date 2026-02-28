@@ -17,9 +17,9 @@ struct IndexDocument: Codable, Sendable {
         roseText = entry.roseItem.combinedText
         budText = entry.budItem.combinedText
         thornText = entry.thornItem.combinedText
-        roseHasPhoto = entry.roseItem.hasPhotos
-        budHasPhoto = entry.budItem.hasPhotos
-        thornHasPhoto = entry.thornItem.hasPhotos
+        roseHasPhoto = entry.roseItem.hasMedia
+        budHasPhoto = entry.budItem.hasMedia
+        thornHasPhoto = entry.thornItem.hasMedia
     }
 
     func text(for categories: Set<EntryType>) -> String {

@@ -10,12 +10,13 @@ final class SearchIndexTests: XCTestCase {
         return root
     }
 
-    private func entry(day: String, rose: String, withPhoto: Bool) -> EntryDay {
+    private func entry(day: String, rose: String, withPhoto: Bool, withVideo: Bool = false) -> EntryDay {
         let dayKey = LocalDayKey(isoDate: day, timeZoneID: "America/Los_Angeles")
         let photo = withPhoto ? [PhotoRef(id: UUID(), relativePath: "rose/attachments/a.jpg", createdAt: .now)] : []
+        let video = withVideo ? [VideoRef(id: UUID(), relativePath: "rose/attachments/b.mov", createdAt: .now, durationSeconds: 3, pixelWidth: 1280, pixelHeight: 720, hasAudio: true)] : []
         return EntryDay(
             dayKey: dayKey,
-            roseItem: EntryItem(type: .rose, shortText: rose, journalTextMarkdown: "journal", photos: photo, updatedAt: .now),
+            roseItem: EntryItem(type: .rose, shortText: rose, journalTextMarkdown: "journal", photos: photo, videos: video, updatedAt: .now),
             budItem: EntryItem(type: .bud, shortText: "bud", journalTextMarkdown: "", updatedAt: .now),
             thornItem: EntryItem(type: .thorn, shortText: "thorn", journalTextMarkdown: "", updatedAt: .now),
             createdAt: .now,
@@ -42,6 +43,20 @@ final class SearchIndexTests: XCTestCase {
 
         let photoResults = try await index.search(EntrySearchQuery(text: "", categories: [.rose], hasPhoto: true, dateRange: nil))
         XCTAssertEqual(photoResults, [e1.dayKey])
+    }
+
+    func testVideoOnlyEntryMatchesHasPhotoFilter() async throws {
+        let root = try makeTempRoot()
+        let configuration = DocumentStoreConfiguration(rootURL: root)
+        let repo = try EntryRepositoryImpl(configuration: configuration)
+        let index = try FileSearchIndex(configuration: configuration, entryRepository: repo)
+
+        let e1 = entry(day: "2026-02-25", rose: "captured clip", withPhoto: false, withVideo: true)
+        try await repo.save(e1)
+        try await index.upsert(e1)
+
+        let mediaResults = try await index.search(EntrySearchQuery(text: "", categories: [.rose], hasPhoto: true, dateRange: nil))
+        XCTAssertEqual(mediaResults, [e1.dayKey])
     }
 
     func testRebuildFromEntries() async throws {

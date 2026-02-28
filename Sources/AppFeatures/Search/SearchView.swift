@@ -55,7 +55,7 @@ public struct SearchView: View {
                         )
                         .listRowBackground(Color.clear)
 
-                        Picker("Photos", selection: $bindable.photoFilter) {
+                        Picker("Media", selection: $bindable.photoFilter) {
                             ForEach(SearchViewModel.PhotoFilter.allCases) { filter in
                                 Text(filter.title).tag(filter)
                             }

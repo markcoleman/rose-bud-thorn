@@ -8,6 +8,7 @@ public struct RootAppView: View {
     @State private var selectedSection: AppSection? = .today
     @State private var selectedTab: AppSection = .today
     @State private var selectedDayKey: LocalDayKey?
+    @State private var captureLaunchRequest: CaptureLaunchRequest?
     @Environment(\.scenePhase) private var scenePhase
 
     private let environment: AppEnvironment
@@ -46,7 +47,7 @@ public struct RootAppView: View {
 
     private var tabView: some View {
         TabView(selection: $selectedTab) {
-            TodayCaptureView(environment: environment)
+            TodayCaptureView(environment: environment, captureLaunchRequest: $captureLaunchRequest)
                 .tabItem { Label("Today", systemImage: AppSection.today.systemImage) }
                 .tag(AppSection.today)
 
@@ -91,7 +92,7 @@ public struct RootAppView: View {
     private func sectionView(_ section: AppSection) -> some View {
         switch section {
         case .today:
-            TodayCaptureView(environment: environment)
+            TodayCaptureView(environment: environment, captureLaunchRequest: $captureLaunchRequest)
         case .browse:
             BrowseShellView(environment: environment, selectedDayKey: $selectedDayKey)
         case .summaries:
@@ -134,6 +135,7 @@ public struct RootAppView: View {
         switch route {
         case "capture", "today":
             selectSection(.today)
+            captureLaunchRequest = Self.captureLaunchRequest(from: url)
         case "browse":
             selectSection(.browse)
         case "summaries", "summary":
@@ -150,6 +152,27 @@ public struct RootAppView: View {
     private func selectSection(_ section: AppSection) {
         selectedSection = section
         selectedTab = section
+    }
+
+    static func captureLaunchRequest(from url: URL) -> CaptureLaunchRequest? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+
+        let typeValue = components.queryItems?
+            .first(where: { $0.name.lowercased() == "type" })?
+            .value?
+            .lowercased()
+
+        guard let typeValue, let type = EntryType(rawValue: typeValue) else {
+            return nil
+        }
+
+        let source = components.queryItems?
+            .first(where: { $0.name.lowercased() == "source" })?
+            .value
+
+        return CaptureLaunchRequest(type: type, source: source)
     }
 
     private var tabSwipeGesture: some Gesture {

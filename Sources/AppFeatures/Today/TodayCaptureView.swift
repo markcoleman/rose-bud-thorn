@@ -4,12 +4,20 @@ import CoreModels
 
 public struct TodayCaptureView: View {
     @State private var viewModel: TodayViewModel
-    @State private var importerType: EntryType?
+    @Binding private var captureLaunchRequest: CaptureLaunchRequest?
+    @State private var importerRequest: ImportRequest?
+    #if os(iOS)
+    @State private var cameraRequest: CameraCaptureRequest?
+    #endif
     @State private var tagsText = ""
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    public init(environment: AppEnvironment) {
+    public init(
+        environment: AppEnvironment,
+        captureLaunchRequest: Binding<CaptureLaunchRequest?> = .constant(nil)
+    ) {
         _viewModel = State(initialValue: TodayViewModel(environment: environment))
+        _captureLaunchRequest = captureLaunchRequest
     }
 
     public var body: some View {
@@ -27,15 +35,22 @@ public struct TodayCaptureView: View {
                                 shortText: bindable.bindingText(for: type),
                                 journalText: bindable.bindingJournal(for: type),
                                 photos: bindable.photos(for: type),
+                                videos: bindable.videos(for: type),
                                 isExpanded: bindable.isExpanded(type),
                                 onShortTextChange: { bindable.updateShortText($0, for: type) },
                                 onJournalTextChange: { bindable.updateJournalText($0, for: type) },
                                 onToggleExpanded: { bindable.toggleExpanded(type) },
-                                onAddPhoto: { importerType = type },
+                                onAddCapture: {
+                                    presentCapture(for: type, dayKey: bindable.dayKey)
+                                },
                                 onRemovePhoto: { photo in
                                     Task { await bindable.removePhoto(photo, for: type) }
                                 },
-                                photoURL: { bindable.photoURL(for: $0) }
+                                onRemoveVideo: { video in
+                                    Task { await bindable.removeVideo(video, for: type) }
+                                },
+                                photoURL: { bindable.photoURL(for: $0) },
+                                videoURL: { bindable.videoURL(for: $0) }
                             )
                         }
 
@@ -75,24 +90,51 @@ public struct TodayCaptureView: View {
             .task {
                 await bindable.load()
                 tagsText = bindable.entry.tags.joined(separator: ", ")
+                consumeLaunchRequestIfNeeded(bindable)
+            }
+            .onChange(of: captureLaunchRequest?.id) { _, _ in
+                consumeLaunchRequestIfNeeded(bindable)
             }
         }
         .fileImporter(
             isPresented: Binding(
-                get: { importerType != nil },
-                set: { isPresented in if !isPresented { importerType = nil } }
+                get: { importerRequest != nil },
+                set: { isPresented in if !isPresented { importerRequest = nil } }
             ),
-            allowedContentTypes: [.image]
+            allowedContentTypes: importerAllowedTypes
         ) { result in
-            guard let type = importerType else { return }
+            guard let request = importerRequest else { return }
             switch result {
             case .success(let url):
-                Task { await bindable.importPhoto(from: url, for: type) }
+                Task {
+                    do {
+                        if isMovieURL(url) {
+                            try await bindable.importVideoNow(from: url, for: request.type, targetDay: request.dayKey)
+                        } else {
+                            try await bindable.importPhotoNow(from: url, for: request.type, targetDay: request.dayKey)
+                        }
+                    } catch {
+                        bindable.errorMessage = error.localizedDescription
+                    }
+                }
             case .failure(let error):
                 bindable.errorMessage = error.localizedDescription
             }
-            importerType = nil
+            importerRequest = nil
         }
+        #if os(iOS)
+        .fullScreenCover(item: $cameraRequest) { request in
+            MomentCameraView(
+                entryType: request.type,
+                onFallbackImport: {
+                    importerRequest = ImportRequest(type: request.type, dayKey: request.dayKey, includeMovies: true)
+                },
+                onConfirm: { draft in
+                    await persist(draft: draft, request: request, model: bindable)
+                }
+            )
+        }
+        #endif
     }
 
     private var toolbarPlacement: ToolbarItemPlacement {
@@ -173,4 +215,63 @@ public struct TodayCaptureView: View {
         .background(RoundedRectangle(cornerRadius: 14).fill(DesignTokens.surfaceElevated))
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+
+    private var importerAllowedTypes: [UTType] {
+        if importerRequest?.includeMovies == true {
+            return [.image, .movie]
+        }
+        return [.image]
+    }
+
+    private func isMovieURL(_ url: URL) -> Bool {
+        guard let type = UTType(filenameExtension: url.pathExtension.lowercased()) else {
+            return false
+        }
+        return type.conforms(to: .movie)
+    }
+
+    private func consumeLaunchRequestIfNeeded(_ model: TodayViewModel) {
+        guard let request = captureLaunchRequest else { return }
+        presentCapture(for: request.type, dayKey: model.dayKey)
+        captureLaunchRequest = nil
+    }
+
+    private func presentCapture(for type: EntryType, dayKey: LocalDayKey) {
+        #if os(iOS)
+        cameraRequest = CameraCaptureRequest(type: type, dayKey: dayKey)
+        #else
+        importerRequest = ImportRequest(type: type, dayKey: dayKey, includeMovies: true)
+        #endif
+    }
+
+    private func persist(
+        draft: CapturedMediaDraft,
+        request: CameraCaptureRequest,
+        model: TodayViewModel
+    ) async -> String? {
+        do {
+            switch draft {
+            case .photo(let url, _, _):
+                try await model.importPhotoNow(from: url, for: request.type, targetDay: request.dayKey)
+            case .video(let url, _, _, _, _):
+                try await model.importVideoNow(from: url, for: request.type, targetDay: request.dayKey)
+            }
+            return nil
+        } catch {
+            return error.localizedDescription
+        }
+    }
+}
+
+private struct ImportRequest: Identifiable {
+    let id = UUID()
+    let type: EntryType
+    let dayKey: LocalDayKey
+    let includeMovies: Bool
+}
+
+private struct CameraCaptureRequest: Identifiable {
+    let id = UUID()
+    let type: EntryType
+    let dayKey: LocalDayKey
 }

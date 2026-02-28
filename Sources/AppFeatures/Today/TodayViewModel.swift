@@ -80,9 +80,69 @@ public final class TodayViewModel {
 
     public func importPhoto(from sourceURL: URL, for type: EntryType) async {
         do {
+            try await importPhotoNow(from: sourceURL, for: type, targetDay: dayKey)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func importPhotoNow(from sourceURL: URL, for type: EntryType, targetDay: LocalDayKey) async throws {
+        if targetDay == dayKey {
             let ref = try await environment.entryStore.importPhoto(from: sourceURL, day: dayKey, type: type)
             var item = entry.item(for: type)
             item.photos.append(ref)
+            item.updatedAt = .now
+            entry.setItem(item, for: type)
+            entry.updatedAt = .now
+            try await saveNow()
+            return
+        }
+
+        var targetEntry = try await environment.entryStore.load(day: targetDay)
+        let ref = try await environment.entryStore.importPhoto(from: sourceURL, day: targetDay, type: type)
+        var item = targetEntry.item(for: type)
+        item.photos.append(ref)
+        item.updatedAt = .now
+        targetEntry.setItem(item, for: type)
+        targetEntry.updatedAt = .now
+        try await environment.entryStore.save(targetEntry)
+    }
+
+    public func importVideo(from sourceURL: URL, for type: EntryType) async {
+        do {
+            try await importVideoNow(from: sourceURL, for: type, targetDay: dayKey)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func importVideoNow(from sourceURL: URL, for type: EntryType, targetDay: LocalDayKey) async throws {
+        if targetDay == dayKey {
+            let ref = try await environment.entryStore.importVideo(from: sourceURL, day: dayKey, type: type)
+            var item = entry.item(for: type)
+            item.videos.append(ref)
+            item.updatedAt = .now
+            entry.setItem(item, for: type)
+            entry.updatedAt = .now
+            try await saveNow()
+            return
+        }
+
+        var targetEntry = try await environment.entryStore.load(day: targetDay)
+        let ref = try await environment.entryStore.importVideo(from: sourceURL, day: targetDay, type: type)
+        var item = targetEntry.item(for: type)
+        item.videos.append(ref)
+        item.updatedAt = .now
+        targetEntry.setItem(item, for: type)
+        targetEntry.updatedAt = .now
+        try await environment.entryStore.save(targetEntry)
+    }
+
+    public func removeVideo(_ ref: VideoRef, for type: EntryType) async {
+        do {
+            try await environment.entryStore.removeVideo(ref, day: dayKey)
+            var item = entry.item(for: type)
+            item.videos.removeAll { $0.id == ref.id }
             item.updatedAt = .now
             entry.setItem(item, for: type)
             entry.updatedAt = .now
@@ -110,6 +170,10 @@ public final class TodayViewModel {
         environment.photoURL(for: ref, day: dayKey)
     }
 
+    public func videoURL(for ref: VideoRef) -> URL {
+        environment.videoURL(for: ref, day: dayKey)
+    }
+
     public func bindingText(for type: EntryType) -> String {
         entry.item(for: type).shortText
     }
@@ -120,6 +184,10 @@ public final class TodayViewModel {
 
     public func photos(for type: EntryType) -> [PhotoRef] {
         entry.item(for: type).photos
+    }
+
+    public func videos(for type: EntryType) -> [VideoRef] {
+        entry.item(for: type).videos
     }
 
     public func toggleExpanded(_ type: EntryType) {

@@ -9,7 +9,9 @@ public protocol EntryRepository: Sendable {
 
 public protocol AttachmentRepository: Sendable {
     func importImage(from sourceURL: URL, day: LocalDayKey, type: EntryType) async throws -> PhotoRef
+    func importVideo(from sourceURL: URL, day: LocalDayKey, type: EntryType) async throws -> VideoRef
     func remove(_ ref: PhotoRef, day: LocalDayKey) async throws
+    func removeVideo(_ ref: VideoRef, day: LocalDayKey) async throws
 }
 
 public protocol SearchIndex: Sendable {
