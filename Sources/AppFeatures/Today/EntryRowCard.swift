@@ -53,39 +53,20 @@ public struct EntryRowCard: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ViewThatFits {
-                HStack(spacing: 10) {
-                    titleBadge
-
-                    TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(DesignTokens.surface)
-                        )
-
-                    addCaptureButton
-                }
-
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        titleBadge
-                        Spacer()
-                        addCaptureButton
-                    }
-
-                    TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(DesignTokens.surface)
-                        )
-                }
+            HStack {
+                titleBadge
+                Spacer()
+                addCaptureButton
             }
+
+            TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
+                .textFieldStyle(.plain)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(DesignTokens.surface)
+                )
 
             if !mediaItems.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
