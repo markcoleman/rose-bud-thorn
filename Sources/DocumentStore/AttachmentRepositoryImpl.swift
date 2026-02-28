@@ -69,7 +69,7 @@ public actor AttachmentRepositoryImpl: AttachmentRepository {
             throw DomainError.storageFailure("Failed to import video: \(error.localizedDescription)")
         }
 
-        let metadata = videoMetadata(at: destination)
+        let metadata = await videoMetadata(at: destination)
         let relativePath = destination.path.replacingOccurrences(of: layout.dayDirectory(for: day).path + "/", with: "")
 
         return VideoRef(
@@ -128,20 +128,22 @@ public actor AttachmentRepositoryImpl: AttachmentRepository {
         return (width, height)
     }
 
-    private func videoMetadata(at url: URL) -> (durationSeconds: Double, dimensions: (Int, Int)?, hasAudio: Bool) {
+    private func videoMetadata(at url: URL) async -> (durationSeconds: Double, dimensions: (Int, Int)?, hasAudio: Bool) {
         let asset = AVURLAsset(url: url)
-        let duration = max(CMTimeGetSeconds(asset.duration), 0)
-        let videoTrack = asset.tracks(withMediaType: .video).first
+        let duration = max(CMTimeGetSeconds((try? await asset.load(.duration)) ?? .zero), 0)
+        let videoTrack = try? await asset.loadTracks(withMediaType: .video).first
 
         let dimensions: (Int, Int)?
         if let videoTrack {
-            let transformed = videoTrack.naturalSize.applying(videoTrack.preferredTransform)
+            let naturalSize = (try? await videoTrack.load(.naturalSize)) ?? .zero
+            let preferredTransform = (try? await videoTrack.load(.preferredTransform)) ?? .identity
+            let transformed = naturalSize.applying(preferredTransform)
             dimensions = (Int(abs(transformed.width).rounded()), Int(abs(transformed.height).rounded()))
         } else {
             dimensions = nil
         }
 
-        let hasAudio = !asset.tracks(withMediaType: .audio).isEmpty
+        let hasAudio = !((try? await asset.loadTracks(withMediaType: .audio)) ?? []).isEmpty
         return (duration, dimensions, hasAudio)
     }
 

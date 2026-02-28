@@ -60,21 +60,26 @@ private enum CaptureAction: String, CaseIterable, Identifiable {
 private struct CaptureMomentEntry: TimelineEntry {
     let date: Date
     let actions: [CaptureAction]
+    let isTodayComplete: Bool
 }
 
 private struct CaptureMomentProvider: TimelineProvider {
     func placeholder(in context: Context) -> CaptureMomentEntry {
-        CaptureMomentEntry(date: .now, actions: CaptureAction.allCases)
+        CaptureMomentEntry(date: .now, actions: CaptureAction.allCases, isTodayComplete: false)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (CaptureMomentEntry) -> Void) {
-        completion(CaptureMomentEntry(date: .now, actions: CaptureAction.allCases))
+        completion(CaptureMomentEntry(date: .now, actions: CaptureAction.allCases, isTodayComplete: readCompletionState()))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<CaptureMomentEntry>) -> Void) {
-        let entry = CaptureMomentEntry(date: .now, actions: CaptureAction.allCases)
+        let entry = CaptureMomentEntry(date: .now, actions: CaptureAction.allCases, isTodayComplete: readCompletionState())
         let refresh = Calendar.current.date(byAdding: .minute, value: 30, to: .now) ?? .now
         completion(Timeline(entries: [entry], policy: .after(refresh)))
+    }
+
+    private func readCompletionState() -> Bool {
+        UserDefaults.standard.bool(forKey: "widget.today.complete")
     }
 }
 
@@ -123,28 +128,26 @@ private struct CaptureMomentWidgetView: View {
     }
 
     private var smallBody: some View {
-        Link(destination: CaptureAction.rose.deepLink) {
-            VStack(alignment: .leading, spacing: 10) {
-                Label("Capture", systemImage: "bolt.badge.clock")
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(.primary)
+        VStack(alignment: .leading, spacing: 10) {
+            Label(entry.isTodayComplete ? "Today complete" : "Today incomplete", systemImage: entry.isTodayComplete ? "checkmark.circle.fill" : "circle")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.primary)
 
-                Text("Log this moment before it slips away.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            Text(entry.isTodayComplete ? "Nice work. You can still add more reflections." : "Capture one quick thought to complete today.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
-                HStack(spacing: 8) {
-                    quickPill(for: .rose)
-                    quickPill(for: .bud)
-                    quickPill(for: .thorn)
-                }
+            Link(destination: URL(string: "rosebudthorn://capture?source=widget")!) {
+                Text(entry.isTodayComplete ? "Open Today" : "Capture now")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial, in: Capsule())
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .padding(14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
-        .padding(10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(14)
     }
 
     private var mediumBody: some View {

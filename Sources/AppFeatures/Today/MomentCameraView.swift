@@ -687,27 +687,37 @@ extension CameraSessionController: AVCaptureFileOutputRecordingDelegate {
             }
         }
 
-        let asset = AVURLAsset(url: outputFileURL)
-        let duration = max(CMTimeGetSeconds(asset.duration), 0)
+        Task {
+            let metadata = await Self.videoMetadata(at: outputFileURL)
+            DispatchQueue.main.async {
+                self.draft = .video(
+                    url: outputFileURL,
+                    durationSeconds: metadata.durationSeconds,
+                    pixelWidth: metadata.dimensions?.0,
+                    pixelHeight: metadata.dimensions?.1,
+                    hasAudio: metadata.hasAudio
+                )
+            }
+        }
+    }
+
+    private static func videoMetadata(at url: URL) async -> (durationSeconds: Double, dimensions: (Int, Int)?, hasAudio: Bool) {
+        let asset = AVURLAsset(url: url)
+        let duration = max(CMTimeGetSeconds((try? await asset.load(.duration)) ?? .zero), 0)
+        let videoTrack = try? await asset.loadTracks(withMediaType: .video).first
 
         let dimensions: (Int, Int)?
-        if let track = asset.tracks(withMediaType: .video).first {
-            let transformed = track.naturalSize.applying(track.preferredTransform)
+        if let videoTrack {
+            let naturalSize = (try? await videoTrack.load(.naturalSize)) ?? .zero
+            let preferredTransform = (try? await videoTrack.load(.preferredTransform)) ?? .identity
+            let transformed = naturalSize.applying(preferredTransform)
             dimensions = (Int(abs(transformed.width).rounded()), Int(abs(transformed.height).rounded()))
         } else {
             dimensions = nil
         }
 
-        let hasAudio = !asset.tracks(withMediaType: .audio).isEmpty
-        DispatchQueue.main.async {
-            self.draft = .video(
-                url: outputFileURL,
-                durationSeconds: duration,
-                pixelWidth: dimensions?.0,
-                pixelHeight: dimensions?.1,
-                hasAudio: hasAudio
-            )
-        }
+        let hasAudio = !((try? await asset.loadTracks(withMediaType: .audio)) ?? []).isEmpty
+        return (duration, dimensions, hasAudio)
     }
 }
 #endif
