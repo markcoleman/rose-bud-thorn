@@ -1,0 +1,194 @@
+name: Apple CI
+
+on:
+  pull_request:
+    paths:
+      - 'Package.swift'
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Fixtures/**'
+      - 'Scripts/**'
+      - 'App/**'
+      - 'Clients/Apple/**'
+      - 'UITests/**'
+      - 'RoseBudThorn.xcodeproj/**'
+      - 'RoseBudThorn.xcworkspace/**'
+      - '.github/workflows/apple-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'Package.swift'
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Fixtures/**'
+      - 'Scripts/**'
+      - 'App/**'
+      - 'Clients/Apple/**'
+      - 'UITests/**'
+      - 'RoseBudThorn.xcodeproj/**'
+      - 'RoseBudThorn.xcworkspace/**'
+      - '.github/workflows/apple-ci.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: apple-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect impacted CI areas
+    runs-on: ubuntu-latest
+    outputs:
+      package: ${{ steps.filter.outputs.package }}
+      app: ${{ steps.filter.outputs.app }}
+      ios: ${{ steps.filter.outputs.ios }}
+      macos: ${{ steps.filter.outputs.macos }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Filter changed files
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            package:
+              - 'Package.swift'
+              - 'Sources/**'
+              - 'Tests/**'
+              - 'Fixtures/**'
+              - 'Scripts/**'
+            app:
+              - 'App/**'
+              - 'Clients/Apple/**'
+              - 'Sources/**'
+              - 'UITests/**'
+              - 'RoseBudThorn.xcodeproj/**'
+              - 'RoseBudThorn.xcworkspace/**'
+            ios:
+              - 'App/**'
+              - 'Clients/Apple/**'
+              - 'Sources/**'
+              - 'UITests/**'
+              - 'RoseBudThorn.xcodeproj/**'
+              - 'RoseBudThorn.xcworkspace/**'
+            macos:
+              - 'App/**'
+              - 'Clients/Apple/**'
+              - 'Sources/**'
+              - 'RoseBudThorn.xcodeproj/**'
+              - 'RoseBudThorn.xcworkspace/**'
+
+  package-test:
+    name: Swift package build + test
+    runs-on: macos-26
+    needs: changes
+    if: needs.changes.outputs.package == 'true'
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Cache SwiftPM artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.swiftpm
+            .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('Package.swift') }}-${{ hashFiles('Sources/**/*.swift', 'Tests/**/*.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-${{ hashFiles('Package.swift') }}-
+            ${{ runner.os }}-spm-
+
+      - name: Resolve package dependencies
+        run: swift package resolve
+
+      - name: Build package and tests
+        run: swift build --build-tests --configuration release
+
+      - name: Test package
+        run: swift test --parallel
+
+  build-ios:
+    name: Build iOS scheme
+    runs-on: macos-26
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Cache SwiftPM + DerivedData (iOS)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData
+            ~/.swiftpm
+          key: ${{ runner.os }}-ios-${{ hashFiles('Package.swift', 'RoseBudThorn.xcodeproj/project.pbxproj', 'Sources/**/*.swift', 'App/**/*.swift', 'Clients/Apple/**/*.swift', 'UITests/**/*.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-${{ hashFiles('Package.swift', 'RoseBudThorn.xcodeproj/project.pbxproj') }}-
+            ${{ runner.os }}-ios-
+
+      - name: Build iOS
+        run: |
+          xcodebuild \
+            -project "RoseBudThorn.xcodeproj" \
+            -scheme "RoseBudThorn iOS" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+  build-macos:
+    name: Build macOS scheme
+    runs-on: macos-26
+    needs: changes
+    if: needs.changes.outputs.macos == 'true'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Cache SwiftPM + DerivedData (macOS)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData
+            ~/.swiftpm
+          key: ${{ runner.os }}-macos-${{ hashFiles('Package.swift', 'RoseBudThorn.xcodeproj/project.pbxproj', 'Sources/**/*.swift', 'App/**/*.swift', 'Clients/Apple/**/*.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-macos-${{ hashFiles('Package.swift', 'RoseBudThorn.xcodeproj/project.pbxproj') }}-
+            ${{ runner.os }}-macos-
+
+      - name: Build macOS
+        run: |
+          xcodebuild \
+            -project "RoseBudThorn.xcodeproj" \
+            -scheme "RoseBudThorn macOS" \
+            -destination "platform=macOS" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
