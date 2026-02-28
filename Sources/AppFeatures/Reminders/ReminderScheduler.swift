@@ -117,6 +117,7 @@ public actor ReminderScheduler {
 
         let processName = ProcessInfo.processInfo.processName.lowercased()
         let executablePath = (ProcessInfo.processInfo.arguments.first ?? "").lowercased()
+        let bundleIdentifier = Bundle.main.bundleIdentifier
 
         if processName.contains("xctest") || processName.contains("swift-test") {
             return false
@@ -125,6 +126,10 @@ public actor ReminderScheduler {
         if executablePath.contains("/usr/bin/") {
             return false
         }
+        if bundleIdentifier == nil {
+            return false
+        }
+
         if bundlePath.hasSuffix("/usr/bin") ||
             bundlePath.hasSuffix("/usr/bin/") ||
             bundlePath.contains("/usr/bin/") {
