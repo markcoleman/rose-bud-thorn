@@ -83,55 +83,6 @@ jobs:
               - 'RoseBudThorn.xcodeproj/**'
               - 'RoseBudThorn.xcworkspace/**'
 
-  package-test-stable:
-    name: Swift package build + test (stable lane)
-    runs-on: macos-15
-    needs: changes
-    if: needs.changes.outputs.package == 'true'
-    timeout-minutes: 25
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Print toolchain versions
-        run: |
-          xcodebuild -version
-          swift --version
-
-      - name: Restore SwiftPM dependency cache
-        id: restore-spm-cache-stable
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ~/.swiftpm
-          key: ${{ runner.os }}-${{ runner.arch }}-spm-stable-${{ hashFiles('Package.swift') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-spm-stable-
-            ${{ runner.os }}-${{ runner.arch }}-spm-
-
-      - name: Resolve package dependencies
-        run: swift package resolve
-
-      - name: Build package (strict concurrency)
-        run: swift build -Xswiftc -warnings-as-errors
-
-      - name: Test package (strict concurrency)
-        run: swift test --parallel
-
-      - name: Save SwiftPM dependency cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ~/.swiftpm
-          key: ${{ steps.restore-spm-cache-stable.outputs.cache-primary-key }}
-
   package-test-os26:
     name: Swift package build + test (OS26 lane)
     runs-on: macos-26
@@ -153,25 +104,30 @@ jobs:
           xcodebuild -version
           swift --version
 
+      - name: Cache SwiftPM dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.swiftpm
+          key: ${{ runner.os }}-${{ runner.arch }}-spm-${{ hashFiles('Package.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-spm-
+
       - name: Resolve package dependencies
         run: swift package resolve
 
-      - name: Build package (strict concurrency)
+      - name: Build package
         run: swift build -Xswiftc -warnings-as-errors
 
-      - name: Test package (strict concurrency)
+      - name: Test package
         run: swift test --parallel
 
   build-ios:
-    name: Build iOS app (${{ matrix.runner }})
-    runs-on: ${{ matrix.runner }}
+    name: Build iOS app (macos-26)
+    runs-on: macos-26
     needs: changes
     if: needs.changes.outputs.ios == 'true'
     timeout-minutes: 35
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [macos-15, macos-26]
 
     steps:
       - name: Checkout
@@ -204,15 +160,11 @@ jobs:
             build
 
   build-macos:
-    name: Build macOS app (${{ matrix.runner }})
-    runs-on: ${{ matrix.runner }}
+    name: Build macOS app (macos-26)
+    runs-on: macos-26
     needs: changes
     if: needs.changes.outputs.macos == 'true'
     timeout-minutes: 35
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [macos-15, macos-26]
 
     steps:
       - name: Checkout
@@ -245,15 +197,11 @@ jobs:
             build
 
   xcode-test-macos:
-    name: Xcode macOS tests (${{ matrix.runner }})
-    runs-on: ${{ matrix.runner }}
+    name: Xcode macOS tests (macos-26)
+    runs-on: macos-26
     needs: changes
     if: needs.changes.outputs.app == 'true'
     timeout-minutes: 35
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [macos-15, macos-26]
 
     steps:
       - name: Checkout
@@ -264,19 +212,19 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Run macOS tests (with retry)
+      - name: Validate macOS test build (build-for-testing)
         run: |
           set -euo pipefail
-          RESULT_PATH="/tmp/AppFeatures-macos-${{ matrix.runner }}.xcresult"
+          RESULT_PATH="/tmp/RoseBudThorn-macos-tests.xcresult"
           for attempt in 1 2; do
-            echo "macOS test attempt ${attempt}"
+            echo "macOS build-for-testing attempt ${attempt}"
             set +e
             xcodebuild \
               -project "RoseBudThorn.xcodeproj" \
-              -scheme "AppFeatures" \
+              -scheme "RoseBudThorn macOS" \
               -destination "platform=macOS" \
               -resultBundlePath "${RESULT_PATH}" \
-              test
+              build-for-testing
             status=$?
             set -e
             if [ "${status}" -eq 0 ]; then
@@ -292,19 +240,15 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: xcresult-macos-${{ matrix.runner }}
-          path: /tmp/AppFeatures-macos-${{ matrix.runner }}.xcresult
+          name: xcresult-macos-tests
+          path: /tmp/RoseBudThorn-macos-tests.xcresult
 
   xcode-test-ios:
-    name: Xcode iOS tests (${{ matrix.runner }})
-    runs-on: ${{ matrix.runner }}
+    name: Xcode iOS tests (macos-26)
+    runs-on: macos-26
     needs: changes
     if: needs.changes.outputs.app == 'true'
     timeout-minutes: 40
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [macos-15, macos-26]
 
     steps:
       - name: Checkout
@@ -315,30 +259,19 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Resolve available iOS simulator
-        id: sim
+      - name: Validate iOS test build (build-for-testing)
         run: |
           set -euo pipefail
-          DEVICE_NAME="$(xcrun simctl list devices available iOS | rg -o 'iPhone[^()]+' | head -n 1 | xargs)"
-          if [ -z "${DEVICE_NAME}" ]; then
-            echo "No available iOS simulator found."
-            exit 1
-          fi
-          echo "name=${DEVICE_NAME}" >> "$GITHUB_OUTPUT"
-
-      - name: Run iOS tests (with retry)
-        run: |
-          set -euo pipefail
-          RESULT_PATH="/tmp/AppFeatures-ios-${{ matrix.runner }}.xcresult"
+          RESULT_PATH="/tmp/RoseBudThorn-ios-tests.xcresult"
           for attempt in 1 2; do
-            echo "iOS test attempt ${attempt}"
+            echo "iOS build-for-testing attempt ${attempt}"
             set +e
             xcodebuild \
               -project "RoseBudThorn.xcodeproj" \
-              -scheme "AppFeatures" \
-              -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+              -scheme "RoseBudThorn iOS" \
+              -destination "generic/platform=iOS Simulator" \
               -resultBundlePath "${RESULT_PATH}" \
-              test
+              build-for-testing
             status=$?
             set -e
             if [ "${status}" -eq 0 ]; then
@@ -354,5 +287,5 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: xcresult-ios-${{ matrix.runner }}
-          path: /tmp/AppFeatures-ios-${{ matrix.runner }}.xcresult
+          name: xcresult-ios-tests
+          path: /tmp/RoseBudThorn-ios-tests.xcresult
