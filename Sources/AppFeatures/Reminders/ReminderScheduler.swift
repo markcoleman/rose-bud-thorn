@@ -115,7 +115,9 @@ public actor ReminderScheduler {
         center ?? UNUserNotificationCenter.current()
     }
 
-    private var isRunningTests: Bool {
+        if bundlePath.hasSuffix("/usr/bin") ||
+            bundlePath.hasSuffix("/usr/bin/") ||
+            bundlePath.contains("/usr/bin/") {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 }
