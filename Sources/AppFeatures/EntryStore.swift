@@ -46,7 +46,15 @@ public actor EntryStore {
         try await attachments.importImage(from: sourceURL, day: day, type: type)
     }
 
+    public func importVideo(from sourceURL: URL, day: LocalDayKey, type: EntryType) async throws -> VideoRef {
+        try await attachments.importVideo(from: sourceURL, day: day, type: type)
+    }
+
     public func removePhoto(_ ref: PhotoRef, day: LocalDayKey) async throws {
         try await attachments.remove(ref, day: day)
+    }
+
+    public func removeVideo(_ ref: VideoRef, day: LocalDayKey) async throws {
+        try await attachments.removeVideo(ref, day: day)
     }
 }

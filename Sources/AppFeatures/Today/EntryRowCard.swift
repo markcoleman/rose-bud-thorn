@@ -8,38 +8,47 @@ public struct EntryRowCard: View {
     public let shortText: String
     public let journalText: String
     public let photos: [PhotoRef]
+    public let videos: [VideoRef]
     public let isExpanded: Bool
     public let onShortTextChange: (String) -> Void
     public let onJournalTextChange: (String) -> Void
     public let onToggleExpanded: () -> Void
-    public let onAddPhoto: () -> Void
+    public let onAddCapture: () -> Void
     public let onRemovePhoto: (PhotoRef) -> Void
+    public let onRemoveVideo: (VideoRef) -> Void
     public let photoURL: (PhotoRef) -> URL
+    public let videoURL: (VideoRef) -> URL
 
     public init(
         type: EntryType,
         shortText: String,
         journalText: String,
         photos: [PhotoRef],
+        videos: [VideoRef],
         isExpanded: Bool,
         onShortTextChange: @escaping (String) -> Void,
         onJournalTextChange: @escaping (String) -> Void,
         onToggleExpanded: @escaping () -> Void,
-        onAddPhoto: @escaping () -> Void,
+        onAddCapture: @escaping () -> Void,
         onRemovePhoto: @escaping (PhotoRef) -> Void,
-        photoURL: @escaping (PhotoRef) -> URL
+        onRemoveVideo: @escaping (VideoRef) -> Void,
+        photoURL: @escaping (PhotoRef) -> URL,
+        videoURL: @escaping (VideoRef) -> URL
     ) {
         self.type = type
         self.shortText = shortText
         self.journalText = journalText
         self.photos = photos
+        self.videos = videos
         self.isExpanded = isExpanded
         self.onShortTextChange = onShortTextChange
         self.onJournalTextChange = onJournalTextChange
         self.onToggleExpanded = onToggleExpanded
-        self.onAddPhoto = onAddPhoto
+        self.onAddCapture = onAddCapture
         self.onRemovePhoto = onRemovePhoto
+        self.onRemoveVideo = onRemoveVideo
         self.photoURL = photoURL
+        self.videoURL = videoURL
     }
 
     public var body: some View {
@@ -57,14 +66,14 @@ public struct EntryRowCard: View {
                                 .fill(DesignTokens.surface)
                         )
 
-                    addPhotoButton
+                    addCaptureButton
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         titleBadge
                         Spacer()
-                        addPhotoButton
+                        addCaptureButton
                     }
 
                     TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
@@ -78,14 +87,14 @@ public struct EntryRowCard: View {
                 }
             }
 
-            if !photos.isEmpty {
+            if !mediaItems.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(photos) { ref in
+                        ForEach(mediaItems) { media in
                             ZStack(alignment: .topTrailing) {
-                                PhotoThumbnailView(url: photoURL(ref), size: 56)
+                                mediaThumbnail(media)
                                 Button {
-                                    onRemovePhoto(ref)
+                                    removeMedia(media)
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")
                                         .foregroundStyle(.white, .black.opacity(0.65))
@@ -126,14 +135,14 @@ public struct EntryRowCard: View {
     }
 
 
-    private var addPhotoButton: some View {
-        Button(action: onAddPhoto) {
+    private var addCaptureButton: some View {
+        Button(action: onAddCapture) {
             Image(systemName: "camera.fill")
                 .imageScale(.medium)
                 .frame(minWidth: 44, minHeight: 44)
         }
         .buttonStyle(.bordered)
-        .accessibilityLabel("Add photo to \(type.title)")
+        .accessibilityLabel("Capture media for \(type.title)")
     }
 
     private var titleBadge: some View {
@@ -151,6 +160,55 @@ public struct EntryRowCard: View {
         case .rose: return DesignTokens.rose
         case .bud: return DesignTokens.bud
         case .thorn: return DesignTokens.thorn
+        }
+    }
+
+    private func mediaThumbnail(_ media: MediaItem) -> some View {
+        Group {
+            switch media {
+            case .photo(let ref):
+                PhotoThumbnailView(url: photoURL(ref), size: 56)
+            case .video(let ref):
+                VideoThumbnailView(url: videoURL(ref), size: 56)
+            }
+        }
+    }
+
+    private func removeMedia(_ media: MediaItem) {
+        switch media {
+        case .photo(let ref):
+            onRemovePhoto(ref)
+        case .video(let ref):
+            onRemoveVideo(ref)
+        }
+    }
+
+    private var mediaItems: [MediaItem] {
+        let photoItems = photos.map(MediaItem.photo)
+        let videoItems = videos.map(MediaItem.video)
+        return (photoItems + videoItems).sorted { $0.createdAt < $1.createdAt }
+    }
+}
+
+private enum MediaItem: Identifiable {
+    case photo(PhotoRef)
+    case video(VideoRef)
+
+    var id: UUID {
+        switch self {
+        case .photo(let ref):
+            return ref.id
+        case .video(let ref):
+            return ref.id
+        }
+    }
+
+    var createdAt: Date {
+        switch self {
+        case .photo(let ref):
+            return ref.createdAt
+        case .video(let ref):
+            return ref.createdAt
         }
     }
 }

@@ -42,6 +42,11 @@ public struct AppEnvironment: Sendable {
         return layout.dayDirectory(for: day).appendingPathComponent(ref.relativePath)
     }
 
+    public func videoURL(for ref: VideoRef, day: LocalDayKey) -> URL {
+        let layout = FileLayout(rootURL: configuration.rootURL)
+        return layout.dayDirectory(for: day).appendingPathComponent(ref.relativePath)
+    }
+
     public func summaryMarkdownURL(period: SummaryPeriod, key: String) -> URL {
         let layout = FileLayout(rootURL: configuration.rootURL)
         return layout.summaryMarkdownURL(period: period, key: key)

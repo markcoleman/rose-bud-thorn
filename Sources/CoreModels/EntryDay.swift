@@ -67,6 +67,6 @@ public struct EntryDay: Codable, Hashable, Sendable {
     }
 
     public var hasAnyPhotos: Bool {
-        roseItem.hasPhotos || budItem.hasPhotos || thornItem.hasPhotos
+        roseItem.hasMedia || budItem.hasMedia || thornItem.hasMedia
     }
 }

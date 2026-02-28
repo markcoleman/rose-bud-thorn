@@ -15,8 +15,8 @@ public final class SearchViewModel {
         public var title: String {
             switch self {
             case .any: return "Any"
-            case .hasPhoto: return "Has Photo"
-            case .noPhoto: return "No Photo"
+            case .hasPhoto: return "Has Media"
+            case .noPhoto: return "No Media"
             }
         }
     }
