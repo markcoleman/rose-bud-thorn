@@ -153,6 +153,18 @@ Based on current shipped capabilities (capture, browse, search, summaries), the 
 - Daily reflection completion rate (rolling 7-day).
 - Percentage of users with at least 4/7 completion.
 
+### 1.5 Implementation Status (2026-02-28)
+- ✅ `ReminderPreferences`, `ReminderPreferencesStore`, and `ReminderScheduler` are implemented in `AppFeatures` with persistence and scheduling checks tied to completion state.
+- ✅ `EntryCompletionTracker` and `EntryCompletionSummary` are implemented and used by Today UI and widget update flows.
+- ✅ Today screen now shows streak + 7-day completion ring with supportive copy variants.
+- ✅ Widget small/medium behavior is aligned to Phase 1 scope (completion status + quick capture actions/deep links).
+- ✅ Reminder scheduler test/CLI stability was hardened to avoid `UNUserNotificationCenter.current()` crashes in package-test environments that have no app-bundle proxy.
+- ✅ AVFoundation metadata access in `AttachmentRepositoryImpl` was migrated to modern async loading APIs to remove deprecation warnings in CI.
+
+**Current caveats / follow-ups**
+- Linux local runs in this container cannot execute the full suite because `ImageIO` is unavailable; validate full test pass on macOS CI runners.
+- Feature flags are currently initialized as enabled defaults in `AppEnvironment`; progressive cohort rollout still needs a remote/local flag source strategy.
+
 ---
 
 ## Phase 2 Build-Out (Detailed)
