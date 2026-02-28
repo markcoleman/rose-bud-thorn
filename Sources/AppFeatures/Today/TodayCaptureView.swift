@@ -29,6 +29,10 @@ public struct TodayCaptureView: View {
                     VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 18 : 14) {
                         header
 
+                        if bindable.completionSummary.last7DaysCompleted.count == 7 && bindable.completionSummary != EntryCompletionSummary() {
+                            streakCard(summary: bindable.completionSummary)
+                        }
+
                         ForEach(EntryType.allCases, id: \.self) { type in
                             EntryRowCard(
                                 type: type,
@@ -216,6 +220,52 @@ public struct TodayCaptureView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private func streakCard(summary: EntryCompletionSummary) -> some View {
+        HStack(spacing: 14) {
+            WeeklyCompletionRing(progress: summary.last7DaysCompleted.filter(\.self).count, total: 7)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(streakTitle(summary))
+                    .font(.headline)
+                Text(streakMessage(summary))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14).fill(DesignTokens.surfaceElevated))
+    }
+
+    private func streakTitle(_ summary: EntryCompletionSummary) -> String {
+        if summary.isTodayComplete, summary.streakCount <= 1 {
+            return "New streak started"
+        }
+
+        if summary.isTodayComplete, summary.streakCount > 1 {
+            return "\(summary.streakCount)-day streak"
+        }
+
+        if summary.previousStreakCount > 0 {
+            return "A fresh start today"
+        }
+
+        return "Build your reflection streak"
+    }
+
+    private func streakMessage(_ summary: EntryCompletionSummary) -> String {
+        if summary.isTodayComplete {
+            return "Great follow-through. Your weekly ring updates instantly as you reflect."
+        }
+
+        if summary.previousStreakCount > 0 {
+            return "You made progress for \(summary.previousStreakCount) days. Add one entry today to restart."
+        }
+
+        return "Capture one Rose, Bud, or Thorn to fill today on your 7-day ring."
+    }
+
     private var importerAllowedTypes: [UTType] {
         if importerRequest?.includeMovies == true {
             return [.image, .movie]
@@ -260,6 +310,35 @@ public struct TodayCaptureView: View {
         } catch {
             return error.localizedDescription
         }
+    }
+}
+
+
+
+
+private struct WeeklyCompletionRing: View {
+    let progress: Int
+    let total: Int
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(DesignTokens.surface, lineWidth: 8)
+
+            Circle()
+                .trim(from: 0, to: CGFloat(progress) / CGFloat(max(total, 1)))
+                .stroke(DesignTokens.accent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+
+            VStack(spacing: 2) {
+                Text("\(progress)/\(total)")
+                    .font(.caption.weight(.semibold))
+                Text("week")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(width: 56, height: 56)
     }
 }
 
