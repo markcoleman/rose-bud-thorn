@@ -32,5 +32,10 @@ public struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        #if !os(macOS)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        #endif
     }
 }

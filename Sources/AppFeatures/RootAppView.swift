@@ -12,6 +12,7 @@ public struct RootAppView: View {
 
     private let environment: AppEnvironment
     @State private var lockManager = PrivacyLockManager()
+    private let tabOrder = AppSection.allCases
 
     public init(environment: AppEnvironment) {
         self.environment = environment
@@ -65,6 +66,8 @@ public struct RootAppView: View {
                 .tabItem { Label("Settings", systemImage: AppSection.settings.systemImage) }
                 .tag(AppSection.settings)
         }
+        .contentShape(Rectangle())
+        .simultaneousGesture(tabSwipeGesture, including: .all)
     }
 
     private var splitView: some View {
@@ -147,6 +150,52 @@ public struct RootAppView: View {
     private func selectSection(_ section: AppSection) {
         selectedSection = section
         selectedTab = section
+    }
+
+    private var tabSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 14, coordinateSpace: .local)
+            .onEnded { value in
+                handleTabSwipe(value)
+            }
+    }
+
+    private func handleTabSwipe(_ value: DragGesture.Value) {
+        let horizontal = value.translation.width
+        let vertical = value.translation.height
+        let horizontalDominant = abs(horizontal) > abs(vertical) * DesignTokens.tabSwipeHorizontalDominanceRatio
+        guard horizontalDominant else { return }
+
+        let predicted = value.predictedEndTranslation.width
+        let exceedsDistance = abs(horizontal) >= DesignTokens.tabSwipeMinimumTranslation
+        let exceedsPredicted = abs(predicted) >= DesignTokens.tabSwipePredictedEndThreshold
+        guard exceedsDistance || exceedsPredicted else { return }
+
+        let effectiveTranslation = exceedsPredicted ? predicted : horizontal
+        if effectiveTranslation < 0 {
+            moveTab(step: 1)
+        } else if effectiveTranslation > 0 {
+            moveTab(step: -1)
+        }
+    }
+
+    private func moveTab(step: Int) {
+        guard let currentIndex = tabOrder.firstIndex(of: selectedTab) else { return }
+        let nextIndex = currentIndex + step
+        guard tabOrder.indices.contains(nextIndex) else { return }
+
+        let nextTab = tabOrder[nextIndex]
+        guard nextTab != selectedTab else { return }
+
+        withAnimation(MotionTokens.tabSwitch) {
+            selectedTab = nextTab
+            selectedSection = nextTab
+        }
+
+        #if os(iOS)
+        let feedback = UISelectionFeedbackGenerator()
+        feedback.prepare()
+        feedback.selectionChanged()
+        #endif
     }
 
     #if !os(macOS)

@@ -50,11 +50,17 @@ public struct TodayCaptureView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .frame(minHeight: geometry.size.height, alignment: .topLeading)
                     .padding(.horizontal, DesignTokens.contentHorizontalPadding(for: geometry.size.width))
-                    .padding(.vertical, 16)
+                    .padding(.top, DesignTokens.contentTopPadding(for: geometry.size.width))
+                    .padding(.bottom, DesignTokens.contentBottomPadding(for: geometry.size.width))
                 }
             }
             .background(DesignTokens.backgroundGradient.ignoresSafeArea())
             .navigationTitle("Today")
+            #if !os(macOS)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            #endif
             .toolbar {
                 ToolbarItem(placement: toolbarPlacement) {
                     if bindable.isSaving {
@@ -98,7 +104,7 @@ public struct TodayCaptureView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             BrandMarkView()
             Text(Date.now.formatted(date: .complete, time: .omitted))
                 .foregroundStyle(.secondary)

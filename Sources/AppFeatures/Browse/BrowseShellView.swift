@@ -53,6 +53,11 @@ public struct BrowseShellView: View {
                 }
             }
             .navigationTitle("Browse")
+            #if !os(macOS)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            #endif
             .navigationDestination(for: LocalDayKey.self) { dayKey in
                 DayDetailView(environment: viewModel.environment, dayKey: dayKey)
             }
@@ -70,8 +75,8 @@ public struct BrowseShellView: View {
         }
         .pickerStyle(.segmented)
         .padding(.horizontal, horizontalSizeClass == .compact ? 16 : 24)
-        .padding(.top, 8)
-        .padding(.bottom, 10)
+        .padding(.top, 4)
+        .padding(.bottom, 8)
         .background(.ultraThinMaterial)
     }
 }

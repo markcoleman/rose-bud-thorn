@@ -17,6 +17,11 @@ public struct SummaryListView: View {
                 NavigationStack {
                     compactSummaryList(bindable)
                         .navigationTitle("Summaries")
+                        #if !os(macOS)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+                        .toolbarBackground(.visible, for: .navigationBar)
+                        #endif
                         .navigationDestination(for: String.self) { key in
                             if let artifact = bindable.artifacts.first(where: { $0.key == key }) {
                                 SummaryDetailView(
