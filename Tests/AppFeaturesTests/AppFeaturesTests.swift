@@ -84,6 +84,22 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(request?.source, "widget")
     }
 
+    func testSummaryLaunchRequestParserParsesWeeklySummaryDeepLink() {
+        let url = URL(string: "rosebudthorn://summary?period=week&action=open-current&source=intent")!
+        let request = RootAppView.summaryLaunchRequest(from: url)
+
+        XCTAssertEqual(request?.action, .openCurrentWeeklySummary)
+        XCTAssertEqual(request?.source, "intent")
+    }
+
+    func testSummaryLaunchRequestParserParsesWeeklyReviewDeepLink() {
+        let url = URL(string: "rosebudthorn://summary?action=start-weekly-review&source=intent")!
+        let request = RootAppView.summaryLaunchRequest(from: url)
+
+        XCTAssertEqual(request?.action, .startWeeklyReview)
+        XCTAssertEqual(request?.source, "intent")
+    }
+
     func testReminderPreferencesPersistAcrossStoreReload() {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!
         let store = ReminderPreferencesStore(defaults: defaults)
@@ -99,9 +115,91 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(store.load(), prefs)
     }
 
+    func testPromptSelectorAvoidsConsecutiveDuplicatesInDeterministicMode() {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        let preferencesStore = PromptPreferencesStore(defaults: defaults)
+        let cacheStore = PromptRotationCacheStore(defaults: defaults)
+        let selector = PromptSelector(preferencesStore: preferencesStore, cacheStore: cacheStore)
+        let preferences = PromptPreferences(
+            isEnabled: true,
+            themePreference: .gratitude,
+            selectionMode: .deterministic,
+            hiddenTypes: []
+        )
+
+        let firstDay = LocalDayKey(isoDate: "2026-03-01", timeZoneID: "America/Los_Angeles")
+        let secondDay = LocalDayKey(isoDate: "2026-03-02", timeZoneID: "America/Los_Angeles")
+
+        let firstPrompt = selector.prompt(for: .rose, dayKey: firstDay, preferences: preferences)
+        let secondPrompt = selector.prompt(for: .rose, dayKey: secondDay, preferences: preferences)
+
+        XCTAssertNotNil(firstPrompt)
+        XCTAssertNotNil(secondPrompt)
+        XCTAssertNotEqual(firstPrompt?.text, secondPrompt?.text)
+    }
+
+    func testPromptSelectorSkipsHiddenPromptTypes() {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        let selector = PromptSelector(
+            preferencesStore: PromptPreferencesStore(defaults: defaults),
+            cacheStore: PromptRotationCacheStore(defaults: defaults)
+        )
+
+        let preferences = PromptPreferences(
+            isEnabled: true,
+            themePreference: .gratitude,
+            selectionMode: .deterministic,
+            hiddenTypes: [.thorn]
+        )
+        let dayKey = LocalDayKey(isoDate: "2026-03-02", timeZoneID: "America/Los_Angeles")
+
+        XCTAssertNil(selector.prompt(for: .thorn, dayKey: dayKey, preferences: preferences))
+        XCTAssertNotNil(selector.prompt(for: .rose, dayKey: dayKey, preferences: preferences))
+    }
+
+    func testIntentLaunchStoreQueuesAndConsumesDeepLink() {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        let url = URL(string: "rosebudthorn://weekly-review?source=test")!
+
+        IntentLaunchStore.queueDeepLink(url, defaults: defaults)
+        XCTAssertEqual(IntentLaunchStore.consumePendingURL(defaults: defaults), url)
+        XCTAssertNil(IntentLaunchStore.consumePendingURL(defaults: defaults))
+    }
+
     func testEnvironmentDisablesReminderSchedulingInTests() throws {
         let environment = try makeEnvironment()
         XCTAssertFalse(environment.featureFlags.remindersEnabled)
+    }
+
+    func testWeeklyIntentionStorePersistsAdjacentToSummaryArtifacts() async throws {
+        let environment = try makeEnvironment()
+        let weekKey = "2026-W10"
+
+        try await environment.weeklyIntentionStore.save(text: "Pause before reacting.", for: weekKey)
+        let loaded = try await environment.weeklyIntentionStore.load(for: weekKey)
+
+        XCTAssertEqual(loaded?.text, "Pause before reacting.")
+
+        let layout = FileLayout(rootURL: environment.configuration.rootURL)
+        let intentionURL = layout.summaryDirectory(for: .week).appendingPathComponent("\(weekKey).intention.json")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: intentionURL.path))
+    }
+
+    func testWeeklyReviewViewModelLoadsPreviousWeekIntention() async throws {
+        let environment = try makeEnvironment()
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        let referenceDate = calendar.date(from: DateComponents(year: 2026, month: 3, day: 14, hour: 12))!
+        let periodCalculator = PeriodKeyCalculator()
+        let previousDate = calendar.date(byAdding: .day, value: -7, to: referenceDate)!
+        let previousWeekKey = periodCalculator.key(for: previousDate, period: .week, timeZone: .current)
+
+        try await environment.weeklyIntentionStore.save(text: "Stay consistent.", for: previousWeekKey)
+
+        let viewModel = WeeklyReviewViewModel(environment: environment, referenceDate: referenceDate)
+        await viewModel.load()
+
+        XCTAssertEqual(viewModel.previousWeekIntention?.text, "Stay consistent.")
     }
 
     func testCompletionTrackerUpdatesWhenTodayEntrySaved() async throws {

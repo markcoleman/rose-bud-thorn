@@ -16,6 +16,9 @@ public struct AppEnvironment: Sendable {
     public let entryStore: EntryStore
     public let reminderPreferencesStore: ReminderPreferencesStore
     public let reminderScheduler: ReminderScheduler
+    public let promptPreferencesStore: PromptPreferencesStore
+    public let promptSelector: PromptSelector
+    public let weeklyIntentionStore: WeeklyIntentionStore
     public let completionTracker: EntryCompletionTracker
     public let featureFlags: AppFeatureFlags
 
@@ -32,6 +35,9 @@ public struct AppEnvironment: Sendable {
         let entryStore = EntryStore(entries: entryRepository, attachments: attachmentRepository, index: searchIndex)
         let reminderPreferencesStore = ReminderPreferencesStore()
         let reminderScheduler = featureFlags.remindersEnabled ? ReminderScheduler.live() : ReminderScheduler()
+        let promptPreferencesStore = PromptPreferencesStore()
+        let promptSelector = PromptSelector(preferencesStore: promptPreferencesStore)
+        let weeklyIntentionStore = WeeklyIntentionStore(configuration: configuration)
         let completionTracker = EntryCompletionTracker(entryStore: entryStore, dayCalculator: dayCalculator)
 
         self.entryRepository = entryRepository
@@ -41,6 +47,9 @@ public struct AppEnvironment: Sendable {
         self.entryStore = entryStore
         self.reminderPreferencesStore = reminderPreferencesStore
         self.reminderScheduler = reminderScheduler
+        self.promptPreferencesStore = promptPreferencesStore
+        self.promptSelector = promptSelector
+        self.weeklyIntentionStore = weeklyIntentionStore
         self.completionTracker = completionTracker
         self.featureFlags = featureFlags
     }

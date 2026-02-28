@@ -5,9 +5,11 @@ import Observation
 @MainActor
 @Observable
 public final class PrivacyLockManager {
+    nonisolated public static let enabledDefaultsKey = "privacy_lock_enabled"
+
     public var isEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(isEnabled, forKey: Self.enabledKey)
+            UserDefaults.standard.set(isEnabled, forKey: Self.enabledDefaultsKey)
             if !isEnabled {
                 isLocked = false
             }
@@ -17,10 +19,8 @@ public final class PrivacyLockManager {
     public private(set) var isLocked: Bool
     public private(set) var lastError: String?
 
-    private static let enabledKey = "privacy_lock_enabled"
-
     public init() {
-        let enabled = UserDefaults.standard.bool(forKey: Self.enabledKey)
+        let enabled = UserDefaults.standard.bool(forKey: Self.enabledDefaultsKey)
         self.isEnabled = enabled
         self.isLocked = enabled
     }

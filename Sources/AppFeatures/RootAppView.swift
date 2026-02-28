@@ -9,6 +9,7 @@ public struct RootAppView: View {
     @State private var selectedTab: AppSection = .today
     @State private var selectedDayKey: LocalDayKey?
     @State private var captureLaunchRequest: CaptureLaunchRequest?
+    @State private var summaryLaunchRequest: SummaryLaunchRequest?
     @Environment(\.scenePhase) private var scenePhase
 
     private let environment: AppEnvironment
@@ -40,9 +41,14 @@ public struct RootAppView: View {
         .onChange(of: scenePhase) { _, newValue in
             if newValue != .active {
                 lockManager.lockIfNeeded()
+            } else {
+                consumePendingIntentLaunchIfNeeded()
             }
         }
         .onOpenURL(perform: handleDeepLink)
+        .task {
+            consumePendingIntentLaunchIfNeeded()
+        }
     }
 
     private var tabView: some View {
@@ -55,7 +61,7 @@ public struct RootAppView: View {
                 .tabItem { Label("Browse", systemImage: AppSection.browse.systemImage) }
                 .tag(AppSection.browse)
 
-            SummaryListView(environment: environment)
+            SummaryListView(environment: environment, summaryLaunchRequest: $summaryLaunchRequest)
                 .tabItem { Label("Summaries", systemImage: AppSection.summaries.systemImage) }
                 .tag(AppSection.summaries)
 
@@ -96,7 +102,7 @@ public struct RootAppView: View {
         case .browse:
             BrowseShellView(environment: environment, selectedDayKey: $selectedDayKey)
         case .summaries:
-            SummaryListView(environment: environment)
+            SummaryListView(environment: environment, summaryLaunchRequest: $summaryLaunchRequest)
         case .search:
             SearchView(environment: environment, selectedDayKey: $selectedDayKey)
         case .settings:
@@ -140,6 +146,13 @@ public struct RootAppView: View {
             selectSection(.browse)
         case "summaries", "summary":
             selectSection(.summaries)
+            summaryLaunchRequest = Self.summaryLaunchRequest(from: url)
+        case "weekly-review", "review":
+            selectSection(.summaries)
+            summaryLaunchRequest = SummaryLaunchRequest(action: .startWeeklyReview, source: Self.source(from: url))
+        case "weekly-summary":
+            selectSection(.summaries)
+            summaryLaunchRequest = SummaryLaunchRequest(action: .openCurrentWeeklySummary, source: Self.source(from: url))
         case "search":
             selectSection(.search)
         case "settings":
@@ -168,11 +181,57 @@ public struct RootAppView: View {
             return nil
         }
 
-        let source = components.queryItems?
+        return CaptureLaunchRequest(type: type, source: source(from: url))
+    }
+
+    static func summaryLaunchRequest(from url: URL) -> SummaryLaunchRequest? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+
+        let actionValue = components.queryItems?
+            .first(where: { $0.name.lowercased() == "action" })?
+            .value?
+            .lowercased()
+
+        let periodValue = components.queryItems?
+            .first(where: { $0.name.lowercased() == "period" })?
+            .value?
+            .lowercased()
+
+        if let actionValue {
+            switch actionValue {
+            case "start-weekly-review", "weekly-review", "review":
+                return SummaryLaunchRequest(action: .startWeeklyReview, source: source(from: url))
+            case "open-current-weekly", "open-weekly", "open-current":
+                return SummaryLaunchRequest(action: .openCurrentWeeklySummary, source: source(from: url))
+            default:
+                break
+            }
+        }
+
+        if periodValue == "week" {
+            return SummaryLaunchRequest(action: .openCurrentWeeklySummary, source: source(from: url))
+        }
+
+        return nil
+    }
+
+    private static func source(from url: URL) -> String? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+
+        return components.queryItems?
             .first(where: { $0.name.lowercased() == "source" })?
             .value
+    }
 
-        return CaptureLaunchRequest(type: type, source: source)
+    private func consumePendingIntentLaunchIfNeeded() {
+        guard let pendingURL = IntentLaunchStore.consumePendingURL() else {
+            return
+        }
+        handleDeepLink(pendingURL)
     }
 
     private var tabSwipeGesture: some Gesture {
