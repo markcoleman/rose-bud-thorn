@@ -77,6 +77,28 @@ public struct WeeklyReviewFlowView: View {
                 .background(RoundedRectangle(cornerRadius: 12).fill(DesignTokens.surfaceElevated))
             }
 
+            if model.isCommitmentsEnabled, let commitment = model.previousWeekCommitment {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Previous weekly commitment")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text(commitment.text)
+                        .font(.body)
+                    if commitment.status == .planned {
+                        Button("Mark complete") {
+                            Task { await model.markPreviousCommitmentCompleted() }
+                        }
+                        .buttonStyle(.bordered)
+                    } else {
+                        Label("Completed", systemImage: "checkmark.circle.fill")
+                            .font(.footnote)
+                            .foregroundStyle(.green)
+                    }
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(DesignTokens.surfaceElevated))
+            }
+
             Text("Guided check-in")
                 .font(.title3.weight(.semibold))
 
@@ -111,6 +133,23 @@ public struct WeeklyReviewFlowView: View {
                 )
                     .lineLimit(2...4)
                     .textFieldStyle(.roundedBorder)
+            }
+
+            if model.isCommitmentsEnabled {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Weekly commitment")
+                        .font(.subheadline.weight(.semibold))
+                    TextField(
+                        "Optional",
+                        text: Binding(
+                            get: { model.commitmentText },
+                            set: { model.commitmentText = $0 }
+                        ),
+                        axis: .vertical
+                    )
+                    .lineLimit(2...4)
+                    .textFieldStyle(.roundedBorder)
+                }
             }
 
             HStack(spacing: 10) {

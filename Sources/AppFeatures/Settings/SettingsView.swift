@@ -5,6 +5,7 @@ public struct SettingsView: View {
     @State private var viewModel: PrivacyLockViewModel
     @State private var reminderPreferences: ReminderPreferences
     @State private var promptPreferences: PromptPreferences
+    @State private var featureFlags: AppFeatureFlags
 
     private let environment: AppEnvironment
 
@@ -13,6 +14,7 @@ public struct SettingsView: View {
         _viewModel = State(initialValue: PrivacyLockViewModel(manager: lockManager))
         _reminderPreferences = State(initialValue: environment.reminderPreferencesStore.load())
         _promptPreferences = State(initialValue: environment.promptPreferencesStore.load())
+        _featureFlags = State(initialValue: environment.featureFlagStore.load(defaults: environment.featureFlags))
     }
 
     public var body: some View {
@@ -70,6 +72,20 @@ public struct SettingsView: View {
             }
             .onChange(of: promptPreferences) { _, newValue in
                 environment.promptPreferencesStore.save(newValue)
+            }
+
+            Section("Engagement Modules") {
+                Toggle("Insights cards", isOn: $featureFlags.insightsEnabled)
+                Toggle("On-this-day resurfacing", isOn: $featureFlags.resurfacingEnabled)
+                Toggle("Weekly commitments", isOn: $featureFlags.commitmentsEnabled)
+                Toggle("Modern OS26 visual style", isOn: $featureFlags.os26UIEnabled)
+
+                Text("Feature module changes apply immediately to newly loaded screens.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .onChange(of: featureFlags) { _, newValue in
+                environment.featureFlagStore.save(newValue)
             }
 
             Section("Privacy") {

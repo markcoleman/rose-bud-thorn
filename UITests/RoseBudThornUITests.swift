@@ -1,2 +1,14 @@
-// XCUITest scaffold for Xcode UI target integration.
-// This repository currently runs tests via SwiftPM, so this file is documentation-first.
+import XCTest
+
+final class RoseBudThornUITests: XCTestCase {
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    func testLaunchesTodayScreen() {
+        let app = XCUIApplication()
+        app.launch()
+
+        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 6) || app.staticTexts["Today"].waitForExistence(timeout: 6))
+    }
+}

@@ -107,7 +107,7 @@ public actor SummaryServiceImpl: SummaryService {
             return nil
         }
 
-        let markdown = try String(contentsOf: markdownURL)
+        let markdown = try String(contentsOf: markdownURL, encoding: .utf8)
         let generatedAt = (try? fileManager.attributesOfItem(atPath: markdownURL.path)[.modificationDate] as? Date) ?? .now
 
         return SummaryArtifact(

@@ -11,14 +11,14 @@ public struct EntryRowCard: View {
     public let photos: [PhotoRef]
     public let videos: [VideoRef]
     public let isExpanded: Bool
-    public let onShortTextChange: (String) -> Void
-    public let onJournalTextChange: (String) -> Void
-    public let onToggleExpanded: () -> Void
-    public let onAddCapture: () -> Void
-    public let onRemovePhoto: (PhotoRef) -> Void
-    public let onRemoveVideo: (VideoRef) -> Void
-    public let photoURL: (PhotoRef) -> URL
-    public let videoURL: (VideoRef) -> URL
+    public let onShortTextChange: @MainActor @Sendable (String) -> Void
+    public let onJournalTextChange: @MainActor @Sendable (String) -> Void
+    public let onToggleExpanded: @MainActor @Sendable () -> Void
+    public let onAddCapture: @MainActor @Sendable () -> Void
+    public let onRemovePhoto: @MainActor @Sendable (PhotoRef) -> Void
+    public let onRemoveVideo: @MainActor @Sendable (VideoRef) -> Void
+    public let photoURL: @MainActor @Sendable (PhotoRef) -> URL
+    public let videoURL: @MainActor @Sendable (VideoRef) -> URL
 
     public init(
         type: EntryType,
@@ -28,14 +28,14 @@ public struct EntryRowCard: View {
         photos: [PhotoRef],
         videos: [VideoRef],
         isExpanded: Bool,
-        onShortTextChange: @escaping (String) -> Void,
-        onJournalTextChange: @escaping (String) -> Void,
-        onToggleExpanded: @escaping () -> Void,
-        onAddCapture: @escaping () -> Void,
-        onRemovePhoto: @escaping (PhotoRef) -> Void,
-        onRemoveVideo: @escaping (VideoRef) -> Void,
-        photoURL: @escaping (PhotoRef) -> URL,
-        videoURL: @escaping (VideoRef) -> URL
+        onShortTextChange: @escaping @MainActor @Sendable (String) -> Void,
+        onJournalTextChange: @escaping @MainActor @Sendable (String) -> Void,
+        onToggleExpanded: @escaping @MainActor @Sendable () -> Void,
+        onAddCapture: @escaping @MainActor @Sendable () -> Void,
+        onRemovePhoto: @escaping @MainActor @Sendable (PhotoRef) -> Void,
+        onRemoveVideo: @escaping @MainActor @Sendable (VideoRef) -> Void,
+        photoURL: @escaping @MainActor @Sendable (PhotoRef) -> URL,
+        videoURL: @escaping @MainActor @Sendable (VideoRef) -> URL
     ) {
         self.type = type
         self.shortText = shortText
@@ -66,7 +66,13 @@ public struct EntryRowCard: View {
             }
 
             HStack(alignment: .center, spacing: 10) {
-                TextField("\(type.title) for today", text: Binding(get: { shortText }, set: onShortTextChange))
+                TextField(
+                    "\(type.title) for today",
+                    text: Binding(
+                        get: { shortText },
+                        set: { value in onShortTextChange(value) }
+                    )
+                )
                     .textFieldStyle(.plain)
                     .padding(.horizontal, 12)
                     .frame(minHeight: 46)
@@ -114,7 +120,12 @@ public struct EntryRowCard: View {
             }
 
             if isExpanded {
-                TextEditor(text: Binding(get: { journalText }, set: onJournalTextChange))
+                TextEditor(
+                    text: Binding(
+                        get: { journalText },
+                        set: { value in onJournalTextChange(value) }
+                    )
+                )
                     .frame(minHeight: dynamicTypeSize.isAccessibilitySize ? 160 : 120)
                     .padding(8)
                     .background(RoundedRectangle(cornerRadius: 10).fill(DesignTokens.surface))

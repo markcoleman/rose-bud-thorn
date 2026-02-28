@@ -8,6 +8,14 @@ public enum LocalAnalyticsEvent: String, CaseIterable, Codable, Sendable {
     case dailyEntryCompleted = "daily_entry_completed"
     case reminderPreferencesUpdated = "reminder_preferences_updated"
     case reminderScheduleEvaluated = "reminder_schedule_evaluated"
+    case insightCardViewed = "insight_card_viewed"
+    case insightCardTapped = "insight_card_tapped"
+    case resurfacingViewed = "resurfacing_viewed"
+    case resurfacingActioned = "resurfacing_actioned"
+    case commitmentSaved = "commitment_saved"
+    case commitmentCompleted = "commitment_completed"
+    case summaryExportPreviewed = "summary_export_previewed"
+    case summaryExportConfirmed = "summary_export_confirmed"
 }
 
 public struct LocalAnalyticsSnapshot: Codable, Equatable, Sendable {

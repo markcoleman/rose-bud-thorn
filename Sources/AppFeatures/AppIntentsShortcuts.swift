@@ -84,6 +84,24 @@ public struct StartWeeklyReviewIntent: DeepLinkLaunchingIntent {
     public init() {}
 }
 
+public struct OpenEngagementHubIntent: DeepLinkLaunchingIntent {
+    public static let title: LocalizedStringResource = "Open Engagement Hub"
+    public static let description = IntentDescription("Open today's Engagement Hub with insights and resurfaced memories.")
+    public static let deepLink = URL(string: "rosebudthorn://engagement?source=intent")!
+    public static let successDialog = IntentDialog("Opening Engagement Hub.")
+
+    public init() {}
+}
+
+public struct OpenOnThisDayIntent: DeepLinkLaunchingIntent {
+    public static let title: LocalizedStringResource = "Open On This Day"
+    public static let description = IntentDescription("Open today's resurfaced memory module.")
+    public static let deepLink = URL(string: "rosebudthorn://on-this-day?source=intent")!
+    public static let successDialog = IntentDialog("Opening On This Day.")
+
+    public init() {}
+}
+
 public struct RoseBudThornShortcutsProvider: AppShortcutsProvider {
     public static var appShortcuts: [AppShortcut] {
         AppShortcut(
@@ -128,6 +146,22 @@ public struct RoseBudThornShortcutsProvider: AppShortcutsProvider {
             ],
             shortTitle: "Weekly Review",
             systemImageName: "checklist"
+        )
+        AppShortcut(
+            intent: OpenEngagementHubIntent(),
+            phrases: [
+                "Open engagement hub in \(.applicationName)"
+            ],
+            shortTitle: "Engagement Hub",
+            systemImageName: "bolt.heart"
+        )
+        AppShortcut(
+            intent: OpenOnThisDayIntent(),
+            phrases: [
+                "Open on this day in \(.applicationName)"
+            ],
+            shortTitle: "On This Day",
+            systemImageName: "clock.arrow.circlepath"
         )
     }
 

@@ -7,6 +7,7 @@ public struct SummaryListView: View {
     @State private var isWeeklyReviewPresented = false
     @State private var compactNavigationPath: [String] = []
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.openURL) private var openURL
 
     public init(
         environment: AppEnvironment,
@@ -36,6 +37,12 @@ public struct SummaryListView: View {
                                     markdownURL: bindable.markdownURL(for: artifact),
                                     regenerate: {
                                         Task { await bindable.regenerate(artifact) }
+                                    },
+                                    onPreviewShare: {
+                                        Task { await bindable.environment.analyticsStore.record(.summaryExportPreviewed) }
+                                    },
+                                    onConfirmShare: {
+                                        Task { await bindable.environment.analyticsStore.record(.summaryExportConfirmed) }
                                     }
                                 )
                             } else {
@@ -58,6 +65,12 @@ public struct SummaryListView: View {
                             markdownURL: bindable.markdownURL(for: selected),
                             regenerate: {
                                 Task { await bindable.regenerate(selected) }
+                            },
+                            onPreviewShare: {
+                                Task { await bindable.environment.analyticsStore.record(.summaryExportPreviewed) }
+                            },
+                            onConfirmShare: {
+                                Task { await bindable.environment.analyticsStore.record(.summaryExportConfirmed) }
                             }
                         )
                     } else {
@@ -66,6 +79,18 @@ public struct SummaryListView: View {
                 }
             }
         }
+        .background(
+            Group {
+                if bindable.os26UIEnabled {
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .overlay(DesignTokens.backgroundGradient.opacity(0.9))
+                } else {
+                    DesignTokens.backgroundGradient
+                }
+            }
+            .ignoresSafeArea()
+        )
         .sheet(isPresented: $isWeeklyReviewPresented) {
             WeeklyReviewFlowView(environment: bindable.environment) { artifact in
                 Task { await handleGeneratedArtifact(artifact, model: bindable) }
@@ -118,6 +143,8 @@ public struct SummaryListView: View {
 
     @ViewBuilder
     private func summaryControls(_ model: SummaryViewModel) -> some View {
+        engagementHub(model)
+
         Picker("Period", selection: Binding(
             get: { model.selectedPeriod },
             set: { model.selectedPeriod = $0 }
@@ -169,6 +196,32 @@ public struct SummaryListView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
+        .padding(.vertical, modelVerticalPadding)
+    }
+
+    @ViewBuilder
+    private func engagementHub(_ model: SummaryViewModel) -> some View {
+        EngagementHubView(
+            insightCards: model.insightCards,
+            resurfacedMemories: model.resurfacedMemories,
+            onTapInsightCard: { _ in
+                Task { await model.recordInsightTap() }
+            },
+            onSnoozeMemory: { memory in
+                Task { await model.snoozeMemory(memory) }
+            },
+            onDismissMemory: { memory in
+                Task { await model.dismissMemory(memory) }
+            },
+            onThenVsNow: { _ in
+                openURL(URL(string: "rosebudthorn://today?source=summaries&focus=resurfacing")!)
+            }
+        )
+        .padding(.horizontal)
+    }
+
+    private var modelVerticalPadding: CGFloat {
+        horizontalSizeClass == .compact ? 2 : 4
     }
 
     private func consumeLaunchRequestIfNeeded(_ model: SummaryViewModel) {

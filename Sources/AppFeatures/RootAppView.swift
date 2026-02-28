@@ -142,6 +142,8 @@ public struct RootAppView: View {
         case "capture", "today":
             selectSection(.today)
             captureLaunchRequest = Self.captureLaunchRequest(from: url)
+        case "engagement", "on-this-day", "resurfacing":
+            selectSection(.today)
         case "browse":
             selectSection(.browse)
         case "summaries", "summary":

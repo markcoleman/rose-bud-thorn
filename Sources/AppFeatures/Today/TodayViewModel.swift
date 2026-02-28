@@ -18,6 +18,9 @@ public final class TodayViewModel {
     public var lastSavedAt: Date?
     public var completionSummary = EntryCompletionSummary()
     public var promptSelections: [EntryType: PromptSelection] = [:]
+    public var insightCards: [InsightCard] = []
+    public var resurfacedMemories: [ResurfacedMemory] = []
+    public var os26UIEnabled = true
 
     private let environment: AppEnvironment
     private let dayCalculator: DayKeyCalculator
@@ -36,15 +39,18 @@ public final class TodayViewModel {
         defer { isLoading = false }
 
         do {
+            let flags = featureFlags
             dayKey = dayCalculator.dayKey(for: .now)
             entry = try await environment.entryStore.load(day: dayKey)
+            os26UIEnabled = flags.os26UIEnabled
             refreshPrompts()
             try await refreshCompletionSummary()
             await environment.analyticsStore.record(.todayScreenOpened)
-            if environment.featureFlags.streaksEnabled {
+            if flags.streaksEnabled {
                 _ = await environment.analyticsStore.recordOncePerDay(.completionRingViewed, dayKey: dayKey)
             }
             await syncReminderSchedule()
+            try await refreshEngagementHub()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -218,6 +224,42 @@ public final class TodayViewModel {
         promptSelections[type]
     }
 
+    public func applyThenVsNowPrompt(for memory: ResurfacedMemory) {
+        var item = entry.item(for: memory.type)
+        let promptText = memory.thenVsNowPrompt
+        if item.journalTextMarkdown.contains(promptText) {
+            expandedTypes.insert(memory.type)
+            return
+        }
+
+        if item.journalTextMarkdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            item.journalTextMarkdown = promptText
+        } else {
+            item.journalTextMarkdown += "\n\n\(promptText)"
+        }
+        item.updatedAt = .now
+        entry.setItem(item, for: memory.type)
+        entry.updatedAt = .now
+        expandedTypes.insert(memory.type)
+        scheduleAutosave()
+
+        Task {
+            await environment.analyticsStore.record(.resurfacingActioned)
+        }
+    }
+
+    public func dismissMemory(_ memory: ResurfacedMemory) async {
+        await handleMemoryDecision(memory, action: .dismiss)
+    }
+
+    public func snoozeMemory(_ memory: ResurfacedMemory) async {
+        await handleMemoryDecision(memory, action: .snooze)
+    }
+
+    public func recordInsightTap() async {
+        await environment.analyticsStore.record(.insightCardTapped)
+    }
+
     public func saveNow() async throws {
         saveTask?.cancel()
         let wasComplete = completionSummary.isTodayComplete
@@ -230,6 +272,7 @@ public final class TodayViewModel {
             _ = await environment.analyticsStore.recordOncePerDay(.dailyEntryCompleted, dayKey: dayKey)
         }
         await syncReminderSchedule()
+        try await refreshEngagementHub()
         refreshWidgets()
     }
 
@@ -256,7 +299,7 @@ public final class TodayViewModel {
     }
 
     private func syncReminderSchedule() async {
-        guard environment.featureFlags.remindersEnabled else { return }
+        guard featureFlags.remindersEnabled else { return }
         let preferences = environment.reminderPreferencesStore.load()
         if preferences.isEnabled {
             _ = await environment.analyticsStore.recordOncePerDay(.reminderScheduleEvaluated, dayKey: dayKey)
@@ -273,9 +316,49 @@ public final class TodayViewModel {
         defaults.set(completionSummary.isTodayComplete, forKey: "widget.today.complete")
 
         #if canImport(WidgetKit)
-        if environment.featureFlags.widgetsEnabled {
+        if featureFlags.widgetsEnabled {
             WidgetKit.WidgetCenter.shared.reloadAllTimelines()
         }
         #endif
+    }
+
+    private func refreshEngagementHub() async throws {
+        let flags = featureFlags
+        if flags.insightsEnabled {
+            insightCards = try await environment.insightEngine.cards(for: .now, timeZone: .current)
+            if !insightCards.isEmpty {
+                _ = await environment.analyticsStore.recordOncePerDay(.insightCardViewed, dayKey: dayKey)
+            }
+        } else {
+            insightCards = []
+        }
+
+        if flags.resurfacingEnabled {
+            resurfacedMemories = try await environment.memoryResurfacingService.memories(for: .now, timeZone: .current)
+            if !resurfacedMemories.isEmpty {
+                _ = await environment.analyticsStore.recordOncePerDay(.resurfacingViewed, dayKey: dayKey)
+            }
+        } else {
+            resurfacedMemories = []
+        }
+    }
+
+    private func handleMemoryDecision(_ memory: ResurfacedMemory, action: ResurfacingAction) async {
+        do {
+            _ = try await environment.memoryResurfacingService.record(
+                decisionAction: action,
+                for: memory,
+                referenceDate: .now,
+                timeZone: .current
+            )
+            resurfacedMemories.removeAll { $0.id == memory.id }
+            await environment.analyticsStore.record(.resurfacingActioned)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private var featureFlags: AppFeatureFlags {
+        environment.featureFlagStore.load(defaults: environment.featureFlags)
     }
 }

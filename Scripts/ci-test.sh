@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-swift build
+swift build -Xswiftc -warnings-as-errors
 swift test

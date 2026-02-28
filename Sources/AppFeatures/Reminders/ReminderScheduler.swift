@@ -2,14 +2,14 @@ import Foundation
 import CoreModels
 
 #if canImport(UserNotifications)
-import UserNotifications
+@preconcurrency import UserNotifications
 
 public actor ReminderScheduler {
-    private let centerProvider: (@Sendable () -> UNUserNotificationCenter)?
+    private let centerProvider: (() -> UNUserNotificationCenter)?
 
     public init(
         center: UNUserNotificationCenter? = nil,
-        centerProvider: (@Sendable () -> UNUserNotificationCenter)? = nil
+        centerProvider: (() -> UNUserNotificationCenter)? = nil
     ) {
         if let center {
             self.centerProvider = { center }

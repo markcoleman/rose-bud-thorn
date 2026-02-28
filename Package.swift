@@ -5,8 +5,8 @@ let package = Package(
     name: "RoseBudThorn",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v17),
-        .macOS(.v14)
+        .iOS("26.0"),
+        .macOS("26.0")
     ],
     products: [
         .library(name: "CoreModels", targets: ["CoreModels"]),
