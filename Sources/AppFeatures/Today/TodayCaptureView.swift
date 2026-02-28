@@ -29,7 +29,7 @@ public struct TodayCaptureView: View {
                     VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 18 : 14) {
                         header
 
-                        if bindable.completionSummary.last7DaysCompleted.count == 7 && bindable.completionSummary != EntryCompletionSummary() {
+                        if bindable.completionSummary.last7DaysCompleted.count == 7 {
                             streakCard(summary: bindable.completionSummary)
                         }
 

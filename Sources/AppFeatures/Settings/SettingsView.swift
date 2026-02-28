@@ -38,6 +38,9 @@ public struct SettingsView: View {
             }
             .onChange(of: reminderPreferences) { _, newValue in
                 environment.reminderPreferencesStore.save(newValue)
+                Task {
+                    await applyReminderPreferences(newValue)
+                }
             }
 
             Section("Privacy") {
@@ -80,5 +83,17 @@ public struct SettingsView: View {
         components.hour = hour
         let date = Calendar.current.date(from: components) ?? .now
         return date.formatted(date: .omitted, time: .shortened)
+    }
+
+    private func applyReminderPreferences(_ preferences: ReminderPreferences) async {
+        let now = Date.now
+        let dayKey = environment.dayCalculator.dayKey(for: now)
+        let summary = (try? await environment.completionTracker.summary(for: now, timeZone: .current)) ?? EntryCompletionSummary()
+
+        await environment.reminderScheduler.updateNotifications(
+            for: dayKey,
+            isComplete: summary.isTodayComplete,
+            preferences: preferences
+        )
     }
 }
