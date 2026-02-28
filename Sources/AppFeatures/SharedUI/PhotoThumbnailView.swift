@@ -16,7 +16,7 @@ public struct PhotoThumbnailView: View {
             case .empty:
                 ProgressView()
                     .frame(width: size, height: size)
-                    .background(Color.secondary.opacity(0.1))
+                    .background(DesignTokens.surface)
             case .success(let image):
                 image
                     .resizable()
@@ -26,7 +26,7 @@ public struct PhotoThumbnailView: View {
             case .failure:
                 Image(systemName: "photo.badge.exclamationmark")
                     .frame(width: size, height: size)
-                    .background(Color.secondary.opacity(0.1))
+                    .background(DesignTokens.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             @unknown default:
                 EmptyView()

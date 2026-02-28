@@ -58,7 +58,7 @@ public struct EntryItemEditorView: View {
             TextEditor(text: Binding(get: { journalText }, set: onJournal))
                 .frame(minHeight: 120)
                 .padding(8)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.1)))
+                .background(RoundedRectangle(cornerRadius: 10).fill(DesignTokens.surface))
 
             if !photos.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {

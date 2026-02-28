@@ -23,8 +23,10 @@ public struct CalendarBrowseView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+
+            Spacer(minLength: 0)
         }
         .padding()
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }

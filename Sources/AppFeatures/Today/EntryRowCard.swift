@@ -108,7 +108,7 @@ public struct EntryRowCard: View {
                 TextEditor(text: Binding(get: { journalText }, set: onJournalTextChange))
                     .frame(minHeight: dynamicTypeSize.isAccessibilitySize ? 160 : 120)
                     .padding(8)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.1)))
+                    .background(RoundedRectangle(cornerRadius: 10).fill(DesignTokens.surface))
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
