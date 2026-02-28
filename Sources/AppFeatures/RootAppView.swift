@@ -63,7 +63,7 @@ public struct RootAppView: View {
                 .tabItem { Label("Search", systemImage: AppSection.search.systemImage) }
                 .tag(AppSection.search)
 
-            SettingsView(lockManager: lockManager)
+            SettingsView(lockManager: lockManager, environment: environment)
                 .tabItem { Label("Settings", systemImage: AppSection.settings.systemImage) }
                 .tag(AppSection.settings)
         }
@@ -100,7 +100,7 @@ public struct RootAppView: View {
         case .search:
             SearchView(environment: environment, selectedDayKey: $selectedDayKey)
         case .settings:
-            SettingsView(lockManager: lockManager)
+            SettingsView(lockManager: lockManager, environment: environment)
         }
     }
 

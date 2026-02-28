@@ -75,4 +75,69 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(request?.type, .bud)
         XCTAssertEqual(request?.source, "widget")
     }
+
+    func testReminderPreferencesPersistAcrossStoreReload() {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        let store = ReminderPreferencesStore(defaults: defaults)
+        let prefs = ReminderPreferences(
+            isEnabled: true,
+            startHour: 9,
+            endHour: 21,
+            includeWeekends: false,
+            allowsEndOfDayFallback: true
+        )
+
+        store.save(prefs)
+        XCTAssertEqual(store.load(), prefs)
+    }
+
+    func testCompletionTrackerUpdatesWhenTodayEntrySaved() async throws {
+        let environment = try makeEnvironment()
+        let tracker = EntryCompletionTracker(entryStore: environment.entryStore, dayCalculator: environment.dayCalculator)
+
+        var entry = EntryDay.empty(dayKey: environment.dayCalculator.dayKey(for: .now))
+        entry.roseItem.shortText = "Done"
+        try await environment.entryStore.save(entry)
+
+        let summary = try await tracker.summary(for: .now, timeZone: .current)
+        XCTAssertTrue(summary.isTodayComplete)
+        XCTAssertEqual(summary.streakCount, 1)
+        XCTAssertEqual(summary.last7DaysCompleted.filter(\.self).count, 1)
+    }
+
+    func testCompletionTrackerReturnsEmptySummaryWithoutEntries() async throws {
+        let environment = try makeEnvironment()
+        let tracker = EntryCompletionTracker(entryStore: environment.entryStore, dayCalculator: environment.dayCalculator)
+
+        let summary = try await tracker.summary(for: Date(timeIntervalSince1970: 1_772_201_600), timeZone: .current)
+
+        XCTAssertFalse(summary.isTodayComplete)
+        XCTAssertEqual(summary.streakCount, 0)
+        XCTAssertEqual(summary.previousStreakCount, 0)
+        XCTAssertEqual(summary.last7DaysCompleted, Array(repeating: false, count: 7))
+    }
+
+    func testCompletionTrackerUsesProvidedTimezoneForConsecutiveDays() async throws {
+        let environment = try makeEnvironment()
+        let tracker = EntryCompletionTracker(entryStore: environment.entryStore, dayCalculator: environment.dayCalculator)
+        let tz = TimeZone(identifier: "America/Los_Angeles")!
+
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = tz
+        let now = calendar.date(from: DateComponents(year: 2026, month: 3, day: 10, hour: 12))!
+
+        for offset in 0..<3 {
+            let date = calendar.date(byAdding: .day, value: -offset, to: now)!
+            let dayKey = environment.dayCalculator.dayKey(for: date, timeZone: tz)
+            var entry = EntryDay.empty(dayKey: dayKey)
+            entry.budItem.shortText = "Day \(offset)"
+            try await environment.entryStore.save(entry)
+        }
+
+        let summary = try await tracker.summary(for: now, timeZone: tz)
+        XCTAssertTrue(summary.isTodayComplete)
+        XCTAssertEqual(summary.streakCount, 3)
+        XCTAssertEqual(summary.last7DaysCompleted.filter(\.self).count, 3)
+    }
+
 }
