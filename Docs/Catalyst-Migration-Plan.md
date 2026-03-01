@@ -1,7 +1,7 @@
 # Catalyst Migration Plan
 
 ## Goal
-Ship a single app target for iPhone, iPad, and Mac Catalyst while preserving behavior parity with the existing native macOS target during migration.
+Ship a single app target for iPhone, iPad, and Mac Catalyst.
 
 ## Phase 1 (Implemented)
 - Enable Mac Catalyst support on the universal iOS target (shared scheme: `RoseBudThorn Universal`).
@@ -19,5 +19,4 @@ Ship a single app target for iPhone, iPad, and Mac Catalyst while preserving beh
 
 ## Phase 3 (Exit Criteria)
 - Confirm feature parity across iPhone, iPad, and Catalyst Mac.
-- Decommission the native macOS parity target/scheme (`RoseBudThorn Legacy macOS`) after release validation and rollback plan.
-- Update release playbook and App Store submission checklist for Catalyst-only Mac distribution.
+- Keep release playbook and App Store submission checklist aligned with the Universal-only target setup.

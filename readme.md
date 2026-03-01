@@ -43,7 +43,6 @@ In Xcode:
 1. Open [`RoseBudThorn.xcworkspace`](/Users/markcoleman/Development/github/rose-bud-thorn/RoseBudThorn.xcworkspace).
 2. Choose target/scheme:
    - `RoseBudThorn Universal` for iPhone, iPad, and Mac Catalyst
-   - `RoseBudThorn Legacy macOS` for the native AppKit-backed parity target during Catalyst migration
 3. In `Signing & Capabilities`, set your Apple Team and keep automatic signing enabled.
 
 Mac Catalyst CLI build:
@@ -59,7 +58,6 @@ xcodebuild \
 
 Bundle identifier strategy:
 - Universal app target (iPhone/iPad/Mac Catalyst): `com.example.rosebudthorn`
-- Legacy native macOS target: `com.example.rosebudthorn.macos.legacy`
 - Widget extension: `com.example.rosebudthorn.widgets`
 
 ## Data Storage

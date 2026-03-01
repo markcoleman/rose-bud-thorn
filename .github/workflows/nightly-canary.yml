@@ -52,13 +52,3 @@ jobs:
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \
             build
-
-      - name: Build macOS app
-        run: |
-          xcodebuild \
-            -project "RoseBudThorn.xcodeproj" \
-            -scheme "RoseBudThorn Legacy macOS" \
-            -destination "platform=macOS" \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO \
-            build
