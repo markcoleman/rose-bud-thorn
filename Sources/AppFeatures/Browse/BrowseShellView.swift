@@ -51,14 +51,22 @@ public struct BrowseShellView: View {
                 if let selectedDayKey {
                     NavigationLink(value: selectedDayKey) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Open Day")
+                            Text("View Day Details")
                                 .font(.subheadline.weight(.semibold))
-                            Text(contextualDayTitle(for: selectedDayKey))
+                            Text(PresentationFormatting.localizedDayTitle(for: selectedDayKey))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("View day details")
+                    .accessibilityHint("Opens the full entry editor for \(PresentationFormatting.localizedDayTitle(for: selectedDayKey)).")
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            Task { await viewModel.environment.analyticsStore.record(.browseDayDetailsOpened) }
+                        }
+                    )
                     .padding(.horizontal, horizontalSizeClass == .compact ? 16 : 24)
                     .padding(.vertical, 10)
                     .background(.ultraThinMaterial)
@@ -125,27 +133,5 @@ public struct BrowseShellView: View {
         #else
         .topBarTrailing
         #endif
-    }
-
-    private func contextualDayTitle(for dayKey: LocalDayKey) -> String {
-        let parts = dayKey.isoDate.split(separator: "-")
-        guard parts.count == 3,
-              let year = Int(parts[0]),
-              let month = Int(parts[1]),
-              let day = Int(parts[2]) else {
-            return dayKey.isoDate
-        }
-
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: dayKey.timeZoneID) ?? .current
-        guard let date = calendar.date(from: DateComponents(year: year, month: month, day: day)) else {
-            return dayKey.isoDate
-        }
-
-        let formatter = DateFormatter()
-        formatter.locale = .current
-        formatter.calendar = calendar
-        formatter.dateStyle = .full
-        return formatter.string(from: date)
     }
 }

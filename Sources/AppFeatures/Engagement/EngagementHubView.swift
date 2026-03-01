@@ -4,6 +4,7 @@ public struct EngagementHubView: View {
     public let insightCards: [InsightCard]
     public let resurfacedMemories: [ResurfacedMemory]
     public let onTapInsightCard: (InsightCard) -> Void
+    public let onOpenMemoryDay: (ResurfacedMemory) -> Void
     public let onSnoozeMemory: (ResurfacedMemory) -> Void
     public let onDismissMemory: (ResurfacedMemory) -> Void
     public let onThenVsNow: (ResurfacedMemory) -> Void
@@ -12,6 +13,7 @@ public struct EngagementHubView: View {
         insightCards: [InsightCard],
         resurfacedMemories: [ResurfacedMemory],
         onTapInsightCard: @escaping (InsightCard) -> Void = { _ in },
+        onOpenMemoryDay: @escaping (ResurfacedMemory) -> Void = { _ in },
         onSnoozeMemory: @escaping (ResurfacedMemory) -> Void,
         onDismissMemory: @escaping (ResurfacedMemory) -> Void,
         onThenVsNow: @escaping (ResurfacedMemory) -> Void
@@ -19,6 +21,7 @@ public struct EngagementHubView: View {
         self.insightCards = insightCards
         self.resurfacedMemories = resurfacedMemories
         self.onTapInsightCard = onTapInsightCard
+        self.onOpenMemoryDay = onOpenMemoryDay
         self.onSnoozeMemory = onSnoozeMemory
         self.onDismissMemory = onDismissMemory
         self.onThenVsNow = onThenVsNow
@@ -102,6 +105,13 @@ public struct EngagementHubView: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 8) {
+                Button("View Day Details") {
+                    onOpenMemoryDay(memory)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .accessibilityHint("Opens the full day entry for \(PresentationFormatting.localizedDayTitle(for: memory.sourceDayKey)).")
+
                 Button("Then vs Now") {
                     onThenVsNow(memory)
                 }

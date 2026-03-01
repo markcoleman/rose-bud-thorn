@@ -27,10 +27,27 @@ public struct SummaryDetailView: View {
     }
 
     public var body: some View {
+        let title = PresentationFormatting.summaryTitle(for: artifact)
+        let range = PresentationFormatting.summaryRangeText(for: artifact, timeZone: .current)
+        let metadata = PresentationFormatting.summaryMetadataText(for: artifact)
+
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text(artifact.key)
-                    .font(.title2.weight(.semibold))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.title3.weight(.semibold))
+
+                    Text(range)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    Text(metadata)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(title). \(range). \(metadata).")
+                .accessibilityHint("Summary period details.")
 
                 if let attributed = try? AttributedString(markdown: artifact.contentMarkdown) {
                     Text(attributed)

@@ -43,7 +43,7 @@ public struct DayDetailView: View {
                 .padding(.vertical, 14)
             }
         }
-        .navigationTitle(bindable.dayKey.isoDate)
+        .navigationTitle(PresentationFormatting.localizedDayTitle(for: bindable.dayKey))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Save") {
