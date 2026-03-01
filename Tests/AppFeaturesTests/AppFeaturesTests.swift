@@ -20,6 +20,29 @@ final class AppFeaturesTests: XCTestCase {
         )
     }
 
+    private func makeEntry(
+        dayKey: LocalDayKey,
+        rose: String = "",
+        bud: String = "",
+        thorn: String = "",
+        favorite: Bool = false,
+        mood: Int? = nil,
+        hasMedia: Bool = false
+    ) -> EntryDay {
+        let media: [PhotoRef] = hasMedia ? [PhotoRef(id: UUID(), relativePath: "rose/attachments/photo.jpg", createdAt: .now)] : []
+        return EntryDay(
+            dayKey: dayKey,
+            roseItem: EntryItem(type: .rose, shortText: rose, journalTextMarkdown: "", photos: media, updatedAt: .now),
+            budItem: EntryItem(type: .bud, shortText: bud, journalTextMarkdown: "", updatedAt: .now),
+            thornItem: EntryItem(type: .thorn, shortText: thorn, journalTextMarkdown: "", updatedAt: .now),
+            tags: [],
+            mood: mood,
+            favorite: favorite,
+            createdAt: .now,
+            updatedAt: .now
+        )
+    }
+
     func testTodayCaptureFlowPersistsEntry() async throws {
         let environment = try makeEnvironment()
         let fixedDate = Date(timeIntervalSince1970: 1_772_201_600) // 2026-03-05
@@ -388,6 +411,72 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertNotNil(completed?.completedAt)
     }
 
+    func testBrowseViewModelGroupsMonthSectionsDescending() async throws {
+        let environment = try makeEnvironment()
+        let la = "America/Los_Angeles"
+        let march = LocalDayKey(isoDate: "2026-03-12", timeZoneID: la)
+        let february = LocalDayKey(isoDate: "2026-02-28", timeZoneID: la)
+        let previousYear = LocalDayKey(isoDate: "2025-12-01", timeZoneID: la)
+
+        try await environment.entryStore.save(makeEntry(dayKey: march, rose: "March day"))
+        try await environment.entryStore.save(makeEntry(dayKey: february, rose: "February day"))
+        try await environment.entryStore.save(makeEntry(dayKey: previousYear, rose: "December day"))
+
+        let viewModel = BrowseViewModel(environment: environment)
+        await viewModel.loadSnapshots()
+
+        XCTAssertEqual(viewModel.sections.map(\.monthKey), ["2026-03", "2026-02", "2025-12"])
+        XCTAssertEqual(viewModel.sections.first?.days.first?.dayKey, march)
+    }
+
+    func testBrowseViewModelFavoritesAndMediaFilters() async throws {
+        let environment = try makeEnvironment()
+        let la = "America/Los_Angeles"
+        let favoriteDay = LocalDayKey(isoDate: "2026-03-15", timeZoneID: la)
+        let mediaDay = LocalDayKey(isoDate: "2026-03-14", timeZoneID: la)
+        let plainDay = LocalDayKey(isoDate: "2026-03-13", timeZoneID: la)
+
+        try await environment.entryStore.save(makeEntry(dayKey: favoriteDay, rose: "Favorite", favorite: true))
+        try await environment.entryStore.save(makeEntry(dayKey: mediaDay, rose: "Media", hasMedia: true))
+        try await environment.entryStore.save(makeEntry(dayKey: plainDay, rose: "Plain"))
+
+        let viewModel = BrowseViewModel(environment: environment)
+        await viewModel.loadSnapshots()
+
+        viewModel.setQuickFilter(.favorites)
+        let favoriteResults = viewModel.sections.flatMap(\.days)
+        XCTAssertEqual(favoriteResults.count, 1)
+        XCTAssertEqual(favoriteResults.first?.dayKey, favoriteDay)
+
+        viewModel.setQuickFilter(.media)
+        let mediaResults = viewModel.sections.flatMap(\.days)
+        XCTAssertEqual(mediaResults.count, 1)
+        XCTAssertEqual(mediaResults.first?.dayKey, mediaDay)
+    }
+
+    func testBrowseViewModelOnThisDayFilterMatchesPastYearsOnly() async throws {
+        let environment = try makeEnvironment()
+        let la = "America/Los_Angeles"
+        let matchingA = LocalDayKey(isoDate: "2025-03-10", timeZoneID: la)
+        let matchingB = LocalDayKey(isoDate: "2024-03-10", timeZoneID: la)
+        let nonMatching = LocalDayKey(isoDate: "2025-03-09", timeZoneID: la)
+        let today = LocalDayKey(isoDate: "2026-03-10", timeZoneID: la)
+
+        try await environment.entryStore.save(makeEntry(dayKey: matchingA, rose: "Match A"))
+        try await environment.entryStore.save(makeEntry(dayKey: matchingB, rose: "Match B"))
+        try await environment.entryStore.save(makeEntry(dayKey: nonMatching, rose: "No match"))
+        try await environment.entryStore.save(makeEntry(dayKey: today, rose: "Today"))
+
+        let fixedNow = Date(timeIntervalSince1970: 1_773_144_000) // 2026-03-10 12:00:00 UTC
+        let viewModel = BrowseViewModel(environment: environment, nowProvider: { fixedNow })
+        await viewModel.loadSnapshots()
+
+        viewModel.setQuickFilter(.onThisDay)
+        let results = Set(viewModel.sections.flatMap(\.days).map(\.dayKey.isoDate))
+
+        XCTAssertEqual(results, Set(["2025-03-10", "2024-03-10"]))
+    }
+
     func testFeatureFlagStoreRoundTripIncludesEngagementFlags() {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!
         let store = FeatureFlagStore(defaults: defaults, key: "flags.test")
@@ -398,7 +487,8 @@ final class AppFeaturesTests: XCTestCase {
             insightsEnabled: false,
             resurfacingEnabled: true,
             commitmentsEnabled: false,
-            os26UIEnabled: true
+            os26UIEnabled: true,
+            browseTimeCapsuleEnabled: false
         )
 
         store.save(flags)

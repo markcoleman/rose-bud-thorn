@@ -79,6 +79,7 @@ public struct SettingsView: View {
                 Toggle("On-this-day resurfacing", isOn: $featureFlags.resurfacingEnabled)
                 Toggle("Weekly commitments", isOn: $featureFlags.commitmentsEnabled)
                 Toggle("Modern OS26 visual style", isOn: $featureFlags.os26UIEnabled)
+                Toggle("Browse time-capsule redesign", isOn: $featureFlags.browseTimeCapsuleEnabled)
 
                 Text("Feature module changes apply immediately to newly loaded screens.")
                     .font(.footnote)
