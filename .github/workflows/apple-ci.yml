@@ -219,12 +219,16 @@ jobs:
           RESULT_PATH="/tmp/RoseBudThorn-ios-tests.xcresult"
           for attempt in 1 2; do
             echo "iOS build-for-testing attempt ${attempt}"
+            rm -rf "${RESULT_PATH}"
             set +e
             xcodebuild \
               -project "RoseBudThorn.xcodeproj" \
               -scheme "RoseBudThorn Universal" \
               -destination "generic/platform=iOS Simulator" \
               -resultBundlePath "${RESULT_PATH}" \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
               build-for-testing
             status=$?
             set -e
@@ -266,12 +270,16 @@ jobs:
           RESULT_PATH="/tmp/RoseBudThorn-catalyst-tests.xcresult"
           for attempt in 1 2; do
             echo "Mac Catalyst build-for-testing attempt ${attempt}"
+            rm -rf "${RESULT_PATH}"
             set +e
             xcodebuild \
               -project "RoseBudThorn.xcodeproj" \
               -scheme "RoseBudThorn Universal" \
               -destination "platform=macOS,variant=Mac Catalyst" \
               -resultBundlePath "${RESULT_PATH}" \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
               build-for-testing
             status=$?
             set -e
