@@ -16,6 +16,8 @@ public enum LocalAnalyticsEvent: String, CaseIterable, Codable, Sendable {
     case commitmentCompleted = "commitment_completed"
     case summaryExportPreviewed = "summary_export_previewed"
     case summaryExportConfirmed = "summary_export_confirmed"
+    case browseDayDetailsOpened = "browse_day_details_opened"
+    case summaryDayDetailsOpened = "summary_day_details_opened"
 }
 
 public struct LocalAnalyticsSnapshot: Codable, Equatable, Sendable {

@@ -55,4 +55,12 @@ final class CoreDateTests: XCTestCase {
         let days = Int(range!.duration / (24 * 3600))
         XCTAssertEqual(days, 29)
     }
+
+    func testInvalidPeriodKeysReturnNilRange() {
+        let tz = TimeZone(identifier: "America/New_York")!
+
+        XCTAssertNil(periodCalculator.range(for: .week, key: "bad-week", timeZone: tz))
+        XCTAssertNil(periodCalculator.range(for: .month, key: "2026-AA", timeZone: tz))
+        XCTAssertNil(periodCalculator.range(for: .year, key: "year-2026", timeZone: tz))
+    }
 }

@@ -477,6 +477,84 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(results, Set(["2025-03-10", "2024-03-10"]))
     }
 
+    func testPresentationFormattingSummaryRangeUsesReadableRangeForValidKey() {
+        let artifact = SummaryArtifact(
+            period: .week,
+            key: "2026-W09",
+            generatedAt: Date(timeIntervalSince1970: 1_772_201_600),
+            contentMarkdown: "",
+            highlights: [],
+            photoRefs: []
+        )
+
+        let text = PresentationFormatting.summaryRangeText(
+            for: artifact,
+            timeZone: TimeZone(identifier: "America/Los_Angeles")!,
+            locale: Locale(identifier: "en_US_POSIX")
+        )
+
+        XCTAssertNotEqual(text, artifact.key)
+        XCTAssertTrue(text.contains("2026"))
+    }
+
+    func testPresentationFormattingSummaryRangeFallsBackToKeyWhenInvalid() {
+        let artifact = SummaryArtifact(
+            period: .week,
+            key: "bad-key",
+            generatedAt: .now,
+            contentMarkdown: "",
+            highlights: [],
+            photoRefs: []
+        )
+
+        let text = PresentationFormatting.summaryRangeText(for: artifact)
+        XCTAssertEqual(text, artifact.key)
+    }
+
+    func testLocalAnalyticsStoreTracksDayDetailsOpenEvents() async {
+        let defaults = UserDefaults(suiteName: "LocalAnalyticsStoreTests.\(UUID().uuidString)")!
+        let dayCalculator = DayKeyCalculator()
+        let store = LocalAnalyticsStore(defaults: defaults, dayCalculator: dayCalculator)
+        let tz = TimeZone(identifier: "America/Los_Angeles")!
+        let date = Date(timeIntervalSince1970: 1_772_201_600)
+        let dayKey = dayCalculator.dayKey(for: date, timeZone: tz)
+
+        await store.record(.browseDayDetailsOpened, at: date, timeZone: tz)
+        await store.record(.summaryDayDetailsOpened, count: 2, at: date, timeZone: tz)
+
+        let browseTotal = await store.totalCount(for: .browseDayDetailsOpened)
+        let browseDay = await store.dayCount(for: .browseDayDetailsOpened, dayKey: dayKey)
+        let summaryTotal = await store.totalCount(for: .summaryDayDetailsOpened)
+        let summaryDay = await store.dayCount(for: .summaryDayDetailsOpened, dayKey: dayKey)
+
+        XCTAssertEqual(browseTotal, 1)
+        XCTAssertEqual(browseDay, 1)
+        XCTAssertEqual(summaryTotal, 2)
+        XCTAssertEqual(summaryDay, 2)
+    }
+
+    func testTodayViewModelThenVsNowPromptPreservesExistingJournalText() async throws {
+        let environment = try makeEnvironment()
+        let now = Date(timeIntervalSince1970: 1_772_201_600)
+        let model = TodayViewModel(environment: environment, now: now)
+        await model.load()
+
+        model.updateJournalText("Existing journal text.", for: .rose)
+        let memory = ResurfacedMemory(
+            id: "memory-1",
+            sourceDayKey: LocalDayKey(isoDate: "2025-03-05", timeZoneID: "America/Los_Angeles"),
+            type: .rose,
+            excerpt: "Old thought",
+            thenVsNowPrompt: "Then vs now: What's different?"
+        )
+
+        model.applyThenVsNowPrompt(for: memory)
+
+        let journal = model.bindingJournal(for: .rose)
+        XCTAssertTrue(journal.contains("Existing journal text."))
+        XCTAssertTrue(journal.contains(memory.thenVsNowPrompt))
+    }
+
     func testFeatureFlagStoreRoundTripIncludesEngagementFlags() {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!
         let store = FeatureFlagStore(defaults: defaults, key: "flags.test")
