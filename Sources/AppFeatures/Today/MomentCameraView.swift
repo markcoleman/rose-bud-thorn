@@ -8,6 +8,7 @@ import CoreModels
 struct MomentCameraView: View {
     let entryType: EntryType
     let onFallbackImport: () -> Void
+    let onPickFromLibrary: () -> Void
     let onConfirm: (CapturedMediaDraft) async -> String?
 
     @Environment(\.dismiss) private var dismiss
@@ -118,6 +119,20 @@ struct MomentCameraView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .disabled(controller.isRecording)
+                .padding(.horizontal, 24)
+
+                Button {
+                    onPickFromLibrary()
+                    dismiss()
+                } label: {
+                    Label("Photo Library", systemImage: "photo.on.rectangle")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(.white.opacity(0.2), in: RoundedRectangle(cornerRadius: 10))
+                }
                 .disabled(controller.isRecording)
                 .padding(.horizontal, 24)
 

@@ -1,0 +1,316 @@
+{
+  "" : {
+    "const-values" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatures-primary.swiftconstvalues",
+    "dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatures-primary.d",
+    "diagnostics" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatures-primary.dia",
+    "emit-module-dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatures-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatures-primary-emit-module.dia",
+    "pch" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatures-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatures-primary.swiftdeps"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Analytics/LocalAnalyticsStore.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/LocalAnalyticsStore.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/LocalAnalyticsStore.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/LocalAnalyticsStore.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/AppEnvironment.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppEnvironment.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppEnvironment.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppEnvironment.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/AppFeatureFlags.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatureFlags.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatureFlags.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppFeatureFlags.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/AppIntentLaunchStore.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppIntentLaunchStore.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppIntentLaunchStore.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppIntentLaunchStore.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/AppIntentsShortcuts.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppIntentsShortcuts.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppIntentsShortcuts.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppIntentsShortcuts.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/AppSection.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppSection.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppSection.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/AppSection.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/BrowseDaySnapshot.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseDaySnapshot.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseDaySnapshot.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseDaySnapshot.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/BrowseShellView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseShellView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseShellView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseShellView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/BrowseViewModel.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseViewModel.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseViewModel.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrowseViewModel.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/CalendarBrowseView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CalendarBrowseView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CalendarBrowseView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CalendarBrowseView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/LocalDayKey+Browse.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/LocalDayKey+Browse.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/LocalDayKey+Browse.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/LocalDayKey+Browse.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/MemoryDayCardView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MemoryDayCardView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MemoryDayCardView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MemoryDayCardView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/TimeCapsuleBrowseView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TimeCapsuleBrowseView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TimeCapsuleBrowseView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TimeCapsuleBrowseView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/TimelineBrowseView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TimelineBrowseView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TimelineBrowseView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TimelineBrowseView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Browse/YearRailView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/YearRailView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/YearRailView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/YearRailView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/DayDetail/DayDetailView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DayDetailView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DayDetailView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DayDetailView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/DayDetail/DayDetailViewModel.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DayDetailViewModel.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DayDetailViewModel.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DayDetailViewModel.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/DayDetail/EntryItemEditorView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryItemEditorView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryItemEditorView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryItemEditorView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Engagement/CommitmentService.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CommitmentService.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CommitmentService.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CommitmentService.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Engagement/EngagementHubView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EngagementHubView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EngagementHubView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EngagementHubView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Engagement/EngagementModels.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EngagementModels.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EngagementModels.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EngagementModels.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Engagement/InsightEngine.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/InsightEngine.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/InsightEngine.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/InsightEngine.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Engagement/MemoryResurfacingService.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MemoryResurfacingService.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MemoryResurfacingService.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MemoryResurfacingService.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/EntryStore.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryStore.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryStore.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryStore.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/FeatureFlagStore.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/FeatureFlagStore.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/FeatureFlagStore.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/FeatureFlagStore.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Platform/PlatformCapabilities.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PlatformCapabilities.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PlatformCapabilities.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PlatformCapabilities.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Platform/PlatformFeedback.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PlatformFeedback.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PlatformFeedback.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PlatformFeedback.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Presentation/PresentationFormatting.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PresentationFormatting.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PresentationFormatting.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PresentationFormatting.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/PrivacyLockManager.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PrivacyLockManager.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PrivacyLockManager.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PrivacyLockManager.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Prompts/PromptModels.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptModels.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptModels.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptModels.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Prompts/PromptPackLibrary.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptPackLibrary.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptPackLibrary.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptPackLibrary.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Prompts/PromptPreferencesStore.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptPreferencesStore.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptPreferencesStore.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptPreferencesStore.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Prompts/PromptRotationCacheStore.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptRotationCacheStore.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptRotationCacheStore.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptRotationCacheStore.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Prompts/PromptSelector.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptSelector.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptSelector.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PromptSelector.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Reminders/ReminderPreferences.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ReminderPreferences.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ReminderPreferences.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ReminderPreferences.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Reminders/ReminderScheduler.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ReminderScheduler.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ReminderScheduler.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ReminderScheduler.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/RootAppView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/RootAppView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/RootAppView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/RootAppView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Search/SearchView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SearchView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SearchView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SearchView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Search/SearchViewModel.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SearchViewModel.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SearchViewModel.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SearchViewModel.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Settings/PrivacyLockViewModel.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PrivacyLockViewModel.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PrivacyLockViewModel.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PrivacyLockViewModel.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Settings/SettingsView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SettingsView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/SharedUI/BrandMarkView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrandMarkView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrandMarkView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/BrandMarkView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/SharedUI/DesignTokens.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DesignTokens.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DesignTokens.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/DesignTokens.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/SharedUI/ErrorBanner.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ErrorBanner.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ErrorBanner.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/ErrorBanner.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/SharedUI/MotionTokens.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MotionTokens.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MotionTokens.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MotionTokens.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/SharedUI/PhotoThumbnailView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PhotoThumbnailView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PhotoThumbnailView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/PhotoThumbnailView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/SharedUI/VideoThumbnailView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/VideoThumbnailView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/VideoThumbnailView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/VideoThumbnailView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Summaries/SummaryDetailView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryDetailView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryDetailView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryDetailView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Summaries/SummaryLaunchRequest.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryLaunchRequest.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryLaunchRequest.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryLaunchRequest.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Summaries/SummaryListView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryListView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryListView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryListView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Summaries/SummaryViewModel.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryViewModel.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryViewModel.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/SummaryViewModel.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Summaries/WeeklyIntentionStore.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyIntentionStore.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyIntentionStore.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyIntentionStore.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Summaries/WeeklyReviewFlowView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyReviewFlowView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyReviewFlowView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyReviewFlowView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Summaries/WeeklyReviewViewModel.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyReviewViewModel.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyReviewViewModel.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/WeeklyReviewViewModel.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Today/CaptureLaunchRequest.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CaptureLaunchRequest.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CaptureLaunchRequest.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CaptureLaunchRequest.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Today/CapturedMediaDraft.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CapturedMediaDraft.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CapturedMediaDraft.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/CapturedMediaDraft.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Today/EntryCompletionTracker.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryCompletionTracker.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryCompletionTracker.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryCompletionTracker.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Today/EntryRowCard.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryRowCard.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryRowCard.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/EntryRowCard.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Today/MomentCameraView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MomentCameraView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MomentCameraView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/MomentCameraView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Today/TodayCaptureView.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TodayCaptureView.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TodayCaptureView.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TodayCaptureView.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/AppFeatures/Today/TodayViewModel.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TodayViewModel.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TodayViewModel.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/AppFeatures.build/Objects-normal/arm64/TodayViewModel.o"
+  }
+}

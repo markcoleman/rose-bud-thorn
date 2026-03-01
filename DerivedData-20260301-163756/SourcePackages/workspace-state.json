@@ -1,0 +1,27 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "rose-bud-thorn",
+          "kind" : "fileSystem",
+          "location" : "/Users/markcoleman/Development/github/rose-bud-thorn",
+          "name" : "RoseBudThorn"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/markcoleman/Development/github/rose-bud-thorn"
+        },
+        "subpath" : "rose-bud-thorn"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

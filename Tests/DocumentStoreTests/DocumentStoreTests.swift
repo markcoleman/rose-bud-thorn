@@ -1,4 +1,7 @@
 import XCTest
+import ImageIO
+import UniformTypeIdentifiers
+import CoreGraphics
 @testable import DocumentStore
 @testable import CoreModels
 @testable import CoreDate
@@ -102,5 +105,176 @@ final class DocumentStoreTests: XCTestCase {
 
         try await attachments.removeVideo(ref, day: dayKey)
         XCTAssertFalse(FileManager.default.fileExists(atPath: storedURL.path))
+    }
+
+    func testStoreLocationMigratorCopiesLegacyDataAndSetsMarker() throws {
+        let legacy = try makeTempRoot()
+        let shared = try makeTempRoot()
+        let defaults = UserDefaults(suiteName: "StoreLocationMigrator.\(UUID().uuidString)")!
+        let migrationKey = "migration.test.v1"
+
+        let legacyEntry = legacy
+            .appendingPathComponent("Entries", isDirectory: true)
+            .appendingPathComponent("2026", isDirectory: true)
+            .appendingPathComponent("03", isDirectory: true)
+            .appendingPathComponent("01", isDirectory: true)
+            .appendingPathComponent("entry.json")
+        try FileManager.default.createDirectory(at: legacyEntry.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("legacy-entry".utf8).write(to: legacyEntry)
+
+        try StoreLocationMigrator.migrateLegacyStoreIfNeeded(
+            from: legacy,
+            to: shared,
+            defaults: defaults,
+            migrationKey: migrationKey
+        )
+
+        let sharedEntry = shared
+            .appendingPathComponent("Entries", isDirectory: true)
+            .appendingPathComponent("2026", isDirectory: true)
+            .appendingPathComponent("03", isDirectory: true)
+            .appendingPathComponent("01", isDirectory: true)
+            .appendingPathComponent("entry.json")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: sharedEntry.path))
+        XCTAssertEqual(try String(contentsOf: sharedEntry, encoding: .utf8), "legacy-entry")
+        XCTAssertTrue(defaults.bool(forKey: migrationKey))
+    }
+
+    func testStoreLocationMigratorDoesNotOverwriteExistingDestinationFiles() throws {
+        let legacy = try makeTempRoot()
+        let shared = try makeTempRoot()
+        let defaults = UserDefaults(suiteName: "StoreLocationMigrator.\(UUID().uuidString)")!
+
+        let relativePath = "Entries/2026/03/01/entry.json"
+        let legacyFile = legacy.appendingPathComponent(relativePath)
+        let sharedFile = shared.appendingPathComponent(relativePath)
+
+        try FileManager.default.createDirectory(at: legacyFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: sharedFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("legacy-version".utf8).write(to: legacyFile)
+        try Data("shared-version".utf8).write(to: sharedFile)
+
+        try StoreLocationMigrator.migrateLegacyStoreIfNeeded(
+            from: legacy,
+            to: shared,
+            defaults: defaults,
+            migrationKey: "migration.overwrite-test.v1"
+        )
+
+        XCTAssertEqual(try String(contentsOf: sharedFile, encoding: .utf8), "shared-version")
+    }
+
+    func testStoreLocationMigratorIsIdempotentAfterMarkerIsSet() throws {
+        let legacy = try makeTempRoot()
+        let shared = try makeTempRoot()
+        let defaults = UserDefaults(suiteName: "StoreLocationMigrator.\(UUID().uuidString)")!
+        let migrationKey = "migration.idempotent.v1"
+
+        let firstLegacyFile = legacy.appendingPathComponent("Entries/2026/03/01/entry.json")
+        try FileManager.default.createDirectory(at: firstLegacyFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("first".utf8).write(to: firstLegacyFile)
+
+        try StoreLocationMigrator.migrateLegacyStoreIfNeeded(
+            from: legacy,
+            to: shared,
+            defaults: defaults,
+            migrationKey: migrationKey
+        )
+
+        let secondLegacyFile = legacy.appendingPathComponent("Entries/2026/03/02/entry.json")
+        try FileManager.default.createDirectory(at: secondLegacyFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("second".utf8).write(to: secondLegacyFile)
+
+        try StoreLocationMigrator.migrateLegacyStoreIfNeeded(
+            from: legacy,
+            to: shared,
+            defaults: defaults,
+            migrationKey: migrationKey
+        )
+
+        let secondSharedFile = shared.appendingPathComponent("Entries/2026/03/02/entry.json")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: secondSharedFile.path))
+    }
+
+    func testImageCaptureDateValidatorMatchesExpectedDay() throws {
+        let imageURL = try makeTempRoot().appendingPathComponent("captured.jpg")
+        try writeJPEG(
+            to: imageURL,
+            exifDateTimeOriginal: "2026:03:01 10:00:00",
+            tiffDateTime: nil
+        )
+
+        let expected = LocalDayKey(isoDate: "2026-03-01", timeZoneID: "America/New_York")
+        let result = ImageCaptureDateValidator.validateImage(at: imageURL, matches: expected)
+        XCTAssertEqual(result, .matches)
+    }
+
+    func testImageCaptureDateValidatorRejectsDifferentDay() throws {
+        let imageURL = try makeTempRoot().appendingPathComponent("captured.jpg")
+        try writeJPEG(
+            to: imageURL,
+            exifDateTimeOriginal: "2026:02:28 22:45:00",
+            tiffDateTime: nil
+        )
+
+        let expected = LocalDayKey(isoDate: "2026-03-01", timeZoneID: "America/New_York")
+        let result = ImageCaptureDateValidator.validateImage(at: imageURL, matches: expected)
+
+        guard case .mismatched(let actual) = result else {
+            return XCTFail("Expected mismatched day result.")
+        }
+        XCTAssertEqual(actual.isoDate, "2026-02-28")
+    }
+
+    func testImageCaptureDateValidatorRejectsMissingTimestamp() throws {
+        let imageURL = try makeTempRoot().appendingPathComponent("captured.jpg")
+        try writeJPEG(
+            to: imageURL,
+            exifDateTimeOriginal: nil,
+            tiffDateTime: nil
+        )
+
+        let expected = LocalDayKey(isoDate: "2026-03-01", timeZoneID: "America/New_York")
+        let result = ImageCaptureDateValidator.validateImage(at: imageURL, matches: expected)
+        XCTAssertEqual(result, .missingTimestamp)
+    }
+
+    private func writeJPEG(
+        to url: URL,
+        exifDateTimeOriginal: String?,
+        tiffDateTime: String?
+    ) throws {
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        guard let context = CGContext(
+            data: nil,
+            width: 1,
+            height: 1,
+            bitsPerComponent: 8,
+            bytesPerRow: 4,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ),
+        let image = context.makeImage(),
+        let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.jpeg.identifier as CFString, 1, nil)
+        else {
+            throw NSError(domain: "DocumentStoreTests", code: 1)
+        }
+
+        var properties: [CFString: Any] = [:]
+        if let exifDateTimeOriginal {
+            properties[kCGImagePropertyExifDictionary] = [
+                kCGImagePropertyExifDateTimeOriginal: exifDateTimeOriginal
+            ]
+        }
+        if let tiffDateTime {
+            properties[kCGImagePropertyTIFFDictionary] = [
+                kCGImagePropertyTIFFDateTime: tiffDateTime
+            ]
+        }
+
+        CGImageDestinationAddImage(destination, image, properties as CFDictionary)
+        if !CGImageDestinationFinalize(destination) {
+            throw NSError(domain: "DocumentStoreTests", code: 2)
+        }
     }
 }

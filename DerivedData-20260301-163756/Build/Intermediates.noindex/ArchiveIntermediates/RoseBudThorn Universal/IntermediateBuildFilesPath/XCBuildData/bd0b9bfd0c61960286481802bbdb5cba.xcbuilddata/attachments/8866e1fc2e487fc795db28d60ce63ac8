@@ -1,0 +1,26 @@
+{
+  "" : {
+    "const-values" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/SearchIndex-primary.swiftconstvalues",
+    "dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/SearchIndex-primary.d",
+    "diagnostics" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/SearchIndex-primary.dia",
+    "emit-module-dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/SearchIndex-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/SearchIndex-primary-emit-module.dia",
+    "pch" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/SearchIndex-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/SearchIndex-primary.swiftdeps"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/SearchIndex/FileSearchIndex.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/FileSearchIndex.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/FileSearchIndex.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/FileSearchIndex.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/SearchIndex/IndexDocument.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/IndexDocument.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/IndexDocument.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/IndexDocument.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/SearchIndex/IndexMapper.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/IndexMapper.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/IndexMapper.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/SearchIndex.build/Objects-normal/arm64/IndexMapper.o"
+  }
+}

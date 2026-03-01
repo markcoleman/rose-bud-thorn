@@ -1,0 +1,4 @@
+module Summaries {
+header "Summaries-Swift.h"
+export *
+}
