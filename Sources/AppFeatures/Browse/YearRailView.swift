@@ -1,9 +1,5 @@
 import SwiftUI
 
-#if os(iOS)
-import UIKit
-#endif
-
 public struct YearRailView: View {
     public let years: [String]
     @Binding public var selectedYear: String?
@@ -30,11 +26,7 @@ public struct YearRailView: View {
         let isActive = selectedYear == year
         return Button {
             selectedYear = year
-            #if os(iOS)
-            let generator = UISelectionFeedbackGenerator()
-            generator.prepare()
-            generator.selectionChanged()
-            #endif
+            PlatformFeedback.selectionChanged()
         } label: {
             Text(title)
                 .font(.subheadline.weight(isActive ? .semibold : .regular))

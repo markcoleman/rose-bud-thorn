@@ -21,7 +21,7 @@ Rose, Bud, Thorn is a local-first daily reflection app for iOS, iPadOS, and macO
 - `Sources/AppFeatures`: SwiftUI feature screens and view models.
 - `Sources/RoseBudThornApp`: app entry point.
 - `Tests/*`: unit and integration tests.
-- `Docs/*`: PRD, UX, ADR, QA plan, brand, and migration strategy.
+- `Docs/*`: PRD, UX, ADR, QA plan, brand, and migration strategy (including Catalyst migration plan).
 
 ## Build and Test
 Requirements:
@@ -42,9 +42,25 @@ swift run RoseBudThornApp
 In Xcode:
 1. Open [`RoseBudThorn.xcworkspace`](/Users/markcoleman/Development/github/rose-bud-thorn/RoseBudThorn.xcworkspace).
 2. Choose target/scheme:
-   - `RoseBudThorn iOS` for iPhone/iPad
-   - `RoseBudThorn macOS` for Mac
+   - `RoseBudThorn Universal` for iPhone, iPad, and Mac Catalyst
+   - `RoseBudThorn Legacy macOS` for the native AppKit-backed parity target during Catalyst migration
 3. In `Signing & Capabilities`, set your Apple Team and keep automatic signing enabled.
+
+Mac Catalyst CLI build:
+```bash
+xcodebuild \
+  -project "RoseBudThorn.xcodeproj" \
+  -scheme "RoseBudThorn Universal" \
+  -destination "platform=macOS,variant=Mac Catalyst" \
+  -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Bundle identifier strategy:
+- Universal app target (iPhone/iPad/Mac Catalyst): `com.example.rosebudthorn`
+- Legacy native macOS target: `com.example.rosebudthorn.macos.legacy`
+- Widget extension: `com.example.rosebudthorn.widgets`
 
 ## Data Storage
 Canonical store:

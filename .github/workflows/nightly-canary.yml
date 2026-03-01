@@ -37,8 +37,18 @@ jobs:
         run: |
           xcodebuild \
             -project "RoseBudThorn.xcodeproj" \
-            -scheme "RoseBudThorn iOS" \
+            -scheme "RoseBudThorn Universal" \
             -destination "generic/platform=iOS Simulator" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Build Mac Catalyst app
+        run: |
+          xcodebuild \
+            -project "RoseBudThorn.xcodeproj" \
+            -scheme "RoseBudThorn Universal" \
+            -destination "platform=macOS,variant=Mac Catalyst" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \
             build
@@ -47,7 +57,7 @@ jobs:
         run: |
           xcodebuild \
             -project "RoseBudThorn.xcodeproj" \
-            -scheme "RoseBudThorn macOS" \
+            -scheme "RoseBudThorn Legacy macOS" \
             -destination "platform=macOS" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \

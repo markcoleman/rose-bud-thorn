@@ -22,15 +22,11 @@ public struct RootAppView: View {
 
     public var body: some View {
         Group {
-            #if os(macOS)
-            splitView
-            #else
-            if isPad {
+            if shouldUseSplitView {
                 splitView
             } else {
                 tabView
             }
-            #endif
         }
         .overlay {
             if lockManager.isEnabled && lockManager.isLocked {
@@ -275,16 +271,17 @@ public struct RootAppView: View {
             selectedSection = nextTab
         }
 
-        #if os(iOS)
-        let feedback = UISelectionFeedbackGenerator()
-        feedback.prepare()
-        feedback.selectionChanged()
-        #endif
+        PlatformFeedback.selectionChanged()
     }
 
-    #if !os(macOS)
-    private var isPad: Bool {
-        UIDevice.current.userInterfaceIdiom == .pad
+    private var shouldUseSplitView: Bool {
+        #if os(macOS)
+        return true
+        #else
+        if PlatformCapabilities.isMacCatalyst {
+            return true
+        }
+        return UIDevice.current.userInterfaceIdiom == .pad
+        #endif
     }
-    #endif
 }
