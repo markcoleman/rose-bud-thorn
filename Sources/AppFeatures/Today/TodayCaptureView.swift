@@ -6,7 +6,7 @@ public struct TodayCaptureView: View {
     @State private var viewModel: TodayViewModel
     @Binding private var captureLaunchRequest: CaptureLaunchRequest?
     @State private var importerRequest: ImportRequest?
-    #if os(iOS)
+    #if os(iOS) && !targetEnvironment(macCatalyst)
     @State private var cameraRequest: CameraCaptureRequest?
     #endif
     @State private var tagsText = ""
@@ -140,7 +140,7 @@ public struct TodayCaptureView: View {
             }
             importerRequest = nil
         }
-        #if os(iOS)
+        #if os(iOS) && !targetEnvironment(macCatalyst)
         .fullScreenCover(item: $cameraRequest) { request in
             MomentCameraView(
                 entryType: request.type,
@@ -321,7 +321,7 @@ public struct TodayCaptureView: View {
     }
 
     private func presentCapture(for type: EntryType, dayKey: LocalDayKey) {
-        #if os(iOS)
+        #if os(iOS) && !targetEnvironment(macCatalyst)
         cameraRequest = CameraCaptureRequest(type: type, dayKey: dayKey)
         #else
         importerRequest = ImportRequest(type: type, dayKey: dayKey, includeMovies: true)
