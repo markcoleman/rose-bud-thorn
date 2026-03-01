@@ -21,13 +21,18 @@ public struct AppEnvironment: Sendable {
     public let weeklyIntentionStore: WeeklyIntentionStore
     public let completionTracker: EntryCompletionTracker
     public let analyticsStore: LocalAnalyticsStore
+    public let featureFlagStore: FeatureFlagStore
+    public let insightEngine: InsightEngine
+    public let memoryResurfacingService: MemoryResurfacingService
+    public let commitmentService: CommitmentService
     public let featureFlags: AppFeatureFlags
 
     public init(configuration: DocumentStoreConfiguration) throws {
         self.configuration = configuration
         self.dayCalculator = DayKeyCalculator()
         self.periodCalculator = PeriodKeyCalculator()
-        let featureFlags = Self.defaultFeatureFlags()
+        let featureFlagStore = FeatureFlagStore(defaults: Self.featureFlagDefaults())
+        let featureFlags = featureFlagStore.load(defaults: Self.defaultFeatureFlags())
 
         let entryRepository = try EntryRepositoryImpl(configuration: configuration)
         let attachmentRepository = try AttachmentRepositoryImpl(configuration: configuration)
@@ -42,6 +47,18 @@ public struct AppEnvironment: Sendable {
         let completionTracker = EntryCompletionTracker(entryStore: entryStore, dayCalculator: dayCalculator)
         let analyticsDefaults = Self.analyticsDefaults()
         let analyticsStore = LocalAnalyticsStore(defaults: analyticsDefaults, dayCalculator: dayCalculator)
+        let insightEngine = InsightEngine(
+            entryStore: entryStore,
+            completionTracker: completionTracker,
+            dayCalculator: dayCalculator,
+            periodCalculator: periodCalculator
+        )
+        let memoryResurfacingService = MemoryResurfacingService(
+            configuration: configuration,
+            entryStore: entryStore,
+            dayCalculator: dayCalculator
+        )
+        let commitmentService = CommitmentService(configuration: configuration)
 
         self.entryRepository = entryRepository
         self.attachmentRepository = attachmentRepository
@@ -55,6 +72,10 @@ public struct AppEnvironment: Sendable {
         self.weeklyIntentionStore = weeklyIntentionStore
         self.completionTracker = completionTracker
         self.analyticsStore = analyticsStore
+        self.featureFlagStore = featureFlagStore
+        self.insightEngine = insightEngine
+        self.memoryResurfacingService = memoryResurfacingService
+        self.commitmentService = commitmentService
         self.featureFlags = featureFlags
     }
 
@@ -96,9 +117,24 @@ private extension AppEnvironment {
         return UserDefaults(suiteName: "LocalAnalyticsStore.Tests.\(UUID().uuidString)") ?? .standard
     }
 
+    static func featureFlagDefaults() -> UserDefaults {
+        guard isTestProcess else {
+            return .standard
+        }
+        return UserDefaults(suiteName: "FeatureFlagStore.Tests.\(UUID().uuidString)") ?? .standard
+    }
+
     static func defaultFeatureFlags() -> AppFeatureFlags {
         if isTestProcess {
-            return AppFeatureFlags(remindersEnabled: false, streaksEnabled: true, widgetsEnabled: false)
+            return AppFeatureFlags(
+                remindersEnabled: false,
+                streaksEnabled: true,
+                widgetsEnabled: false,
+                insightsEnabled: true,
+                resurfacingEnabled: true,
+                commitmentsEnabled: true,
+                os26UIEnabled: true
+            )
         }
 
         return AppFeatureFlags()

@@ -18,10 +18,13 @@ public final class WeeklyReviewViewModel {
     public let weekKey: String
     public let environment: AppEnvironment
     public let questions: [WeeklyReviewQuestion]
+    public let isCommitmentsEnabled: Bool
 
     public var responses: [String: String] = [:]
     public var intentionText = ""
+    public var commitmentText = ""
     public var previousWeekIntention: WeeklyIntention?
+    public var previousWeekCommitment: WeeklyCommitment?
     public var previewHighlights: [String] = []
     public var generatedArtifact: SummaryArtifact?
     public var isLoading = false
@@ -31,6 +34,7 @@ public final class WeeklyReviewViewModel {
     public init(environment: AppEnvironment, referenceDate: Date = .now) {
         self.environment = environment
         self.weekKey = environment.periodCalculator.key(for: referenceDate, period: .week, timeZone: .current)
+        self.isCommitmentsEnabled = environment.featureFlagStore.load(defaults: environment.featureFlags).commitmentsEnabled
         self.questions = [
             WeeklyReviewQuestion(id: "energy", text: "What gave you energy this week?"),
             WeeklyReviewQuestion(id: "friction", text: "Where did friction show up the most?"),
@@ -45,6 +49,7 @@ public final class WeeklyReviewViewModel {
 
         do {
             try await loadPreviousWeekIntention()
+            try await loadPreviousWeekCommitment()
             try await buildPreviewHighlights()
         } catch {
             errorMessage = error.localizedDescription
@@ -58,12 +63,31 @@ public final class WeeklyReviewViewModel {
 
         do {
             try await environment.weeklyIntentionStore.save(text: intentionText, for: weekKey)
+            if isCommitmentsEnabled {
+                let savedCommitment = try await environment.commitmentService.save(text: commitmentText, for: weekKey)
+                if savedCommitment != nil {
+                    await environment.analyticsStore.record(.commitmentSaved)
+                }
+            }
             let artifact = try await environment.summaryService.generate(period: .week, key: weekKey)
             generatedArtifact = artifact
             return artifact
         } catch {
             errorMessage = error.localizedDescription
             return nil
+        }
+    }
+
+    public func markPreviousCommitmentCompleted() async {
+        guard let previousWeekKey = previousWeekKey() else {
+            return
+        }
+
+        do {
+            previousWeekCommitment = try await environment.commitmentService.markCompleted(for: previousWeekKey)
+            await environment.analyticsStore.record(.commitmentCompleted)
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
@@ -74,6 +98,20 @@ public final class WeeklyReviewViewModel {
         }
 
         previousWeekIntention = try await environment.weeklyIntentionStore.load(for: previousWeekKey)
+    }
+
+    private func loadPreviousWeekCommitment() async throws {
+        guard isCommitmentsEnabled else {
+            previousWeekCommitment = nil
+            return
+        }
+
+        guard let previousWeekKey = previousWeekKey() else {
+            previousWeekCommitment = nil
+            return
+        }
+
+        previousWeekCommitment = try await environment.commitmentService.load(for: previousWeekKey)
     }
 
     private func buildPreviewHighlights() async throws {

@@ -26,7 +26,7 @@ Rose, Bud, Thorn is a local-first daily reflection app for iOS, iPadOS, and macO
 ## Build and Test
 Requirements:
 - Xcode 26 toolchain (Swift 5.10+)
-- macOS 14+
+- iOS 26 / iPadOS 26 / macOS 26 minimum deployment targets
 
 Commands:
 ```bash

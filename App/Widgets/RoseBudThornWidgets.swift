@@ -132,6 +132,7 @@ private struct CaptureMomentWidgetView: View {
             Label(entry.isTodayComplete ? "Today complete" : "Today incomplete", systemImage: entry.isTodayComplete ? "checkmark.circle.fill" : "circle")
                 .font(.headline.weight(.semibold))
                 .foregroundStyle(.primary)
+                .widgetAccentable()
 
             Text(entry.isTodayComplete ? "Nice work. You can still add more reflections." : "Capture one quick thought to complete today.")
                 .font(.caption)
@@ -143,6 +144,7 @@ private struct CaptureMomentWidgetView: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial, in: Capsule())
+                    .minimumScaleFactor(0.8)
             }
             .buttonStyle(.plain)
         }
@@ -187,6 +189,7 @@ private struct CaptureMomentWidgetView: View {
                         Image(systemName: action.symbolName)
                             .font(.headline)
                             .foregroundStyle(action.tint)
+                            .widgetAccentable()
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(action.title)
@@ -234,6 +237,7 @@ private struct CaptureMomentWidgetView: View {
             Image(systemName: action.symbolName)
                 .font(.headline)
                 .foregroundStyle(action.tint)
+                .widgetAccentable()
 
             Text(action.title)
                 .font(.subheadline.weight(.semibold))

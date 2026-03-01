@@ -1,0 +1,54 @@
+name: Nightly Canary
+
+on:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  os26-canary:
+    name: OS26 canary checks
+    runs-on: macos-26
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Print toolchain versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Swift package test (strict concurrency)
+        run: |
+          swift package resolve
+          swift test --parallel
+
+      - name: Build iOS app
+        run: |
+          xcodebuild \
+            -project "RoseBudThorn.xcodeproj" \
+            -scheme "RoseBudThorn iOS" \
+            -destination "generic/platform=iOS Simulator" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Build macOS app
+        run: |
+          xcodebuild \
+            -project "RoseBudThorn.xcodeproj" \
+            -scheme "RoseBudThorn macOS" \
+            -destination "platform=macOS" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build

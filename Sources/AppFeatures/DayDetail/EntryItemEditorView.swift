@@ -6,22 +6,22 @@ public struct EntryItemEditorView: View {
     public let shortText: String
     public let journalText: String
     public let photos: [PhotoRef]
-    public let onShortText: (String) -> Void
-    public let onJournal: (String) -> Void
-    public let onAddPhoto: () -> Void
-    public let onRemovePhoto: (PhotoRef) -> Void
-    public let photoURL: (PhotoRef) -> URL
+    public let onShortText: @MainActor @Sendable (String) -> Void
+    public let onJournal: @MainActor @Sendable (String) -> Void
+    public let onAddPhoto: @MainActor @Sendable () -> Void
+    public let onRemovePhoto: @MainActor @Sendable (PhotoRef) -> Void
+    public let photoURL: @MainActor @Sendable (PhotoRef) -> URL
 
     public init(
         type: EntryType,
         shortText: String,
         journalText: String,
         photos: [PhotoRef],
-        onShortText: @escaping (String) -> Void,
-        onJournal: @escaping (String) -> Void,
-        onAddPhoto: @escaping () -> Void,
-        onRemovePhoto: @escaping (PhotoRef) -> Void,
-        photoURL: @escaping (PhotoRef) -> URL
+        onShortText: @escaping @MainActor @Sendable (String) -> Void,
+        onJournal: @escaping @MainActor @Sendable (String) -> Void,
+        onAddPhoto: @escaping @MainActor @Sendable () -> Void,
+        onRemovePhoto: @escaping @MainActor @Sendable (PhotoRef) -> Void,
+        photoURL: @escaping @MainActor @Sendable (PhotoRef) -> URL
     ) {
         self.type = type
         self.shortText = shortText
@@ -46,7 +46,13 @@ public struct EntryItemEditorView: View {
                 .buttonStyle(.bordered)
             }
 
-            TextField("Short reflection", text: Binding(get: { shortText }, set: onShortText))
+            TextField(
+                "Short reflection",
+                text: Binding(
+                    get: { shortText },
+                    set: { value in onShortText(value) }
+                )
+            )
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
@@ -55,7 +61,12 @@ public struct EntryItemEditorView: View {
                         .fill(DesignTokens.surface)
                 )
 
-            TextEditor(text: Binding(get: { journalText }, set: onJournal))
+            TextEditor(
+                text: Binding(
+                    get: { journalText },
+                    set: { value in onJournal(value) }
+                )
+            )
                 .frame(minHeight: 120)
                 .padding(8)
                 .background(RoundedRectangle(cornerRadius: 10).fill(DesignTokens.surface))

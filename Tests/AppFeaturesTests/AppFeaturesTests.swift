@@ -315,6 +315,96 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(secondCompletionCount, 1)
     }
 
+    func testInsightEngineProducesDeterministicCards() async throws {
+        let environment = try makeEnvironment()
+        let tz = TimeZone(identifier: "America/Los_Angeles")!
+        let dayCalculator = DayKeyCalculator()
+
+        let day1 = dayCalculator.dayKey(for: Date(timeIntervalSince1970: 1_772_201_600), timeZone: tz) // 2026-03-05
+        let day2 = dayCalculator.dayKey(for: Date(timeIntervalSince1970: 1_772_288_000), timeZone: tz) // 2026-03-06
+
+        var first = EntryDay.empty(dayKey: day1)
+        first.roseItem.shortText = "Sunny walk"
+        first.tags = ["health", "family"]
+        first.mood = 4
+        try await environment.entryStore.save(first)
+
+        var second = EntryDay.empty(dayKey: day2)
+        second.budItem.shortText = "Project momentum"
+        second.tags = ["work", "health"]
+        second.mood = 5
+        try await environment.entryStore.save(second)
+
+        let cardsA = try await environment.insightEngine.cards(for: Date(timeIntervalSince1970: 1_772_288_000), timeZone: tz)
+        let cardsB = try await environment.insightEngine.cards(for: Date(timeIntervalSince1970: 1_772_288_000), timeZone: tz)
+
+        XCTAssertEqual(cardsA.map(\.id), cardsB.map(\.id))
+        XCTAssertEqual(cardsA.map(\.body), cardsB.map(\.body))
+        XCTAssertTrue(cardsA.contains { $0.type == .consistency })
+    }
+
+    func testMemoryResurfacingAppliesCooldownAfterSnooze() async throws {
+        let environment = try makeEnvironment()
+        let tz = TimeZone(identifier: "America/Los_Angeles")!
+        let dayCalculator = DayKeyCalculator()
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = tz
+        let reference = calendar.date(from: DateComponents(year: 2026, month: 3, day: 22, hour: 12))!
+        let historical = calendar.date(from: DateComponents(year: 2025, month: 3, day: 22, hour: 12))!
+
+        let historicalKey = dayCalculator.dayKey(for: historical, timeZone: tz)
+        var historicalEntry = EntryDay.empty(dayKey: historicalKey)
+        historicalEntry.roseItem.shortText = "Old reflection"
+        try await environment.entryStore.save(historicalEntry)
+
+        let initial = try await environment.memoryResurfacingService.memories(for: reference, timeZone: tz)
+        XCTAssertEqual(initial.count, 1)
+
+        if let memory = initial.first {
+            _ = try await environment.memoryResurfacingService.record(
+                decisionAction: .snooze,
+                for: memory,
+                referenceDate: reference,
+                timeZone: tz
+            )
+        }
+
+        let afterSnooze = try await environment.memoryResurfacingService.memories(for: reference, timeZone: tz)
+        XCTAssertTrue(afterSnooze.isEmpty)
+    }
+
+    func testCommitmentServiceLifecycle() async throws {
+        let environment = try makeEnvironment()
+        let weekKey = "2026-W12"
+
+        let saved = try await environment.commitmentService.save(text: "Walk every morning", for: weekKey)
+        XCTAssertEqual(saved?.status, .planned)
+
+        let loaded = try await environment.commitmentService.load(for: weekKey)
+        XCTAssertEqual(loaded?.text, "Walk every morning")
+
+        let completed = try await environment.commitmentService.markCompleted(for: weekKey)
+        XCTAssertEqual(completed?.status, .completed)
+        XCTAssertNotNil(completed?.completedAt)
+    }
+
+    func testFeatureFlagStoreRoundTripIncludesEngagementFlags() {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        let store = FeatureFlagStore(defaults: defaults, key: "flags.test")
+        let flags = AppFeatureFlags(
+            remindersEnabled: false,
+            streaksEnabled: true,
+            widgetsEnabled: false,
+            insightsEnabled: false,
+            resurfacingEnabled: true,
+            commitmentsEnabled: false,
+            os26UIEnabled: true
+        )
+
+        store.save(flags)
+        XCTAssertEqual(store.load(defaults: AppFeatureFlags()), flags)
+    }
+
 }
 
 private actor InMemoryEntryRepository: EntryRepository {

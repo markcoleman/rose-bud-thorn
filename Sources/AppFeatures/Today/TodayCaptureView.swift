@@ -29,6 +29,8 @@ public struct TodayCaptureView: View {
                     VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 18 : 14) {
                         header
 
+                        engagementHub(bindable)
+
                         if bindable.completionSummary.last7DaysCompleted.count == 7 {
                             streakCard(summary: bindable.completionSummary)
                         }
@@ -74,7 +76,18 @@ public struct TodayCaptureView: View {
                     .padding(.bottom, DesignTokens.contentBottomPadding(for: geometry.size.width))
                 }
             }
-            .background(DesignTokens.backgroundGradient.ignoresSafeArea())
+            .background(
+                Group {
+                    if bindable.os26UIEnabled {
+                        Rectangle()
+                            .fill(.ultraThinMaterial)
+                            .overlay(DesignTokens.backgroundGradient.opacity(0.92))
+                    } else {
+                        DesignTokens.backgroundGradient
+                    }
+                }
+                .ignoresSafeArea()
+            )
             .navigationTitle("Today")
             #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -219,6 +232,26 @@ public struct TodayCaptureView: View {
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 14).fill(DesignTokens.surfaceElevated))
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func engagementHub(_ model: TodayViewModel) -> some View {
+        EngagementHubView(
+            insightCards: model.insightCards,
+            resurfacedMemories: model.resurfacedMemories,
+            onTapInsightCard: { _ in
+                Task { await model.recordInsightTap() }
+            },
+            onSnoozeMemory: { memory in
+                Task { await model.snoozeMemory(memory) }
+            },
+            onDismissMemory: { memory in
+                Task { await model.dismissMemory(memory) }
+            },
+            onThenVsNow: { memory in
+                model.applyThenVsNowPrompt(for: memory)
+            }
+        )
     }
 
     private func streakCard(summary: EntryCompletionSummary) -> some View {
