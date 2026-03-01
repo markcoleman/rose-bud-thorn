@@ -2,30 +2,15 @@ import SwiftUI
 import CoreModels
 
 public struct TimelineBrowseView: View {
-    public let days: [LocalDayKey]
-    @Binding public var selectedDayKey: LocalDayKey?
+    @Bindable private var viewModel: BrowseViewModel
+    @Binding private var selectedDayKey: LocalDayKey?
 
-    public init(days: [LocalDayKey], selectedDayKey: Binding<LocalDayKey?>) {
-        self.days = days
+    public init(viewModel: BrowseViewModel, selectedDayKey: Binding<LocalDayKey?>) {
+        self._viewModel = Bindable(viewModel)
         self._selectedDayKey = selectedDayKey
     }
 
     public var body: some View {
-        List(days, id: \.self, selection: $selectedDayKey) { day in
-            Button {
-                selectedDayKey = day
-            } label: {
-                HStack {
-                    Text(day.isoDate)
-                        .font(.body)
-                    Spacer()
-                    Text(day.timeZoneID)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .buttonStyle(.plain)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        TimeCapsuleBrowseView(viewModel: viewModel, selectedDayKey: $selectedDayKey)
     }
 }
