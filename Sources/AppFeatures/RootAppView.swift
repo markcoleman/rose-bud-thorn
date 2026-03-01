@@ -9,6 +9,7 @@ public struct RootAppView: View {
     @State private var selectedTab: AppSection = .today
     @State private var selectedDayKey: LocalDayKey?
     @State private var captureLaunchRequest: CaptureLaunchRequest?
+    @State private var todayRefreshToken = 0
     @State private var summaryLaunchRequest: SummaryLaunchRequest?
     @Environment(\.scenePhase) private var scenePhase
 
@@ -49,7 +50,11 @@ public struct RootAppView: View {
 
     private var tabView: some View {
         TabView(selection: $selectedTab) {
-            TodayCaptureView(environment: environment, captureLaunchRequest: $captureLaunchRequest)
+            TodayCaptureView(
+                environment: environment,
+                captureLaunchRequest: $captureLaunchRequest,
+                refreshTrigger: todayRefreshToken
+            )
                 .tabItem { Label("Today", systemImage: AppSection.today.systemImage) }
                 .tag(AppSection.today)
 
@@ -94,7 +99,11 @@ public struct RootAppView: View {
     private func sectionView(_ section: AppSection) -> some View {
         switch section {
         case .today:
-            TodayCaptureView(environment: environment, captureLaunchRequest: $captureLaunchRequest)
+            TodayCaptureView(
+                environment: environment,
+                captureLaunchRequest: $captureLaunchRequest,
+                refreshTrigger: todayRefreshToken
+            )
         case .browse:
             BrowseShellView(environment: environment, selectedDayKey: $selectedDayKey)
         case .summaries:
@@ -134,9 +143,13 @@ public struct RootAppView: View {
         guard let scheme = url.scheme?.lowercased(), scheme == "rosebudthorn" else { return }
 
         let route = (url.host?.lowercased() ?? url.pathComponents.dropFirst().first?.lowercased()) ?? ""
+        let source = Self.source(from: url)
         switch route {
         case "capture", "today":
             selectSection(.today)
+            if source == "share-extension" {
+                todayRefreshToken &+= 1
+            }
             captureLaunchRequest = Self.captureLaunchRequest(from: url)
         case "engagement", "on-this-day", "resurfacing":
             selectSection(.today)
@@ -147,10 +160,10 @@ public struct RootAppView: View {
             summaryLaunchRequest = Self.summaryLaunchRequest(from: url)
         case "weekly-review", "review":
             selectSection(.summaries)
-            summaryLaunchRequest = SummaryLaunchRequest(action: .startWeeklyReview, source: Self.source(from: url))
+            summaryLaunchRequest = SummaryLaunchRequest(action: .startWeeklyReview, source: source)
         case "weekly-summary":
             selectSection(.summaries)
-            summaryLaunchRequest = SummaryLaunchRequest(action: .openCurrentWeeklySummary, source: Self.source(from: url))
+            summaryLaunchRequest = SummaryLaunchRequest(action: .openCurrentWeeklySummary, source: source)
         case "search":
             selectSection(.search)
         case "settings":

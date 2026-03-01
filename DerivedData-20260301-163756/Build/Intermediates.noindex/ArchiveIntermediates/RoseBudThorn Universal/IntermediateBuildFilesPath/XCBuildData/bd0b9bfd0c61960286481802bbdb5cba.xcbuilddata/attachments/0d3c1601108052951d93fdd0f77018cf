@@ -1,0 +1,16 @@
+{
+  "" : {
+    "const-values" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThorn Widgets-primary.swiftconstvalues",
+    "dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThorn Widgets-primary.d",
+    "diagnostics" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThorn Widgets-primary.dia",
+    "emit-module-dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThorn Widgets-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThorn Widgets-primary-emit-module.dia",
+    "pch" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThorn Widgets-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThorn Widgets-primary.swiftdeps"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/App/Widgets/RoseBudThornWidgets.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThornWidgets.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThornWidgets.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/RoseBudThorn Widgets.build/Objects-normal/arm64/RoseBudThornWidgets.o"
+  }
+}

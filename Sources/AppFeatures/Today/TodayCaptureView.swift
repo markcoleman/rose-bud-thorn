@@ -1,23 +1,33 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import CoreModels
+import DocumentStore
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import PhotosUI
+#endif
 
 public struct TodayCaptureView: View {
     @State private var viewModel: TodayViewModel
     @Binding private var captureLaunchRequest: CaptureLaunchRequest?
+    private let refreshTrigger: Int
     @State private var importerRequest: ImportRequest?
     #if os(iOS) && !targetEnvironment(macCatalyst)
     @State private var cameraRequest: CameraCaptureRequest?
+    @State private var libraryImportRequest: LibraryImportRequest?
+    @State private var isPhotoLibraryPresented = false
+    @State private var selectedPhotoLibraryItem: PhotosPickerItem?
     #endif
     @State private var tagsText = ""
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public init(
         environment: AppEnvironment,
-        captureLaunchRequest: Binding<CaptureLaunchRequest?> = .constant(nil)
+        captureLaunchRequest: Binding<CaptureLaunchRequest?> = .constant(nil),
+        refreshTrigger: Int = 0
     ) {
         _viewModel = State(initialValue: TodayViewModel(environment: environment))
         _captureLaunchRequest = captureLaunchRequest
+        self.refreshTrigger = refreshTrigger
     }
 
     public var body: some View {
@@ -113,6 +123,12 @@ public struct TodayCaptureView: View {
             .onChange(of: captureLaunchRequest?.id) { _, _ in
                 consumeLaunchRequestIfNeeded(bindable)
             }
+            .onChange(of: refreshTrigger) { _, _ in
+                Task {
+                    await bindable.load()
+                    tagsText = bindable.entry.tags.joined(separator: ", ")
+                }
+            }
         }
         .fileImporter(
             isPresented: Binding(
@@ -147,10 +163,29 @@ public struct TodayCaptureView: View {
                 onFallbackImport: {
                     importerRequest = ImportRequest(type: request.type, dayKey: request.dayKey, includeMovies: true)
                 },
+                onPickFromLibrary: {
+                    presentPhotoLibrary(for: request.type, dayKey: request.dayKey)
+                },
                 onConfirm: { draft in
                     await persist(draft: draft, request: request, model: bindable)
                 }
             )
+        }
+        .photosPicker(
+            isPresented: $isPhotoLibraryPresented,
+            selection: $selectedPhotoLibraryItem,
+            matching: .images
+        )
+        .onChange(of: selectedPhotoLibraryItem) { _, item in
+            guard let item, let request = libraryImportRequest else { return }
+            Task {
+                await importFromPhotoLibrary(item: item, request: request, model: bindable)
+            }
+        }
+        .onChange(of: isPhotoLibraryPresented) { _, isPresented in
+            if !isPresented, selectedPhotoLibraryItem == nil {
+                libraryImportRequest = nil
+            }
         }
         #endif
     }
@@ -328,6 +363,52 @@ public struct TodayCaptureView: View {
         #endif
     }
 
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    private func presentPhotoLibrary(for type: EntryType, dayKey: LocalDayKey) {
+        libraryImportRequest = LibraryImportRequest(type: type, dayKey: dayKey)
+        selectedPhotoLibraryItem = nil
+        isPhotoLibraryPresented = true
+    }
+
+    private func importFromPhotoLibrary(
+        item: PhotosPickerItem,
+        request: LibraryImportRequest,
+        model: TodayViewModel
+    ) async {
+        defer {
+            selectedPhotoLibraryItem = nil
+            libraryImportRequest = nil
+        }
+
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self) else {
+                model.errorMessage = "The selected photo couldn't be loaded."
+                return
+            }
+
+            let imageType = item.supportedContentTypes.first(where: { $0.conforms(to: .image) })
+            let fileExtension = imageType?.preferredFilenameExtension ?? "jpg"
+            let temporaryURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension(fileExtension)
+
+            try data.write(to: temporaryURL, options: .atomic)
+            defer { try? FileManager.default.removeItem(at: temporaryURL) }
+
+            switch ImageCaptureDateValidator.validateImage(at: temporaryURL, matches: request.dayKey) {
+            case .matches:
+                try await model.importPhotoNow(from: temporaryURL, for: request.type, targetDay: request.dayKey)
+            case .mismatched(let actual):
+                model.errorMessage = "Only photos captured on \(request.dayKey.isoDate) are allowed. This photo appears from \(actual.isoDate)."
+            case .missingTimestamp:
+                model.errorMessage = "This photo is missing a capture timestamp and can't be attached to today's entry."
+            }
+        } catch {
+            model.errorMessage = error.localizedDescription
+        }
+    }
+    #endif
+
     private func persist(
         draft: CapturedMediaDraft,
         request: CameraCaptureRequest,
@@ -388,3 +469,11 @@ private struct CameraCaptureRequest: Identifiable {
     let type: EntryType
     let dayKey: LocalDayKey
 }
+
+#if os(iOS) && !targetEnvironment(macCatalyst)
+private struct LibraryImportRequest: Identifiable {
+    let id = UUID()
+    let type: EntryType
+    let dayKey: LocalDayKey
+}
+#endif

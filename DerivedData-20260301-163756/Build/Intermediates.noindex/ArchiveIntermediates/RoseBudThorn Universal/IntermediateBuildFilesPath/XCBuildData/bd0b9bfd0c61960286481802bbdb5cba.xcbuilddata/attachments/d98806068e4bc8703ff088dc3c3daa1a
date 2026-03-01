@@ -1,0 +1,4 @@
+module CoreDate {
+header "CoreDate-Swift.h"
+export *
+}

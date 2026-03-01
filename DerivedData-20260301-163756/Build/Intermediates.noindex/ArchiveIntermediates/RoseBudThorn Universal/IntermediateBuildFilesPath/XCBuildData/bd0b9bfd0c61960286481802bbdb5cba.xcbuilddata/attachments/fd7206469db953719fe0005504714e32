@@ -1,0 +1,46 @@
+{
+  "" : {
+    "const-values" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStore-primary.swiftconstvalues",
+    "dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStore-primary.d",
+    "diagnostics" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStore-primary.dia",
+    "emit-module-dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStore-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStore-primary-emit-module.dia",
+    "pch" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStore-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStore-primary.swiftdeps"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/DocumentStore/AtomicFileWriter.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/AtomicFileWriter.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/AtomicFileWriter.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/AtomicFileWriter.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/DocumentStore/AttachmentRepositoryImpl.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/AttachmentRepositoryImpl.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/AttachmentRepositoryImpl.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/AttachmentRepositoryImpl.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/DocumentStore/DocumentStoreConfiguration.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStoreConfiguration.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStoreConfiguration.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/DocumentStoreConfiguration.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/DocumentStore/EntryRepositoryImpl.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/EntryRepositoryImpl.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/EntryRepositoryImpl.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/EntryRepositoryImpl.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/DocumentStore/FileCoordinatorAdapter.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/FileCoordinatorAdapter.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/FileCoordinatorAdapter.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/FileCoordinatorAdapter.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/DocumentStore/FileLayout.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/FileLayout.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/FileLayout.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/FileLayout.o"
+  },
+  "/Users/markcoleman/Development/github/rose-bud-thorn/Sources/DocumentStore/MigrationManager.swift" : {
+    "index-unit-output-path" : "/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/MigrationManager.o",
+    "llvm-bc" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/MigrationManager.bc",
+    "object" : "/Users/markcoleman/Development/github/rose-bud-thorn/DerivedData-20260301-163756/Build/Intermediates.noindex/ArchiveIntermediates/RoseBudThorn Universal/IntermediateBuildFilesPath/RoseBudThorn.build/Release-iphoneos/DocumentStore.build/Objects-normal/arm64/MigrationManager.o"
+  }
+}

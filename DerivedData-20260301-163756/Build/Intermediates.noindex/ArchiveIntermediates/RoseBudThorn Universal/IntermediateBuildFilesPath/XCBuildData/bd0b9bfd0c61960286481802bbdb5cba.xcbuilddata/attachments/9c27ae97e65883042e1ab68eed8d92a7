@@ -1,0 +1,4 @@
+module SearchIndex {
+header "SearchIndex-Swift.h"
+export *
+}
