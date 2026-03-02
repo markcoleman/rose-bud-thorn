@@ -135,6 +135,11 @@ public final class BrowseViewModel {
         dayCalculator.date(for: dayKey)
     }
 
+    public func photoURL(for ref: PhotoRef?, day: LocalDayKey) -> URL? {
+        guard let ref else { return nil }
+        return environment.photoURL(for: ref, day: day)
+    }
+
     public func hasEntry(for dayKey: LocalDayKey) -> Bool {
         daySet.contains(dayKey)
     }

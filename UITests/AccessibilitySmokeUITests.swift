@@ -10,6 +10,7 @@ final class AccessibilitySmokeUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.otherElements["today-completion-progress"].exists)
         XCTAssertTrue(app.textFields["Bud for today"].exists)
         XCTAssertTrue(app.textFields["Thorn for today"].exists)
         let roseCapture = app.buttons["Capture media for Rose"]
@@ -59,6 +60,19 @@ final class AccessibilitySmokeUITests: XCTestCase {
             if button.exists {
                 XCTAssertTrue(button.isHittable, "Expected \(action) to be hittable when shown.")
             }
+        }
+    }
+
+    func testBrowseFeedThumbnailIsDiscoverableWhenShown() {
+        let app = XCUIApplication()
+        app.launch()
+
+        app.tabBars.buttons["Browse"].tap()
+        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 4))
+
+        let thumbnail = app.otherElements["browse-feed-thumbnail"].firstMatch
+        if thumbnail.waitForExistence(timeout: 2) {
+            XCTAssertTrue(thumbnail.isHittable)
         }
     }
 }

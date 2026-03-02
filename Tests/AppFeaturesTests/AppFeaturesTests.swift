@@ -245,6 +245,15 @@ final class AppFeaturesTests: XCTestCase {
         entry.roseItem.shortText = "Done"
         try await entryStore.save(entry)
 
+        let partialSummary = try await tracker.summary(for: .now, timeZone: .current)
+        XCTAssertFalse(partialSummary.isTodayComplete)
+        XCTAssertEqual(partialSummary.streakCount, 0)
+        XCTAssertEqual(partialSummary.last7DaysCompleted.filter(\.self).count, 0)
+
+        entry.budItem.shortText = "Done"
+        entry.thornItem.shortText = "Done"
+        try await entryStore.save(entry)
+
         let summary = try await tracker.summary(for: .now, timeZone: .current)
         XCTAssertTrue(summary.isTodayComplete)
         XCTAssertEqual(summary.streakCount, 1)
@@ -276,7 +285,9 @@ final class AppFeaturesTests: XCTestCase {
             let date = calendar.date(byAdding: .day, value: -offset, to: now)!
             let dayKey = dayCalculator.dayKey(for: date, timeZone: tz)
             var entry = EntryDay.empty(dayKey: dayKey)
-            entry.budItem.shortText = "Day \(offset)"
+            entry.roseItem.shortText = "Rose \(offset)"
+            entry.budItem.shortText = "Bud \(offset)"
+            entry.thornItem.shortText = "Thorn \(offset)"
             try await entryStore.save(entry)
         }
 
@@ -338,15 +349,86 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(openCount, 1)
         XCTAssertEqual(initialCompletionCount, 0)
 
-        viewModel.updateShortText("Completed first item", for: .rose)
+        viewModel.updateShortText("Rose done", for: .rose)
         try await viewModel.saveNow()
         let firstCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
-        XCTAssertEqual(firstCompletionCount, 1)
+        XCTAssertEqual(firstCompletionCount, 0)
+
+        viewModel.updateShortText("Bud done", for: .bud)
+        try await viewModel.saveNow()
+        let secondCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
+        XCTAssertEqual(secondCompletionCount, 0)
+
+        viewModel.updateShortText("Thorn done", for: .thorn)
+        try await viewModel.saveNow()
+        let thirdCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
+        XCTAssertEqual(thirdCompletionCount, 1)
 
         viewModel.updateShortText("Updated text only", for: .rose)
         try await viewModel.saveNow()
-        let secondCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
-        XCTAssertEqual(secondCompletionCount, 1)
+        let fourthCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
+        XCTAssertEqual(fourthCompletionCount, 1)
+    }
+
+    func testBrowseDaySnapshotSelectsNewestPreviewPhotoDeterministically() {
+        let dayKey = LocalDayKey(isoDate: "2026-03-22", timeZoneID: "America/Los_Angeles")
+        let old = Date(timeIntervalSince1970: 100)
+        let newer = Date(timeIntervalSince1970: 200)
+        let tie = Date(timeIntervalSince1970: 200)
+
+        let rose = PhotoRef(id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!, relativePath: "rose/attachments/old.jpg", createdAt: old)
+        let bud = PhotoRef(id: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!, relativePath: "bud/attachments/newer.jpg", createdAt: newer)
+        let thorn = PhotoRef(id: UUID(uuidString: "33333333-3333-3333-3333-333333333333")!, relativePath: "thorn/attachments/tie.jpg", createdAt: tie)
+
+        let entry = EntryDay(
+            dayKey: dayKey,
+            roseItem: EntryItem(type: .rose, shortText: "Rose", journalTextMarkdown: "", photos: [rose], updatedAt: .now),
+            budItem: EntryItem(type: .bud, shortText: "Bud", journalTextMarkdown: "", photos: [bud], updatedAt: .now),
+            thornItem: EntryItem(type: .thorn, shortText: "Thorn", journalTextMarkdown: "", photos: [thorn], updatedAt: .now),
+            createdAt: .now,
+            updatedAt: .now
+        )
+
+        let snapshot = BrowseDaySnapshot(entry: entry)
+        XCTAssertEqual(snapshot.previewPhotoRef?.id, thorn.id)
+    }
+
+    func testBrowseViewModelPhotoURLReturnsResolvedURL() throws {
+        let environment = try makeEnvironment()
+        let viewModel = BrowseViewModel(environment: environment)
+        let dayKey = LocalDayKey(isoDate: "2026-03-22", timeZoneID: "America/Los_Angeles")
+        let ref = PhotoRef(id: UUID(), relativePath: "rose/attachments/image.jpg", createdAt: .now)
+
+        let resolved = viewModel.photoURL(for: ref, day: dayKey)
+        XCTAssertNotNil(resolved)
+        XCTAssertTrue(resolved?.path.hasSuffix("Entries/2026/03/22/rose/attachments/image.jpg") ?? false)
+
+        let nilResolved = viewModel.photoURL(for: nil, day: dayKey)
+        XCTAssertNil(nilResolved)
+    }
+
+    func testTodayViewModelExposesThreeOfThreeCompletionState() async throws {
+        let environment = try makeEnvironment()
+        let model = TodayViewModel(environment: environment)
+        await model.load()
+        let today = model.dayKey
+
+        XCTAssertFalse(model.isThreeOfThreeComplete)
+        XCTAssertEqual(model.todayCompletionCount, 0)
+
+        model.updateShortText("Rose", for: .rose)
+        model.updateShortText("Bud", for: .bud)
+        model.updateShortText("Thorn", for: .thorn)
+        try await model.saveNow()
+
+        XCTAssertTrue(model.isThreeOfThreeComplete)
+        XCTAssertEqual(model.todayCompletionCount, 3)
+        XCTAssertEqual(model.typeCompletionStates[.rose], true)
+        XCTAssertEqual(model.typeCompletionStates[.bud], true)
+        XCTAssertEqual(model.typeCompletionStates[.thorn], true)
+
+        let firstCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
+        XCTAssertEqual(firstCompletionCount, 1)
     }
 
     func testInsightEngineProducesDeterministicCards() async throws {

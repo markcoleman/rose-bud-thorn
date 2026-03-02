@@ -94,4 +94,54 @@ final class CoreModelsTests: XCTestCase {
         XCTAssertEqual(entry.thornItem.type, .thorn)
         XCTAssertFalse(entry.hasAnyPhotos)
     }
+
+    func testEntryDayCompletionRequiresAllThreeTypes() {
+        let dayKey = LocalDayKey(isoDate: "2026-02-27", timeZoneID: "America/Los_Angeles")
+        var entry = EntryDay.empty(dayKey: dayKey)
+
+        XCTAssertEqual(entry.completionCount, 0)
+        XCTAssertFalse(entry.isCompleteForDailyCapture)
+
+        entry.roseItem.shortText = "Rose"
+        XCTAssertEqual(entry.completionCount, 1)
+        XCTAssertFalse(entry.isCompleteForDailyCapture)
+
+        entry.budItem.journalTextMarkdown = "Bud journal"
+        XCTAssertEqual(entry.completionCount, 2)
+        XCTAssertFalse(entry.isCompleteForDailyCapture)
+
+        entry.thornItem.videos = [VideoRef(
+            id: UUID(),
+            relativePath: "thorn/attachments/c.mov",
+            createdAt: .now,
+            durationSeconds: 3,
+            pixelWidth: 1920,
+            pixelHeight: 1080,
+            hasAudio: true
+        )]
+        XCTAssertEqual(entry.completionCount, 3)
+        XCTAssertTrue(entry.isCompleteForDailyCapture)
+    }
+
+    func testEntryDayCompletionCountSupportsMixedContentTypes() {
+        let now = Date(timeIntervalSince1970: 1_708_800_000)
+        let dayKey = LocalDayKey(isoDate: "2026-02-27", timeZoneID: "America/Los_Angeles")
+        var entry = EntryDay.empty(dayKey: dayKey)
+
+        entry.roseItem.shortText = "Text"
+        entry.budItem.journalTextMarkdown = "Journal"
+        entry.thornItem.photos = [PhotoRef(
+            id: UUID(),
+            relativePath: "thorn/attachments/a.jpg",
+            createdAt: now,
+            pixelWidth: 100,
+            pixelHeight: 200
+        )]
+
+        XCTAssertTrue(entry.isRoseComplete)
+        XCTAssertTrue(entry.isBudComplete)
+        XCTAssertTrue(entry.isThornComplete)
+        XCTAssertEqual(entry.completionCount, 3)
+        XCTAssertTrue(entry.isCompleteForDailyCapture)
+    }
 }

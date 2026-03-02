@@ -3,11 +3,18 @@ import CoreModels
 
 public struct MemoryDayCardView: View {
     public let snapshot: BrowseDaySnapshot
+    public let thumbnailURL: URL?
     public let isSelected: Bool
     public let onSelect: () -> Void
 
-    public init(snapshot: BrowseDaySnapshot, isSelected: Bool, onSelect: @escaping () -> Void) {
+    public init(
+        snapshot: BrowseDaySnapshot,
+        thumbnailURL: URL? = nil,
+        isSelected: Bool,
+        onSelect: @escaping () -> Void
+    ) {
         self.snapshot = snapshot
+        self.thumbnailURL = thumbnailURL
         self.isSelected = isSelected
         self.onSelect = onSelect
     }
@@ -16,6 +23,7 @@ public struct MemoryDayCardView: View {
         Button(action: onSelect) {
             VStack(alignment: .leading, spacing: 12) {
                 header
+                feedThumbnail
                 emotionalStrip
                 previewRows
                 metadataRow
@@ -33,7 +41,7 @@ public struct MemoryDayCardView: View {
             .shadow(color: .black.opacity(isSelected ? 0.12 : 0.06), radius: isSelected ? 14 : 8, x: 0, y: 6)
         }
         .buttonStyle(MemoryCardPressStyle())
-        .accessibilityElement(children: .ignore)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibilitySummary)
     }
 
@@ -68,6 +76,56 @@ public struct MemoryDayCardView: View {
             stripBlock(color: DesignTokens.bud, isActive: snapshot.hasBudContent)
             stripBlock(color: DesignTokens.thorn, isActive: snapshot.hasThornContent)
         }
+    }
+
+    private var feedThumbnail: some View {
+        ZStack(alignment: .bottomLeading) {
+            Group {
+                if let thumbnailURL {
+                    AsyncImage(url: thumbnailURL) { phase in
+                        switch phase {
+                        case .empty:
+                            ZStack {
+                                DesignTokens.surface
+                                ProgressView()
+                            }
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        case .failure:
+                            placeholderThumbnail
+                        @unknown default:
+                            placeholderThumbnail
+                        }
+                    }
+                } else {
+                    placeholderThumbnail
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+
+            Text("Feed")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(.black.opacity(0.5), in: Capsule())
+                .padding(8)
+                .accessibilityHidden(true)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 96)
+        .background(DesignTokens.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(thumbnailURL == nil ? "No feed thumbnail" : "Feed thumbnail")
+        .accessibilityIdentifier("browse-feed-thumbnail")
     }
 
     private func stripBlock(color: Color, isActive: Bool) -> some View {
@@ -151,6 +209,19 @@ public struct MemoryDayCardView: View {
         }
 
         return dayKey.isoDate
+    }
+
+    private var placeholderThumbnail: some View {
+        ZStack {
+            LinearGradient(
+                colors: [DesignTokens.surface, DesignTokens.surfaceElevated],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            Image(systemName: AppIcon.mediaCount.systemName)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
+        }
     }
 }
 

@@ -9,7 +9,23 @@ public extension EntryItem {
 }
 
 public extension EntryDay {
+    var isRoseComplete: Bool {
+        roseItem.hasAnyContent
+    }
+
+    var isBudComplete: Bool {
+        budItem.hasAnyContent
+    }
+
+    var isThornComplete: Bool {
+        thornItem.hasAnyContent
+    }
+
+    var completionCount: Int {
+        [isRoseComplete, isBudComplete, isThornComplete].filter { $0 }.count
+    }
+
     var isCompleteForDailyCapture: Bool {
-        roseItem.hasAnyContent || budItem.hasAnyContent || thornItem.hasAnyContent
+        completionCount == EntryType.allCases.count
     }
 }

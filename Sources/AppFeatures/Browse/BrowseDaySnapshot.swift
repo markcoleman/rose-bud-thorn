@@ -6,6 +6,7 @@ public struct BrowseDaySnapshot: Hashable, Sendable, Identifiable {
     public let rosePreview: String
     public let budPreview: String
     public let thornPreview: String
+    public let previewPhotoRef: PhotoRef?
     public let mood: Int?
     public let favorite: Bool
     public let hasMedia: Bool
@@ -20,6 +21,7 @@ public struct BrowseDaySnapshot: Hashable, Sendable, Identifiable {
         rosePreview: String,
         budPreview: String,
         thornPreview: String,
+        previewPhotoRef: PhotoRef?,
         mood: Int?,
         favorite: Bool,
         hasMedia: Bool,
@@ -31,6 +33,7 @@ public struct BrowseDaySnapshot: Hashable, Sendable, Identifiable {
         self.rosePreview = rosePreview
         self.budPreview = budPreview
         self.thornPreview = thornPreview
+        self.previewPhotoRef = previewPhotoRef
         self.mood = mood
         self.favorite = favorite
         self.hasMedia = hasMedia
@@ -45,6 +48,8 @@ public extension BrowseDaySnapshot {
         let rosePreview = Self.previewText(from: entry.roseItem)
         let budPreview = Self.previewText(from: entry.budItem)
         let thornPreview = Self.previewText(from: entry.thornItem)
+        let allPhotos = entry.roseItem.photos + entry.budItem.photos + entry.thornItem.photos
+        let previewPhotoRef = Self.latestPhotoRef(in: allPhotos)
         let mediaCount = entry.roseItem.photos.count + entry.roseItem.videos.count +
             entry.budItem.photos.count + entry.budItem.videos.count +
             entry.thornItem.photos.count + entry.thornItem.videos.count
@@ -54,6 +59,7 @@ public extension BrowseDaySnapshot {
             rosePreview: rosePreview,
             budPreview: budPreview,
             thornPreview: thornPreview,
+            previewPhotoRef: previewPhotoRef,
             mood: entry.mood,
             favorite: entry.favorite,
             hasMedia: mediaCount > 0,
@@ -128,5 +134,14 @@ private extension BrowseDaySnapshot {
         }
 
         return ""
+    }
+
+    static func latestPhotoRef(in photos: [PhotoRef]) -> PhotoRef? {
+        photos.max { lhs, rhs in
+            if lhs.createdAt == rhs.createdAt {
+                return lhs.id.uuidString < rhs.id.uuidString
+            }
+            return lhs.createdAt < rhs.createdAt
+        }
     }
 }

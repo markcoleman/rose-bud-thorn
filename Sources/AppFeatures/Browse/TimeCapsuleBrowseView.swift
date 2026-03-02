@@ -118,7 +118,11 @@ public struct TimeCapsuleBrowseView: View {
                             .id(section.monthKey)
 
                         ForEach(section.days) { snapshot in
-                            MemoryDayCardView(snapshot: snapshot, isSelected: selectedDayKey == snapshot.dayKey) {
+                            MemoryDayCardView(
+                                snapshot: snapshot,
+                                thumbnailURL: viewModel.photoURL(for: snapshot.previewPhotoRef, day: snapshot.dayKey),
+                                isSelected: selectedDayKey == snapshot.dayKey
+                            ) {
                                 if reduceMotion {
                                     selectedDayKey = snapshot.dayKey
                                 } else {
