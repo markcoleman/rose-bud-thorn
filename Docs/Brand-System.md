@@ -1,7 +1,7 @@
 # Brand System
 
 ## Visual Direction
-Calm, botanical journaling style with warm surfaces and natural accent colors.
+Playful botanical journaling style with vibrant candy-pastel gradients and expressive floral illustration.
 
 ## Color Tokens
 - `rose`: key rose reflection color.
@@ -20,5 +20,5 @@ Defined in `Sources/AppFeatures/SharedUI/DesignTokens.swift`.
 - Reduced-motion-safe defaults.
 
 ## Icon/Splash Guidance
-- Icon: three abstract petal forms (rose/bud/thorn) in circular composition.
-- Launch: emblem + soft gradient with short fade scale animation.
+- Icon: two kawaii pink roses with rainbow backdrop (`RoseBudLogo` / `AppIcon` assets).
+- Launch: emblem + luminous multi-color gradient with short fade scale animation.
