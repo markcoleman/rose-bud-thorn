@@ -43,6 +43,17 @@ final class AppFeaturesTests: XCTestCase {
         )
     }
 
+    private func writeAttachmentFile(
+        in environment: AppEnvironment,
+        dayKey: LocalDayKey,
+        ref: PhotoRef
+    ) throws {
+        let dayDirectory = FileLayout(rootURL: environment.configuration.rootURL).dayDirectory(for: dayKey)
+        let outputURL = dayDirectory.appendingPathComponent(ref.relativePath)
+        try FileManager.default.createDirectory(at: outputURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("image-bytes".utf8).write(to: outputURL)
+    }
+
     func testTodayCaptureFlowPersistsEntry() async throws {
         let environment = try makeEnvironment()
         let fixedDate = Date(timeIntervalSince1970: 1_772_201_600) // 2026-03-05
@@ -555,6 +566,156 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertTrue(journal.contains(memory.thenVsNowPrompt))
     }
 
+    func testDayShareEligibilityRequiresOnePhotoPerType() async throws {
+        let environment = try makeEnvironment()
+        let dayKey = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
+        var entry = EntryDay.empty(dayKey: dayKey)
+
+        let roseRef = PhotoRef(id: UUID(), relativePath: "rose/attachments/r.jpg", createdAt: .now)
+        let budRef = PhotoRef(id: UUID(), relativePath: "bud/attachments/b.jpg", createdAt: .now)
+        entry.roseItem.photos = [roseRef]
+        entry.budItem.photos = [budRef]
+
+        let incomplete = await environment.dayShareService.eligibility(for: entry)
+        XCTAssertEqual(incomplete, .missingPhotos(types: [.thorn]))
+
+        let thornRef = PhotoRef(id: UUID(), relativePath: "thorn/attachments/t.jpg", createdAt: .now)
+        entry.thornItem.photos = [thornRef]
+        let ready = await environment.dayShareService.eligibility(for: entry)
+        XCTAssertEqual(ready, .ready)
+    }
+
+    func testDayShareServiceSelectsMostRecentPhotosAndExcludesEntryTextInPayload() async throws {
+        let environment = try makeEnvironment()
+        let dayKey = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
+        let old = Date(timeIntervalSince1970: 100)
+        let newer = Date(timeIntervalSince1970: 200)
+        let newest = Date(timeIntervalSince1970: 300)
+
+        let roseOld = PhotoRef(id: UUID(), relativePath: "rose/attachments/old.jpg", createdAt: old)
+        let roseNew = PhotoRef(id: UUID(), relativePath: "rose/attachments/new.jpg", createdAt: newest)
+        let budOld = PhotoRef(id: UUID(), relativePath: "bud/attachments/old.jpg", createdAt: old)
+        let budNew = PhotoRef(id: UUID(), relativePath: "bud/attachments/new.jpg", createdAt: newer)
+        let thornOnly = PhotoRef(id: UUID(), relativePath: "thorn/attachments/new.jpg", createdAt: newer)
+
+        var entry = EntryDay.empty(dayKey: dayKey)
+        entry.roseItem.shortText = "rose private text"
+        entry.budItem.shortText = "bud private text"
+        entry.thornItem.shortText = "thorn private text"
+        entry.roseItem.photos = [roseOld, roseNew]
+        entry.budItem.photos = [budOld, budNew]
+        entry.thornItem.photos = [thornOnly]
+
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: roseOld)
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: roseNew)
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: budOld)
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: budNew)
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: thornOnly)
+
+        let payload = try await environment.dayShareService.makePayload(
+            for: entry,
+            resolvePhotoURL: { ref in
+                environment.photoURL(for: ref, day: dayKey)
+            }
+        )
+
+        XCTAssertEqual(payload.rose.ref.id, roseNew.id)
+        XCTAssertEqual(payload.bud.ref.id, budNew.id)
+        XCTAssertEqual(payload.thorn.ref.id, thornOnly.id)
+        XCTAssertFalse(payload.messageBody.contains("private text"))
+    }
+
+    func testDayShareNudgeStoreSuppressesRepeatedPromptPerDay() {
+        let defaults = UserDefaults(suiteName: "DayShareNudgeStoreTests.\(UUID().uuidString)")!
+        let store = DayShareNudgeStore(defaults: defaults, key: "DayShareNudgeStoreTests.key")
+        let dayKey = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
+
+        XCTAssertTrue(store.shouldPresentPrompt(for: dayKey))
+        store.markHandled(for: dayKey)
+        XCTAssertFalse(store.shouldPresentPrompt(for: dayKey))
+    }
+
+    func testTodayViewModelTriggersDaySharePromptOnReadyTransitionOncePerDay() async throws {
+        let environment = try makeEnvironment()
+        let model = TodayViewModel(environment: environment)
+        await model.load()
+
+        let dayKey = model.dayKey
+        let roseRef = PhotoRef(id: UUID(), relativePath: "rose/attachments/ready.jpg", createdAt: .now)
+        let budRef = PhotoRef(id: UUID(), relativePath: "bud/attachments/ready.jpg", createdAt: .now)
+        let thornRef = PhotoRef(id: UUID(), relativePath: "thorn/attachments/ready.jpg", createdAt: .now)
+
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: roseRef)
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: budRef)
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: thornRef)
+
+        model.entry.roseItem.photos = [roseRef]
+        model.entry.budItem.photos = [budRef]
+        model.entry.thornItem.photos = [thornRef]
+        try await model.saveNow()
+
+        XCTAssertTrue(model.isDayShareReady)
+        XCTAssertTrue(model.shouldPresentShareNudge)
+
+        model.dismissShareNudge()
+        model.entry.thornItem.photos = []
+        try await model.saveNow()
+        XCTAssertFalse(model.isDayShareReady)
+
+        model.entry.thornItem.photos = [thornRef]
+        try await model.saveNow()
+        XCTAssertTrue(model.isDayShareReady)
+        XCTAssertFalse(model.shouldPresentShareNudge)
+    }
+
+    func testDayDetailViewModelPrepareShareSavePersistsLatestEntry() async throws {
+        let environment = try makeEnvironment()
+        let dayKey = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
+        let model = DayDetailViewModel(environment: environment, dayKey: dayKey)
+        await model.load()
+
+        model.updateShortText("Saved before share", for: .rose)
+        await model.prepareShareSaveIfNeeded()
+
+        let persisted = try await environment.entryStore.load(day: dayKey)
+        XCTAssertEqual(persisted.roseItem.shortText, "Saved before share")
+    }
+
+    func testDayShareAnalyticsEventsAreTracked() async throws {
+        let environment = try makeEnvironment()
+        let model = TodayViewModel(environment: environment)
+        await model.load()
+        let dayKey = model.dayKey
+
+        let roseRef = PhotoRef(id: UUID(), relativePath: "rose/attachments/ready.jpg", createdAt: .now)
+        let budRef = PhotoRef(id: UUID(), relativePath: "bud/attachments/ready.jpg", createdAt: .now)
+        let thornRef = PhotoRef(id: UUID(), relativePath: "thorn/attachments/ready.jpg", createdAt: .now)
+
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: roseRef)
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: budRef)
+        try writeAttachmentFile(in: environment, dayKey: dayKey, ref: thornRef)
+
+        model.entry.roseItem.photos = [roseRef]
+        model.entry.budItem.photos = [budRef]
+        model.entry.thornItem.photos = [thornRef]
+        try await model.saveNow()
+
+        let payload = try await model.makeDaySharePayload()
+        await model.recordDayShareSent()
+        await model.recordDayShareFailed()
+        await model.disposeDaySharePayload(payload)
+
+        let promptShownCount = await environment.analyticsStore.totalCount(for: .daySharePromptShown)
+        let initiatedCount = await environment.analyticsStore.totalCount(for: .dayShareInitiated)
+        let sentCount = await environment.analyticsStore.totalCount(for: .dayShareSent)
+        let failedCount = await environment.analyticsStore.totalCount(for: .dayShareFailed)
+
+        XCTAssertEqual(promptShownCount, 1)
+        XCTAssertEqual(initiatedCount, 1)
+        XCTAssertEqual(sentCount, 1)
+        XCTAssertEqual(failedCount, 1)
+    }
+
     func testFeatureFlagStoreRoundTripIncludesEngagementFlags() {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!
         let store = FeatureFlagStore(defaults: defaults, key: "flags.test")
@@ -565,6 +726,7 @@ final class AppFeaturesTests: XCTestCase {
             insightsEnabled: false,
             resurfacingEnabled: true,
             commitmentsEnabled: false,
+            dayShareEnabled: false,
             os26UIEnabled: true,
             browseTimeCapsuleEnabled: false
         )

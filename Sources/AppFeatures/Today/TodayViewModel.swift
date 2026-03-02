@@ -21,6 +21,10 @@ public final class TodayViewModel {
     public var insightCards: [InsightCard] = []
     public var resurfacedMemories: [ResurfacedMemory] = []
     public var os26UIEnabled = true
+    public var isDayShareFeatureEnabled = true
+    public var isDayShareReady = false
+    public var dayShareDisabledReason: String?
+    public var shouldPresentShareNudge = false
 
     private let environment: AppEnvironment
     private let dayCalculator: DayKeyCalculator
@@ -43,7 +47,9 @@ public final class TodayViewModel {
             dayKey = dayCalculator.dayKey(for: .now)
             entry = try await environment.entryStore.load(day: dayKey)
             os26UIEnabled = flags.os26UIEnabled
+            isDayShareFeatureEnabled = flags.dayShareEnabled
             refreshPrompts()
+            await refreshDayShareState()
             try await refreshCompletionSummary()
             await environment.analyticsStore.record(.todayScreenOpened)
             if flags.streaksEnabled {
@@ -260,13 +266,53 @@ public final class TodayViewModel {
         await environment.analyticsStore.record(.insightCardTapped)
     }
 
+    public func dismissShareNudge() {
+        shouldPresentShareNudge = false
+        environment.dayShareNudgeStore.markHandled(for: dayKey)
+    }
+
+    public func markShareNudgeHandled() {
+        shouldPresentShareNudge = false
+        environment.dayShareNudgeStore.markHandled(for: dayKey)
+    }
+
+    public func makeDaySharePayload() async throws -> DayShareCardPayload {
+        await environment.analyticsStore.record(.dayShareInitiated)
+        do {
+            let payload = try await environment.dayShareService.makePayload(
+                for: entry,
+                resolvePhotoURL: { [environment, dayKey] ref in
+                    environment.photoURL(for: ref, day: dayKey)
+                }
+            )
+            return payload
+        } catch {
+            await environment.analyticsStore.record(.dayShareFailed)
+            throw error
+        }
+    }
+
+    public func recordDayShareSent() async {
+        await environment.analyticsStore.record(.dayShareSent)
+    }
+
+    public func recordDayShareFailed() async {
+        await environment.analyticsStore.record(.dayShareFailed)
+    }
+
+    public func disposeDaySharePayload(_ payload: DayShareCardPayload) async {
+        await environment.dayShareService.removeTemporaryFile(at: payload.outputURL)
+    }
+
     public func saveNow() async throws {
         saveTask?.cancel()
         let wasComplete = completionSummary.isTodayComplete
+        let wasDayShareReady = isDayShareReady
         isSaving = true
         defer { isSaving = false }
         try await environment.entryStore.save(entry)
         lastSavedAt = .now
+        await refreshDayShareState(previousWasReady: wasDayShareReady, allowPromptForTransition: true)
         try await refreshCompletionSummary()
         if !wasComplete && completionSummary.isTodayComplete {
             _ = await environment.analyticsStore.recordOncePerDay(.dailyEntryCompleted, dayKey: dayKey)
@@ -296,6 +342,40 @@ public final class TodayViewModel {
 
     private func refreshCompletionSummary() async throws {
         completionSummary = try await environment.completionTracker.summary(for: .now, timeZone: .current)
+    }
+
+    private func refreshDayShareState(
+        previousWasReady: Bool? = nil,
+        allowPromptForTransition: Bool = false
+    ) async {
+        let flags = featureFlags
+        isDayShareFeatureEnabled = flags.dayShareEnabled
+
+        guard flags.dayShareEnabled else {
+            isDayShareReady = false
+            dayShareDisabledReason = nil
+            shouldPresentShareNudge = false
+            return
+        }
+
+        let eligibility = await environment.dayShareService.eligibility(for: entry)
+        isDayShareReady = eligibility.isReady
+        dayShareDisabledReason = eligibility.disabledReason
+
+        guard eligibility.isReady else {
+            shouldPresentShareNudge = false
+            return
+        }
+
+        guard allowPromptForTransition,
+              let previousWasReady,
+              !previousWasReady,
+              environment.dayShareNudgeStore.shouldPresentPrompt(for: dayKey) else {
+            return
+        }
+
+        shouldPresentShareNudge = true
+        _ = await environment.analyticsStore.recordOncePerDay(.daySharePromptShown, dayKey: dayKey)
     }
 
     private func syncReminderSchedule() async {
