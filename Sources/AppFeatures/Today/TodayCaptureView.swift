@@ -4,6 +4,7 @@ import CoreModels
 import DocumentStore
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import PhotosUI
+import MessageUI
 #endif
 
 public struct TodayCaptureView: View {
@@ -18,6 +19,12 @@ public struct TodayCaptureView: View {
     @State private var selectedPhotoLibraryItem: PhotosPickerItem?
     #endif
     @State private var tagsText = ""
+    @State private var isPreparingDayShare = false
+    @State private var sharePayload: DayShareCardPayload?
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    @State private var isMessageComposerPresented = false
+    @State private var isActivitySharePresented = false
+    #endif
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public init(
@@ -37,7 +44,7 @@ public struct TodayCaptureView: View {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 18 : 14) {
-                        header
+                        header(bindable)
 
                         engagementHub(bindable)
 
@@ -105,7 +112,23 @@ public struct TodayCaptureView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             #endif
             .toolbar {
-                ToolbarItem(placement: toolbarPlacement) {
+                ToolbarItemGroup(placement: toolbarPlacement) {
+                    if bindable.isDayShareFeatureEnabled {
+                        Button {
+                            Task {
+                                await beginDayShare(model: bindable, markNudgeHandled: true)
+                            }
+                        } label: {
+                            if isPreparingDayShare {
+                                ProgressView()
+                            } else {
+                                Label("Share", systemImage: "message.fill")
+                            }
+                        }
+                        .disabled(!bindable.isDayShareReady || isPreparingDayShare)
+                        .help(bindable.isDayShareReady ? "Share your day in Messages." : (bindable.dayShareDisabledReason ?? "Day sharing is unavailable."))
+                    }
+
                     if bindable.isSaving {
                         ProgressView()
                     } else if let lastSaved = bindable.lastSavedAt {
@@ -129,6 +152,86 @@ public struct TodayCaptureView: View {
                     tagsText = bindable.entry.tags.joined(separator: ", ")
                 }
             }
+            .sheet(
+                isPresented: Binding(
+                    get: { bindable.shouldPresentShareNudge },
+                    set: { isPresented in
+                        if !isPresented {
+                            bindable.dismissShareNudge()
+                        }
+                    }
+                )
+            ) {
+                daySharePromptSheet(bindable)
+                    .presentationDetents([.medium])
+            }
+            #if os(iOS) && !targetEnvironment(macCatalyst)
+            .sheet(isPresented: $isMessageComposerPresented, onDismiss: {
+                clearSharePayload(bindable)
+            }) {
+                if let payload = sharePayload {
+                    MessageComposerView(
+                        bodyText: payload.messageBody,
+                        attachmentURL: payload.outputURL,
+                        attachmentTypeIdentifier: payload.outputTypeIdentifier
+                    ) { result in
+                        switch result {
+                        case .sent:
+                            Task { await bindable.recordDayShareSent() }
+                        case .failed:
+                            Task { await bindable.recordDayShareFailed() }
+                        case .cancelled:
+                            break
+                        }
+                        isMessageComposerPresented = false
+                    }
+                    .ignoresSafeArea()
+                }
+            }
+            .sheet(isPresented: $isActivitySharePresented, onDismiss: {
+                clearSharePayload(bindable)
+            }) {
+                if let payload = sharePayload {
+                    ActivityShareSheetView(
+                        activityItems: [payload.outputURL, payload.messageBody]
+                    ) { completed in
+                        if completed {
+                            Task { await bindable.recordDayShareSent() }
+                        }
+                    }
+                    .ignoresSafeArea()
+                }
+            }
+            #else
+            .sheet(item: $sharePayload, onDismiss: {
+                clearSharePayload(bindable)
+            }) { payload in
+                NavigationStack {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Share your card")
+                            .font(.headline)
+                        Text(payload.messageBody)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        ShareLink(item: payload.outputURL) {
+                            Label("Share Card", systemImage: "square.and.arrow.up")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        Spacer()
+                    }
+                    .padding()
+                    .navigationTitle("Share Day")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") {
+                                sharePayload = nil
+                            }
+                        }
+                    }
+                }
+            }
+            #endif
         }
         .fileImporter(
             isPresented: Binding(
@@ -198,12 +301,18 @@ public struct TodayCaptureView: View {
         #endif
     }
 
-    private var header: some View {
+    private func header(_ model: TodayViewModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             BrandMarkView()
             Text(Date.now.formatted(date: .complete, time: .omitted))
                 .foregroundStyle(.secondary)
                 .accessibilityLabel("Today, \(Date.now.formatted(date: .complete, time: .omitted))")
+
+            if model.isDayShareFeatureEnabled, let reason = model.dayShareDisabledReason {
+                Text(reason)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -333,6 +442,85 @@ public struct TodayCaptureView: View {
         }
 
         return "Capture one Rose, Bud, or Thorn to fill today on your 7-day ring."
+    }
+
+    private func daySharePromptSheet(_ model: TodayViewModel) -> some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Day Complete")
+                    .font(.title3.weight(.semibold))
+                Text("Send your Rose, Bud, Thorn card in Messages.")
+                    .foregroundStyle(.secondary)
+
+                Button {
+                    model.markShareNudgeHandled()
+                    Task {
+                        await beginDayShare(model: model, markNudgeHandled: false)
+                    }
+                } label: {
+                    Label("Send in Messages", systemImage: "message.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!model.isDayShareReady || isPreparingDayShare)
+
+                Button("Not Now") {
+                    model.dismissShareNudge()
+                }
+                .buttonStyle(.bordered)
+
+                Spacer(minLength: 0)
+            }
+            .padding()
+            .navigationTitle("Share")
+            #if !os(macOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        model.dismissShareNudge()
+                    }
+                }
+            }
+        }
+    }
+
+    private func beginDayShare(model: TodayViewModel, markNudgeHandled: Bool) async {
+        guard model.isDayShareReady else { return }
+
+        if markNudgeHandled {
+            model.markShareNudgeHandled()
+        }
+
+        isPreparingDayShare = true
+        defer { isPreparingDayShare = false }
+
+        do {
+            let payload = try await model.makeDaySharePayload()
+            sharePayload = payload
+            presentPreparedSharePayload()
+        } catch {
+            model.errorMessage = error.localizedDescription
+        }
+    }
+
+    private func clearSharePayload(_ model: TodayViewModel) {
+        guard let payload = sharePayload else { return }
+        sharePayload = nil
+        Task {
+            await model.disposeDaySharePayload(payload)
+        }
+    }
+
+    private func presentPreparedSharePayload() {
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        if MFMessageComposeViewController.canSendText() && MFMessageComposeViewController.canSendAttachments() {
+            isMessageComposerPresented = true
+            return
+        }
+        isActivitySharePresented = true
+        #endif
     }
 
     private var importerAllowedTypes: [UTType] {

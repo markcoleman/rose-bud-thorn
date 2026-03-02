@@ -25,6 +25,8 @@ public struct AppEnvironment: Sendable {
     public let insightEngine: InsightEngine
     public let memoryResurfacingService: MemoryResurfacingService
     public let commitmentService: CommitmentService
+    public let dayShareService: DayShareService
+    public let dayShareNudgeStore: DayShareNudgeStore
     public let featureFlags: AppFeatureFlags
 
     public init(configuration: DocumentStoreConfiguration) throws {
@@ -59,6 +61,8 @@ public struct AppEnvironment: Sendable {
             dayCalculator: dayCalculator
         )
         let commitmentService = CommitmentService(configuration: configuration)
+        let dayShareService = DayShareService()
+        let dayShareNudgeStore = DayShareNudgeStore()
 
         self.entryRepository = entryRepository
         self.attachmentRepository = attachmentRepository
@@ -76,6 +80,8 @@ public struct AppEnvironment: Sendable {
         self.insightEngine = insightEngine
         self.memoryResurfacingService = memoryResurfacingService
         self.commitmentService = commitmentService
+        self.dayShareService = dayShareService
+        self.dayShareNudgeStore = dayShareNudgeStore
         self.featureFlags = featureFlags
     }
 
@@ -133,6 +139,7 @@ private extension AppEnvironment {
                 insightsEnabled: true,
                 resurfacingEnabled: true,
                 commitmentsEnabled: true,
+                dayShareEnabled: true,
                 os26UIEnabled: true
             )
         }

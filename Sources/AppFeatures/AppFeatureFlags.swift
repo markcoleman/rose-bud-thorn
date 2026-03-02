@@ -7,6 +7,7 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
     public var insightsEnabled: Bool
     public var resurfacingEnabled: Bool
     public var commitmentsEnabled: Bool
+    public var dayShareEnabled: Bool
     public var os26UIEnabled: Bool
     public var browseTimeCapsuleEnabled: Bool
 
@@ -17,6 +18,7 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
         insightsEnabled: Bool = true,
         resurfacingEnabled: Bool = true,
         commitmentsEnabled: Bool = true,
+        dayShareEnabled: Bool = true,
         os26UIEnabled: Bool = true,
         browseTimeCapsuleEnabled: Bool = true
     ) {
@@ -26,6 +28,7 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
         self.insightsEnabled = insightsEnabled
         self.resurfacingEnabled = resurfacingEnabled
         self.commitmentsEnabled = commitmentsEnabled
+        self.dayShareEnabled = dayShareEnabled
         self.os26UIEnabled = os26UIEnabled
         self.browseTimeCapsuleEnabled = browseTimeCapsuleEnabled
     }
@@ -37,6 +40,7 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
         case insightsEnabled
         case resurfacingEnabled
         case commitmentsEnabled
+        case dayShareEnabled
         case os26UIEnabled
         case browseTimeCapsuleEnabled
     }
@@ -49,6 +53,7 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
         insightsEnabled = try container.decodeIfPresent(Bool.self, forKey: .insightsEnabled) ?? true
         resurfacingEnabled = try container.decodeIfPresent(Bool.self, forKey: .resurfacingEnabled) ?? true
         commitmentsEnabled = try container.decodeIfPresent(Bool.self, forKey: .commitmentsEnabled) ?? true
+        dayShareEnabled = try container.decodeIfPresent(Bool.self, forKey: .dayShareEnabled) ?? true
         os26UIEnabled = try container.decodeIfPresent(Bool.self, forKey: .os26UIEnabled) ?? true
         browseTimeCapsuleEnabled = try container.decodeIfPresent(Bool.self, forKey: .browseTimeCapsuleEnabled) ?? true
     }

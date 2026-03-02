@@ -10,6 +10,9 @@ public final class DayDetailViewModel {
     public var expandedTypes: Set<EntryType> = Set(EntryType.allCases)
     public var errorMessage: String?
     public var isSaving = false
+    public var isDayShareFeatureEnabled = true
+    public var isDayShareReady = false
+    public var dayShareDisabledReason: String?
 
     private let environment: AppEnvironment
 
@@ -22,6 +25,7 @@ public final class DayDetailViewModel {
     public func load() async {
         do {
             entry = try await environment.entryStore.load(day: dayKey)
+            await refreshDayShareState()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -51,6 +55,7 @@ public final class DayDetailViewModel {
             item.updatedAt = .now
             entry.setItem(item, for: type)
             entry.updatedAt = .now
+            await refreshDayShareState()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -64,6 +69,7 @@ public final class DayDetailViewModel {
             item.updatedAt = .now
             entry.setItem(item, for: type)
             entry.updatedAt = .now
+            await refreshDayShareState()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -75,12 +81,60 @@ public final class DayDetailViewModel {
 
         do {
             try await environment.entryStore.save(entry)
+            await refreshDayShareState()
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
+    public func prepareShareSaveIfNeeded() async {
+        await save()
+    }
+
+    public func makeDaySharePayload() async throws -> DayShareCardPayload {
+        await environment.analyticsStore.record(.dayShareInitiated)
+        do {
+            let payload = try await environment.dayShareService.makePayload(
+                for: entry,
+                resolvePhotoURL: { [environment, dayKey] ref in
+                    environment.photoURL(for: ref, day: dayKey)
+                }
+            )
+            return payload
+        } catch {
+            await environment.analyticsStore.record(.dayShareFailed)
+            throw error
+        }
+    }
+
+    public func recordDayShareSent() async {
+        await environment.analyticsStore.record(.dayShareSent)
+    }
+
+    public func recordDayShareFailed() async {
+        await environment.analyticsStore.record(.dayShareFailed)
+    }
+
+    public func disposeDaySharePayload(_ payload: DayShareCardPayload) async {
+        await environment.dayShareService.removeTemporaryFile(at: payload.outputURL)
+    }
+
     public func photoURL(for ref: PhotoRef) -> URL {
         environment.photoURL(for: ref, day: dayKey)
+    }
+
+    private func refreshDayShareState() async {
+        let flags = environment.featureFlagStore.load(defaults: environment.featureFlags)
+        isDayShareFeatureEnabled = flags.dayShareEnabled
+
+        guard flags.dayShareEnabled else {
+            isDayShareReady = false
+            dayShareDisabledReason = nil
+            return
+        }
+
+        let eligibility = await environment.dayShareService.eligibility(for: entry)
+        isDayShareReady = eligibility.isReady
+        dayShareDisabledReason = eligibility.disabledReason
     }
 }

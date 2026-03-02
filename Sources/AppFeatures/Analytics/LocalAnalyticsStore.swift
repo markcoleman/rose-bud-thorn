@@ -18,6 +18,10 @@ public enum LocalAnalyticsEvent: String, CaseIterable, Codable, Sendable {
     case summaryExportConfirmed = "summary_export_confirmed"
     case browseDayDetailsOpened = "browse_day_details_opened"
     case summaryDayDetailsOpened = "summary_day_details_opened"
+    case daySharePromptShown = "day_share_prompt_shown"
+    case dayShareInitiated = "day_share_initiated"
+    case dayShareSent = "day_share_sent"
+    case dayShareFailed = "day_share_failed"
 }
 
 public struct LocalAnalyticsSnapshot: Codable, Equatable, Sendable {
