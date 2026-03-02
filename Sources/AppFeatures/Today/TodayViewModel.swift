@@ -198,6 +198,35 @@ public final class TodayViewModel {
         environment.videoURL(for: ref, day: dayKey)
     }
 
+    public var typeCompletionStates: [EntryType: Bool] {
+        [
+            .rose: entry.isRoseComplete,
+            .bud: entry.isBudComplete,
+            .thorn: entry.isThornComplete,
+        ]
+    }
+
+    public var todayCompletionCount: Int {
+        entry.completionCount
+    }
+
+    public var isThreeOfThreeComplete: Bool {
+        entry.isCompleteForDailyCapture
+    }
+
+    public var isGridPhotoReady: Bool {
+        EntryType.allCases.allSatisfy { !entry.item(for: $0).photos.isEmpty }
+    }
+
+    public func latestPhoto(for type: EntryType) -> PhotoRef? {
+        entry.item(for: type).photos.max { lhs, rhs in
+            if lhs.createdAt == rhs.createdAt {
+                return lhs.id.uuidString < rhs.id.uuidString
+            }
+            return lhs.createdAt < rhs.createdAt
+        }
+    }
+
     public func bindingText(for type: EntryType) -> String {
         entry.item(for: type).shortText
     }

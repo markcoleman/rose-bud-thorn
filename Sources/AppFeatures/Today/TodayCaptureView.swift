@@ -45,6 +45,11 @@ public struct TodayCaptureView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 18 : 14) {
                         header(bindable)
+                        completionProgressBar(bindable)
+
+                        if bindable.isThreeOfThreeComplete, bindable.isGridPhotoReady {
+                            dayGridPhotoCard(bindable)
+                        }
 
                         engagementHub(bindable)
 
@@ -318,6 +323,153 @@ public struct TodayCaptureView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private func completionProgressBar(_ model: TodayViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Today Progress")
+                    .font(.subheadline.weight(.semibold))
+                Spacer(minLength: 0)
+                Text("\(model.todayCompletionCount)/3")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(DesignTokens.surface))
+            }
+
+            HStack(spacing: 8) {
+                ForEach(EntryType.allCases, id: \.self) { type in
+                    completionSegment(type: type, isComplete: model.typeCompletionStates[type] ?? false)
+                }
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14).fill(DesignTokens.surfaceElevated))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Today's progress. \(model.todayCompletionCount) of 3 complete.")
+        .accessibilityHint("Rose, Bud, and Thorn are checked off as you complete each reflection.")
+        .accessibilityIdentifier("today-completion-progress")
+    }
+
+    private func completionSegment(type: EntryType, isComplete: Bool) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: isComplete ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isComplete ? typeColor(for: type) : DesignTokens.textSecondaryOnSurface)
+            Text(type.title)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .foregroundStyle(DesignTokens.textPrimaryOnSurface)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(typeColor(for: type).opacity(isComplete ? 0.18 : 0.10))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(typeColor(for: type).opacity(isComplete ? 0.35 : 0.18), lineWidth: 1)
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(type.title) \(isComplete ? "complete" : "incomplete")")
+    }
+
+    @ViewBuilder
+    private func dayGridPhotoCard(_ model: TodayViewModel) -> some View {
+        if let roseRef = model.latestPhoto(for: .rose),
+           let budRef = model.latestPhoto(for: .bud),
+           let thornRef = model.latestPhoto(for: .thorn) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Day Complete")
+                    .font(.headline.weight(.semibold))
+                Text("Your grid photo is ready.")
+                    .font(.footnote)
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
+
+                HStack(alignment: .top, spacing: 8) {
+                    dayGridTile(
+                        title: "Rose",
+                        url: model.photoURL(for: roseRef),
+                        color: DesignTokens.rose,
+                        size: 146
+                    )
+
+                    VStack(spacing: 8) {
+                        dayGridTile(
+                            title: "Bud",
+                            url: model.photoURL(for: budRef),
+                            color: DesignTokens.bud,
+                            size: 69
+                        )
+                        dayGridTile(
+                            title: "Thorn",
+                            url: model.photoURL(for: thornRef),
+                            color: DesignTokens.thorn,
+                            size: 69
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity)
+
+                Button {
+                    Task {
+                        await beginDayShare(model: model, markNudgeHandled: true)
+                    }
+                } label: {
+                    if isPreparingDayShare {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Label("Share Grid", systemImage: AppIcon.shareMessage.systemName)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!model.isDayShareReady || isPreparingDayShare)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
+            }
+            .padding(14)
+            .background(RoundedRectangle(cornerRadius: 14).fill(DesignTokens.surfaceElevated))
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Day complete. Grid photo ready to share.")
+        }
+    }
+
+    private func dayGridTile(title: String, url: URL, color: Color, size: CGFloat) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            PhotoThumbnailView(url: url, size: size)
+                .frame(width: size, height: size)
+
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(color.opacity(0.95), in: Capsule())
+                .padding(6)
+                .accessibilityHidden(true)
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(color.opacity(0.32), lineWidth: 1)
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title) grid photo")
+    }
+
+    private func typeColor(for type: EntryType) -> Color {
+        switch type {
+        case .rose:
+            return DesignTokens.rose
+        case .bud:
+            return DesignTokens.bud
+        case .thorn:
+            return DesignTokens.thorn
+        }
+    }
+
     private func metadata(_ model: TodayViewModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             TextField("Tags (comma separated)", text: $tagsText)
@@ -451,10 +603,10 @@ public struct TodayCaptureView: View {
         }
 
         if summary.previousStreakCount > 0 {
-            return "You made progress for \(summary.previousStreakCount) days. Add one entry today to restart."
+            return "You made progress for \(summary.previousStreakCount) days. Complete Rose, Bud, and Thorn today to restart."
         }
 
-        return "Capture one Rose, Bud, or Thorn to fill today on your 7-day ring."
+        return "Complete Rose, Bud, and Thorn to fill today on your 7-day ring."
     }
 
     private func daySharePromptSheet(_ model: TodayViewModel) -> some View {
