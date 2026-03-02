@@ -62,6 +62,7 @@ public struct EntryRowCard: View {
                 Button(isExpanded ? "Done" : "More…", action: onToggleExpanded)
                     .font(.subheadline.weight(.semibold))
                     .buttonStyle(.plain)
+                    .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
                     .accessibilityHint("Shows additional journal details for \(type.title)")
             }
 
@@ -88,10 +89,10 @@ public struct EntryRowCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(promptSelection.theme.title) prompt")
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                     Text(promptSelection.text)
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
@@ -107,10 +108,12 @@ public struct EntryRowCard: View {
                                 Button {
                                     removeMedia(media)
                                 } label: {
-                                    Image(systemName: "xmark.circle.fill")
+                                    Image(systemName: AppIcon.closeCircle.systemName)
                                         .foregroundStyle(.white, .black.opacity(0.65))
                                 }
                                 .buttonStyle(.plain)
+                                .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
+                                .accessibilityLabel("Remove media")
                                 .offset(x: 5, y: -5)
                             }
                         }
@@ -148,7 +151,7 @@ public struct EntryRowCard: View {
 
     private var addCaptureButton: some View {
         Button(action: onAddCapture) {
-            Image(systemName: "camera.fill")
+            Image(systemName: AppIcon.camera.systemName)
                 .font(.headline)
                 .foregroundStyle(color(for: type))
                 .frame(width: 46, height: 46)
@@ -158,6 +161,7 @@ public struct EntryRowCard: View {
                 )
         }
         .buttonStyle(.plain)
+        .touchTargetMinSize(ControlTokens.minTouchTarget)
         .accessibilityLabel("Capture media for \(type.title)")
     }
 

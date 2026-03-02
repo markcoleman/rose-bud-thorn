@@ -30,7 +30,7 @@ public struct YearRailView: View {
         } label: {
             Text(title)
                 .font(.subheadline.weight(isActive ? .semibold : .regular))
-                .foregroundStyle(isActive ? Color.white : .primary)
+                .foregroundStyle(isActive ? DesignTokens.textOnAccent : DesignTokens.textPrimaryOnSurface)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(
@@ -39,5 +39,6 @@ public struct YearRailView: View {
                 )
         }
         .buttonStyle(.plain)
+        .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
     }
 }

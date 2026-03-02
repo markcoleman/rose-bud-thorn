@@ -30,8 +30,9 @@ public struct EngagementHubView: View {
     public var body: some View {
         if !insightCards.isEmpty || !resurfacedMemories.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Label("Engagement Hub", systemImage: "bolt.heart")
+                Label("Engagement Hub", systemImage: AppIcon.engagementHub.systemName)
                     .font(.headline.weight(.semibold))
+                    .foregroundStyle(DesignTokens.textPrimaryOnSurface)
 
                 if !insightCards.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -64,14 +65,14 @@ public struct EngagementHubView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(card.title)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(DesignTokens.textPrimaryOnSurface)
             Text(card.body)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                 .lineLimit(3)
             Text(card.explainability)
                 .font(.caption2)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(DesignTokens.textSecondaryOnSurface.opacity(0.75))
                 .lineLimit(2)
         }
         .frame(width: 220, alignment: .leading)
@@ -87,48 +88,48 @@ public struct EngagementHubView: View {
     private func resurfacedMemoryCard(_ memory: ResurfacedMemory) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                Label("On this day", systemImage: "clock.arrow.circlepath")
+                Label("On this day", systemImage: AppIcon.onThisDay.systemName)
                     .font(.subheadline.weight(.semibold))
                 Spacer(minLength: 0)
                 Text(memory.sourceDayKey.isoDate)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
             }
 
             Text("\(memory.type.title): \(memory.excerpt)")
                 .font(.footnote)
-                .foregroundStyle(.primary)
+                .foregroundStyle(DesignTokens.textPrimaryOnSurface)
                 .lineLimit(3)
 
             Text(memory.thenVsNowPrompt)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
 
             HStack(spacing: 8) {
                 Button("View Day Details") {
                     onOpenMemoryDay(memory)
                 }
                 .buttonStyle(.bordered)
-                .controlSize(.small)
+                .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
                 .accessibilityHint("Opens the full day entry for \(PresentationFormatting.localizedDayTitle(for: memory.sourceDayKey)).")
 
                 Button("Then vs Now") {
                     onThenVsNow(memory)
                 }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.small)
+                .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
 
                 Button("Snooze") {
                     onSnoozeMemory(memory)
                 }
                 .buttonStyle(.bordered)
-                .controlSize(.small)
+                .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
 
                 Button("Dismiss") {
                     onDismissMemory(memory)
                 }
                 .buttonStyle(.bordered)
-                .controlSize(.small)
+                .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
             }
         }
         .padding(12)

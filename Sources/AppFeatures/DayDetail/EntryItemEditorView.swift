@@ -41,8 +41,9 @@ public struct EntryItemEditorView: View {
                     .font(.headline)
                 Spacer()
                 Button(action: onAddPhoto) {
-                    Label("Add Photo", systemImage: "photo.badge.plus")
+                    Label("Add Photo", systemImage: AppIcon.addPhoto.systemName)
                 }
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
                 .buttonStyle(.bordered)
             }
 
@@ -84,6 +85,8 @@ public struct EntryItemEditorView: View {
                                         .font(.caption)
                                 }
                                 .buttonStyle(.plain)
+                                .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
+                                .accessibilityLabel("Remove photo")
                             }
                         }
                     }

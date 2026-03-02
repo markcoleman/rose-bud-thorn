@@ -32,3 +32,9 @@
 - **Comfortable color system:** brand palette with automatic light/dark adaptations for surfaces and gradients.
 - **Visual identity assets:** reusable app logo (`RoseBudLogo`) and branded header treatment for recognition across app layouts.
 - **Calm motion:** preserve subtle transitions while ensuring reduced cognitive load in expanded editor states.
+
+## 2026 Q1 Deliverables
+- Deep audit: `Docs/UX-Audit-2026Q1.md`
+- IA refinement blueprint: `Docs/IA-Blueprint-2026Q1.md`
+- Semantic icon system source: `Sources/AppFeatures/SharedUI/AppIconography.swift`
+- Shared touch target utilities: `Sources/AppFeatures/SharedUI/ControlTokens.swift` and `Sources/AppFeatures/SharedUI/TouchTargetModifier.swift`

@@ -92,11 +92,11 @@ public enum BrowseQuickFilter: String, CaseIterable, Identifiable, Sendable {
 
     public var systemImage: String {
         switch self {
-        case .all: return "tray.full"
-        case .favorites: return "star.fill"
-        case .media: return "photo.on.rectangle.angled"
-        case .thisMonth: return "calendar.badge.clock"
-        case .onThisDay: return "clock.arrow.circlepath"
+        case .all: return AppIcon.filterAll.systemName
+        case .favorites: return AppIcon.filterFavorites.systemName
+        case .media: return AppIcon.filterMedia.systemName
+        case .thisMonth: return AppIcon.filterThisMonth.systemName
+        case .onThisDay: return AppIcon.filterOnThisDay.systemName
         }
     }
 }

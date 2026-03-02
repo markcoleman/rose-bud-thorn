@@ -39,7 +39,7 @@ public struct SummaryListView: View {
                                 } else {
                                     ContentUnavailableView(
                                         "No Summary",
-                                        systemImage: "doc.text",
+                                        systemImage: AppIcon.summaryDocument.systemName,
                                         description: Text("Generate a summary to get started.")
                                     )
                                 }
@@ -92,7 +92,11 @@ public struct SummaryListView: View {
         } else if let selected = model.selectedArtifact {
             summaryDetail(selected, model: model)
         } else {
-            ContentUnavailableView("No Summary", systemImage: "doc.text", description: Text("Generate a summary to get started."))
+            ContentUnavailableView(
+                "No Summary",
+                systemImage: AppIcon.summaryDocument.systemName,
+                description: Text("Generate a summary to get started.")
+            )
         }
     }
 
@@ -170,10 +174,11 @@ public struct SummaryListView: View {
         Button {
             Task { await model.generateCurrent() }
         } label: {
-            Label("Generate Current", systemImage: "sparkles")
+            Label("Generate Current", systemImage: AppIcon.sparkles.systemName)
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
+        .touchTargetMinSize(ControlTokens.minTouchTarget)
         .padding(.horizontal)
         .keyboardShortcut("g", modifiers: [.command, .shift])
 
@@ -181,10 +186,11 @@ public struct SummaryListView: View {
             Button {
                 isWeeklyReviewPresented = true
             } label: {
-                Label("Start Weekly Review", systemImage: "checklist")
+                Label("Start Weekly Review", systemImage: AppIcon.checklist.systemName)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
+            .touchTargetMinSize(ControlTokens.minTouchTarget)
             .padding(.horizontal)
         }
 
@@ -208,14 +214,15 @@ public struct SummaryListView: View {
         return VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(DesignTokens.textPrimaryOnSurface)
 
             Text(range)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
 
             Text(metadata)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title). \(range). \(metadata).")

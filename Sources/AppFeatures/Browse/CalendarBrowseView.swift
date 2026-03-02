@@ -23,7 +23,7 @@ public struct CalendarBrowseView: View {
             if let selectedDayKey {
                 Text("Selected: \(selectedDayKey.isoDate)")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
             }
 
             monthEntryGrid
@@ -54,7 +54,7 @@ public struct CalendarBrowseView: View {
                 guard let previous else { return }
                 selectedDayKey = previous
             } label: {
-                Label("Older Entry", systemImage: "chevron.left")
+                Label("Older Entry", systemImage: AppIcon.navigateBackward.systemName)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -64,7 +64,7 @@ public struct CalendarBrowseView: View {
                 guard let next else { return }
                 selectedDayKey = next
             } label: {
-                Label("Newer Entry", systemImage: "chevron.right")
+                Label("Newer Entry", systemImage: AppIcon.navigateForward.systemName)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -97,20 +97,53 @@ public struct CalendarBrowseView: View {
     }
 
     private func dayCell(day: Int, isSelected: Bool, hasEntry: Bool) -> some View {
-        Text(String(day))
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(isSelected ? Color.white : (hasEntry ? DesignTokens.accent : .secondary))
-            .frame(maxWidth: .infinity, minHeight: 30)
-            .background(
-                Circle()
-                    .fill(
-                        isSelected ? DesignTokens.accent :
-                            (hasEntry ? DesignTokens.accent.opacity(0.18) : Color.clear)
-                    )
-            )
-            .overlay(
-                Circle()
-                    .strokeBorder(hasEntry ? DesignTokens.accent.opacity(0.35) : Color.secondary.opacity(0.15), lineWidth: 1)
-            )
+        Button {
+            guard let date = dateForDay(day) else { return }
+            viewModel.selectedDate = date
+            selectedDayKey = viewModel.dayKey(for: date)
+        } label: {
+            Text(String(day))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(
+                    isSelected
+                        ? DesignTokens.textOnAccent
+                        : (hasEntry ? DesignTokens.accent : DesignTokens.textSecondaryOnSurface)
+                )
+                .frame(maxWidth: .infinity, minHeight: ControlTokens.minTouchTarget)
+                .background(
+                    Circle()
+                        .fill(
+                            isSelected
+                                ? DesignTokens.accent
+                                : (hasEntry ? DesignTokens.accent.opacity(0.18) : Color.clear)
+                        )
+                )
+                .overlay(
+                    Circle()
+                        .strokeBorder(
+                            hasEntry ? DesignTokens.focusStroke : DesignTokens.dividerSubtle,
+                            lineWidth: 1
+                        )
+                )
+        }
+        .buttonStyle(.plain)
+        .touchTargetMinSize(ControlTokens.minTouchTarget)
+        .accessibilityLabel(
+            hasEntry
+                ? "Day \(day), has entry"
+                : "Day \(day), no entry"
+        )
+        .accessibilityHint("Selects day \(day) in the current month.")
+    }
+
+    private func dateForDay(_ day: Int) -> Date? {
+        let calendar = Calendar(identifier: .gregorian)
+        let base = viewModel.selectedDate
+        let components = calendar.dateComponents([.year, .month], from: base)
+        var dayComponents = DateComponents()
+        dayComponents.year = components.year
+        dayComponents.month = components.month
+        dayComponents.day = day
+        return calendar.date(from: dayComponents)
     }
 }

@@ -41,10 +41,10 @@ public struct MemoryDayCardView: View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text(Self.dayTitle(for: snapshot.dayKey))
                 .font(.headline.weight(.semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(DesignTokens.textPrimaryOnSurface)
 
             if snapshot.favorite {
-                Image(systemName: "star.fill")
+                Image(systemName: AppIcon.favoriteOn.systemName)
                     .foregroundStyle(.yellow)
                     .accessibilityHidden(true)
             }
@@ -95,7 +95,7 @@ public struct MemoryDayCardView: View {
                     .accessibilityHidden(true)
                 Text(text)
                     .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(DesignTokens.textPrimaryOnSurface)
                     .lineLimit(1)
             }
         }
@@ -104,12 +104,12 @@ public struct MemoryDayCardView: View {
     private var metadataRow: some View {
         HStack(spacing: 10) {
             if let mood = snapshot.mood {
-                Label("\(mood)/5", systemImage: "face.smiling")
+                Label("\(mood)/5", systemImage: AppIcon.mood.systemName)
                     .labelStyle(.titleAndIcon)
             }
 
             if snapshot.hasMedia {
-                Label("\(snapshot.mediaCount)", systemImage: "photo.on.rectangle.angled")
+                Label("\(snapshot.mediaCount)", systemImage: AppIcon.mediaCount.systemName)
                     .labelStyle(.titleAndIcon)
             }
 
@@ -119,7 +119,7 @@ public struct MemoryDayCardView: View {
             }
         }
         .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(DesignTokens.textSecondaryOnSurface)
     }
 
     private var accessibilitySummary: String {

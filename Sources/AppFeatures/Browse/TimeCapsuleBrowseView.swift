@@ -54,9 +54,10 @@ public struct TimeCapsuleBrowseView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Revisit your moments")
                 .font(.title2.weight(.bold))
+                .foregroundStyle(DesignTokens.textPrimaryOnSurface)
             Text("Browse your past in chapters you can feel.")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
         }
     }
 
@@ -92,14 +93,14 @@ public struct TimeCapsuleBrowseView: View {
                 Text("Your timeline starts with today")
                     .font(.headline)
                 Text("Capture your first Rose, Bud, or Thorn and this space will become your memory stream.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
 
                 Button {
                     if let todayURL = URL(string: "rosebudthorn://today?source=browse-empty") {
                         openURL(todayURL)
                     }
                 } label: {
-                    Label("Capture Today", systemImage: "sparkles")
+                    Label("Capture Today", systemImage: AppIcon.sparkles.systemName)
                 }
                 .buttonStyle(.borderedProminent)
             }

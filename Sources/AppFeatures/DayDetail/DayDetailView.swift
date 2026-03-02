@@ -28,7 +28,7 @@ public struct DayDetailView: View {
                     if bindable.isDayShareFeatureEnabled, let reason = bindable.dayShareDisabledReason {
                         Text(reason)
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                     }
 
                     ForEach(EntryType.allCases, id: \.self) { type in
@@ -70,9 +70,10 @@ public struct DayDetailView: View {
                         if isPreparingDayShare {
                             ProgressView()
                         } else {
-                            Label("Share", systemImage: "message.fill")
+                            Label("Share", systemImage: AppIcon.shareMessage.systemName)
                         }
                     }
+                    .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                     .disabled(!bindable.isDayShareReady || isPreparingDayShare)
                     .help(bindable.isDayShareReady ? "Share this day in Messages." : (bindable.dayShareDisabledReason ?? "Day sharing is unavailable."))
                 }
@@ -80,6 +81,7 @@ public struct DayDetailView: View {
                 Button("Save") {
                     Task { await bindable.save() }
                 }
+                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                 .keyboardShortcut("s", modifiers: [.command])
                 .disabled(bindable.isSaving)
             }
@@ -134,9 +136,9 @@ public struct DayDetailView: View {
                         .font(.headline)
                     Text(payload.messageBody)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                     ShareLink(item: payload.outputURL) {
-                        Label("Share Card", systemImage: "square.and.arrow.up")
+                        Label("Share Card", systemImage: AppIcon.shareExport.systemName)
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
