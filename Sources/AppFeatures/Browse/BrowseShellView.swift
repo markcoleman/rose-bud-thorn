@@ -55,7 +55,7 @@ public struct BrowseShellView: View {
                                 .font(.subheadline.weight(.semibold))
                             Text(PresentationFormatting.localizedDayTitle(for: selectedDayKey))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -81,9 +81,10 @@ public struct BrowseShellView: View {
                         if viewModel.isLoading {
                             ProgressView()
                         } else {
-                            Image(systemName: "arrow.clockwise")
+                            Image(systemName: AppIcon.refresh.systemName)
                         }
                     }
+                    .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                     .help("Refresh timeline")
                 }
             }

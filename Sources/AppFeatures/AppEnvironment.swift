@@ -62,7 +62,7 @@ public struct AppEnvironment: Sendable {
         )
         let commitmentService = CommitmentService(configuration: configuration)
         let dayShareService = DayShareService()
-        let dayShareNudgeStore = DayShareNudgeStore()
+        let dayShareNudgeStore = DayShareNudgeStore(defaults: Self.dayShareNudgeDefaults())
 
         self.entryRepository = entryRepository
         self.attachmentRepository = attachmentRepository
@@ -128,6 +128,13 @@ private extension AppEnvironment {
             return .standard
         }
         return UserDefaults(suiteName: "FeatureFlagStore.Tests.\(UUID().uuidString)") ?? .standard
+    }
+
+    static func dayShareNudgeDefaults() -> UserDefaults {
+        guard isTestProcess else {
+            return .standard
+        }
+        return UserDefaults(suiteName: "DayShareNudgeStore.Tests.\(UUID().uuidString)") ?? .standard
     }
 
     static func defaultFeatureFlags() -> AppFeatureFlags {

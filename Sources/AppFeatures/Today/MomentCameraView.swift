@@ -70,12 +70,13 @@ struct MomentCameraView: View {
                 Button {
                     dismiss()
                 } label: {
-                    Image(systemName: "xmark")
+                    Image(systemName: AppIcon.close.systemName)
                         .font(.headline)
                         .foregroundStyle(.white)
                         .frame(width: 44, height: 44)
                         .background(.black.opacity(0.4), in: Circle())
                 }
+                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
 
                 Spacer()
 
@@ -88,12 +89,13 @@ struct MomentCameraView: View {
                 Button {
                     controller.flipCamera()
                 } label: {
-                    Image(systemName: "camera.rotate")
+                    Image(systemName: AppIcon.cameraRotate.systemName)
                         .font(.headline)
                         .foregroundStyle(.white)
                         .frame(width: 44, height: 44)
                         .background(.black.opacity(0.4), in: Circle())
                 }
+                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                 .disabled(controller.isRecording)
                 .opacity(controller.isRecording ? 0.5 : 1)
             }
@@ -126,13 +128,14 @@ struct MomentCameraView: View {
                     onPickFromLibrary()
                     dismiss()
                 } label: {
-                    Label("Photo Library", systemImage: "photo.on.rectangle")
+                    Label("Photo Library", systemImage: AppIcon.photoLibrary.systemName)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(.white.opacity(0.2), in: RoundedRectangle(cornerRadius: 10))
                 }
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
                 .disabled(controller.isRecording)
                 .padding(.horizontal, 24)
 
@@ -152,6 +155,7 @@ struct MomentCameraView: View {
                     }
                 }
                 .disabled(controller.isRecording)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
                 .accessibilityLabel(controller.mode == .photo ? "Take photo" : "Record 3 second video")
 
                 if controller.isRecording {
@@ -178,6 +182,7 @@ struct MomentCameraView: View {
                             .padding(.vertical, 8)
                             .background(controller.selectedZoomPreset == preset ? Color.white : Color.white.opacity(0.2), in: Capsule())
                     }
+                    .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
                     .disabled(controller.isRecording)
                 }
             }
@@ -187,7 +192,7 @@ struct MomentCameraView: View {
 
     private func permissionErrorView(title: String, message: String) -> some View {
         VStack(spacing: 14) {
-            Image(systemName: "camera.metering.unknown")
+            Image(systemName: AppIcon.cameraUnavailable.systemName)
                 .font(.system(size: 40))
                 .foregroundStyle(.white.opacity(0.9))
 
@@ -236,12 +241,13 @@ struct MomentCameraView: View {
                 Button {
                     dismiss()
                 } label: {
-                    Image(systemName: "xmark")
+                    Image(systemName: AppIcon.close.systemName)
                         .font(.headline)
                         .foregroundStyle(.white)
-                        .frame(width: 40, height: 40)
+                        .frame(width: 44, height: 44)
                         .background(.black.opacity(0.45), in: Circle())
                 }
+                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -258,7 +264,7 @@ struct MomentCameraView: View {
                                 .resizable()
                                 .scaledToFit()
                         case .failure:
-                            Label("Preview unavailable", systemImage: "exclamationmark.triangle")
+                            Label("Preview unavailable", systemImage: AppIcon.warning.systemName)
                                 .foregroundStyle(.white)
                         @unknown default:
                             EmptyView()

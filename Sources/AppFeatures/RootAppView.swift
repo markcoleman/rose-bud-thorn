@@ -119,19 +119,20 @@ public struct RootAppView: View {
         ZStack {
             Rectangle().fill(.ultraThinMaterial)
             VStack(spacing: 16) {
-                Image(systemName: "lock.shield")
+                Image(systemName: AppIcon.lockShield.systemName)
                     .font(.largeTitle)
                 Text("App Locked")
                     .font(.title3.weight(.semibold))
                 Button("Unlock") {
                     Task { await lockManager.unlock() }
                 }
+                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                 .buttonStyle(.borderedProminent)
                 if let error = lockManager.lastError {
                     Text(error)
                         .font(.footnote)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                         .padding(.horizontal)
                 }
             }

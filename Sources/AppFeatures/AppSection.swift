@@ -21,11 +21,11 @@ public enum AppSection: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     public var systemImage: String {
         switch self {
-        case .today: return "sun.max"
-        case .browse: return "calendar"
-        case .summaries: return "doc.text.magnifyingglass"
-        case .search: return "magnifyingglass"
-        case .settings: return "gearshape"
+        case .today: return AppIcon.sectionToday.systemName
+        case .browse: return AppIcon.sectionBrowse.systemName
+        case .summaries: return AppIcon.sectionSummaries.systemName
+        case .search: return AppIcon.sectionSearch.systemName
+        case .settings: return AppIcon.sectionSettings.systemName
         }
     }
 }

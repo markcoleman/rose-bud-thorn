@@ -122,9 +122,10 @@ public struct TodayCaptureView: View {
                             if isPreparingDayShare {
                                 ProgressView()
                             } else {
-                                Label("Share", systemImage: "message.fill")
+                                Label("Share", systemImage: AppIcon.shareMessage.systemName)
                             }
                         }
+                        .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                         .disabled(!bindable.isDayShareReady || isPreparingDayShare)
                         .help(bindable.isDayShareReady ? "Share your day in Messages." : (bindable.dayShareDisabledReason ?? "Day sharing is unavailable."))
                     }
@@ -214,7 +215,7 @@ public struct TodayCaptureView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         ShareLink(item: payload.outputURL) {
-                            Label("Share Card", systemImage: "square.and.arrow.up")
+                            Label("Share Card", systemImage: AppIcon.shareExport.systemName)
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
@@ -305,13 +306,13 @@ public struct TodayCaptureView: View {
         VStack(alignment: .leading, spacing: 8) {
             BrandMarkView()
             Text(Date.now.formatted(date: .complete, time: .omitted))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                 .accessibilityLabel("Today, \(Date.now.formatted(date: .complete, time: .omitted))")
 
             if model.isDayShareFeatureEnabled, let reason = model.dayShareDisabledReason {
                 Text(reason)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -347,9 +348,15 @@ public struct TodayCaptureView: View {
                 Button {
                     model.toggleFavorite()
                 } label: {
-                    Label("Favorite", systemImage: model.entry.favorite ? "star.fill" : "star")
+                    Label(
+                        "Favorite",
+                        systemImage: model.entry.favorite
+                            ? AppIcon.favoriteOn.systemName
+                            : AppIcon.favoriteOff.systemName
+                    )
                 }
                 .buttonStyle(.bordered)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
@@ -367,9 +374,15 @@ public struct TodayCaptureView: View {
                     Button {
                         model.toggleFavorite()
                     } label: {
-                        Label("Favorite", systemImage: model.entry.favorite ? "star.fill" : "star")
+                        Label(
+                            "Favorite",
+                            systemImage: model.entry.favorite
+                                ? AppIcon.favoriteOn.systemName
+                                : AppIcon.favoriteOff.systemName
+                        )
                     }
                     .buttonStyle(.bordered)
+                    .touchTargetMinSize(ControlTokens.minTouchTarget)
                 }
             }
         }
@@ -407,7 +420,7 @@ public struct TodayCaptureView: View {
                     .font(.headline)
                 Text(streakMessage(summary))
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
             }
 
             Spacer(minLength: 0)
@@ -450,7 +463,7 @@ public struct TodayCaptureView: View {
                 Text("Day Complete")
                     .font(.title3.weight(.semibold))
                 Text("Send your Rose, Bud, Thorn card in Messages.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
 
                 Button {
                     model.markShareNudgeHandled()
@@ -458,16 +471,18 @@ public struct TodayCaptureView: View {
                         await beginDayShare(model: model, markNudgeHandled: false)
                     }
                 } label: {
-                    Label("Send in Messages", systemImage: "message.fill")
+                    Label("Send in Messages", systemImage: AppIcon.shareMessage.systemName)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(!model.isDayShareReady || isPreparingDayShare)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
 
                 Button("Not Now") {
                     model.dismissShareNudge()
                 }
                 .buttonStyle(.bordered)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
 
                 Spacer(minLength: 0)
             }

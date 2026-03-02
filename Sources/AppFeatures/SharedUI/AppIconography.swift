@@ -1,0 +1,112 @@
+public enum AppIcon: Sendable {
+    case sectionToday
+    case sectionBrowse
+    case sectionSummaries
+    case sectionSearch
+    case sectionSettings
+
+    case lockShield
+    case refresh
+    case shareMessage
+    case shareExport
+    case addPhoto
+    case close
+    case closeCircle
+    case camera
+    case cameraRotate
+    case photoLibrary
+    case cameraUnavailable
+    case navigateBackward
+    case navigateForward
+
+    case favoriteOn
+    case favoriteOff
+    case filterAll
+    case filterFavorites
+    case filterMedia
+    case filterThisMonth
+    case filterOnThisDay
+
+    case engagementHub
+    case onThisDay
+    case checklist
+    case sparkles
+    case alert
+    case warning
+    case summaryDocument
+    case mood
+    case mediaCount
+
+    public var systemName: String {
+        switch self {
+        case .sectionToday:
+            return "sun.max"
+        case .sectionBrowse:
+            return "calendar"
+        case .sectionSummaries:
+            return "doc.text.magnifyingglass"
+        case .sectionSearch:
+            return "magnifyingglass"
+        case .sectionSettings:
+            return "gearshape"
+        case .lockShield:
+            return "lock.shield"
+        case .refresh:
+            return "arrow.clockwise"
+        case .shareMessage:
+            return "message.fill"
+        case .shareExport:
+            return "square.and.arrow.up"
+        case .addPhoto:
+            return "photo.badge.plus"
+        case .close:
+            return "xmark"
+        case .closeCircle:
+            return "xmark.circle.fill"
+        case .camera:
+            return "camera.fill"
+        case .cameraRotate:
+            return "camera.rotate"
+        case .photoLibrary:
+            return "photo.on.rectangle"
+        case .cameraUnavailable:
+            return "camera.metering.unknown"
+        case .navigateBackward:
+            return "chevron.left"
+        case .navigateForward:
+            return "chevron.right"
+        case .favoriteOn:
+            return "star.fill"
+        case .favoriteOff:
+            return "star"
+        case .filterAll:
+            return "tray.full"
+        case .filterFavorites:
+            return "star.fill"
+        case .filterMedia:
+            return "photo.on.rectangle.angled"
+        case .filterThisMonth:
+            return "calendar.badge.clock"
+        case .filterOnThisDay:
+            return "clock.arrow.circlepath"
+        case .engagementHub:
+            return "bolt.heart"
+        case .onThisDay:
+            return "clock.arrow.circlepath"
+        case .checklist:
+            return "checklist"
+        case .sparkles:
+            return "sparkles"
+        case .alert:
+            return "exclamationmark.triangle.fill"
+        case .warning:
+            return "exclamationmark.triangle"
+        case .summaryDocument:
+            return "doc.text"
+        case .mood:
+            return "face.smiling"
+        case .mediaCount:
+            return "photo.on.rectangle.angled"
+        }
+    }
+}

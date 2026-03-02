@@ -75,10 +75,11 @@ public struct SearchView: View {
                             isSearchFieldFocused = false
                             Task { await bindable.runSearch() }
                         } label: {
-                            Label("Search", systemImage: "magnifyingglass")
+                            Label("Search", systemImage: AppIcon.sectionSearch.systemName)
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
+                        .touchTargetMinSize(ControlTokens.minTouchTarget)
                         .keyboardShortcut("f", modifiers: [.command])
                         .listRowInsets(
                             EdgeInsets(
@@ -126,7 +127,7 @@ public struct SearchView: View {
                         if bindable.results.isEmpty {
                             ContentUnavailableView(
                                 "No Results Yet",
-                                systemImage: "magnifyingglass",
+                                systemImage: AppIcon.sectionSearch.systemName,
                                 description: Text("Run a search to view matching days.")
                             )
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -145,7 +146,7 @@ public struct SearchView: View {
                                         Text(day.isoDate)
                                         Text(day.timeZoneID)
                                             .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                                     }
                                 }
                             }
@@ -162,6 +163,7 @@ public struct SearchView: View {
                         Button("Done") {
                             isSearchFieldFocused = false
                         }
+                        .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                     }
                 }
             }

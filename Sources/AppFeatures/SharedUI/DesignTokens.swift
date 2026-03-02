@@ -9,9 +9,12 @@ public enum DesignTokens {
     public static let rose = Color(red: 0.95, green: 0.30, blue: 0.72)
     public static let bud = Color(red: 0.24, green: 0.80, blue: 0.49)
     public static let thorn = Color(red: 0.40, green: 0.34, blue: 0.86)
+
+    static let surfaceLight: (Double, Double, Double) = (0.99, 0.96, 0.98)
+    static let surfaceDark: (Double, Double, Double) = (0.11, 0.11, 0.16)
     public static let surface = platformColor(
-        light: (0.99, 0.96, 0.98),
-        dark: (0.11, 0.11, 0.16)
+        light: surfaceLight,
+        dark: surfaceDark
     )
     public static let surfaceElevated = platformColor(
         light: (1.0, 1.0, 1.0),
@@ -19,7 +22,55 @@ public enum DesignTokens {
         lightAlpha: 0.9,
         darkAlpha: 0.95
     )
-    public static let accent = Color(red: 0.10, green: 0.72, blue: 0.86)
+
+    static let textPrimaryOnSurfaceLight: (Double, Double, Double) = (0.16, 0.10, 0.23)
+    static let textPrimaryOnSurfaceDark: (Double, Double, Double) = (0.97, 0.96, 0.99)
+    public static let textPrimaryOnSurface = platformColor(
+        light: textPrimaryOnSurfaceLight,
+        dark: textPrimaryOnSurfaceDark
+    )
+
+    static let textSecondaryOnSurfaceLight: (Double, Double, Double) = (0.35, 0.28, 0.45)
+    static let textSecondaryOnSurfaceDark: (Double, Double, Double) = (0.77, 0.78, 0.86)
+    public static let textSecondaryOnSurface = platformColor(
+        light: textSecondaryOnSurfaceLight,
+        dark: textSecondaryOnSurfaceDark
+    )
+
+    static let textOnAccentLight: (Double, Double, Double) = (1.0, 1.0, 1.0)
+    static let textOnAccentDark: (Double, Double, Double) = (1.0, 1.0, 1.0)
+    public static let textOnAccent = platformColor(
+        light: textOnAccentLight,
+        dark: textOnAccentDark
+    )
+
+    static let interactivePrimaryLight: (Double, Double, Double) = (0.24, 0.33, 0.77)
+    static let interactivePrimaryDark: (Double, Double, Double) = (0.31, 0.40, 0.86)
+    public static let interactivePrimary = platformColor(
+        light: interactivePrimaryLight,
+        dark: interactivePrimaryDark
+    )
+
+    public static let interactivePrimaryDisabled = platformColor(
+        light: (0.63, 0.66, 0.75),
+        dark: (0.34, 0.36, 0.45)
+    )
+
+    public static let focusStroke = platformColor(
+        light: interactivePrimaryLight,
+        dark: (0.58, 0.67, 0.98),
+        lightAlpha: 0.65,
+        darkAlpha: 0.75
+    )
+
+    public static let dividerSubtle = platformColor(
+        light: (0.16, 0.13, 0.22),
+        dark: (0.96, 0.96, 0.99),
+        lightAlpha: 0.12,
+        darkAlpha: 0.18
+    )
+
+    public static let accent = interactivePrimary
     public static let warning = Color(red: 0.99, green: 0.62, blue: 0.33)
     public static let success = Color(red: 0.49, green: 0.86, blue: 0.33)
 

@@ -12,6 +12,53 @@ final class AccessibilitySmokeUITests: XCTestCase {
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 6))
         XCTAssertTrue(app.textFields["Bud for today"].exists)
         XCTAssertTrue(app.textFields["Thorn for today"].exists)
-        XCTAssertTrue(app.buttons["Capture media for Rose"].exists)
+        let roseCapture = app.buttons["Capture media for Rose"]
+        let budCapture = app.buttons["Capture media for Bud"]
+        let thornCapture = app.buttons["Capture media for Thorn"]
+        XCTAssertTrue(roseCapture.exists)
+        XCTAssertTrue(budCapture.exists)
+        XCTAssertTrue(thornCapture.exists)
+        XCTAssertTrue(roseCapture.isHittable)
+        XCTAssertTrue(budCapture.isHittable)
+        XCTAssertTrue(thornCapture.isHittable)
+    }
+
+    func testCoreTabNavigationDiscoverability() {
+        let app = XCUIApplication()
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.tabBars.buttons["Browse"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Summaries"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Search"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Settings"].exists)
+
+        app.tabBars.buttons["Browse"].tap()
+        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 4))
+
+        app.tabBars.buttons["Summaries"].tap()
+        XCTAssertTrue(app.navigationBars["Summaries"].waitForExistence(timeout: 4))
+
+        app.tabBars.buttons["Search"].tap()
+        XCTAssertTrue(app.navigationBars["Search"].waitForExistence(timeout: 4))
+    }
+
+    func testEngagementActionsAreHittableWhenPresent() {
+        let app = XCUIApplication()
+        app.launch()
+
+        let actions = [
+            "View Day Details",
+            "Then vs Now",
+            "Snooze",
+            "Dismiss",
+        ]
+
+        for action in actions {
+            let button = app.buttons[action].firstMatch
+            if button.exists {
+                XCTAssertTrue(button.isHittable, "Expected \(action) to be hittable when shown.")
+            }
+        }
     }
 }
