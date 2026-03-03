@@ -6,8 +6,8 @@ final class CaptureDayFlowUITests: XCTestCase {
     }
 
     func testCaptureAndExpandFlow() {
-        let app = XCUIApplication()
-        app.launch()
+        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
+        dismissOnboardingIfPresented(app)
 
         let roseField = app.textFields["Rose for today"]
         XCTAssertTrue(roseField.waitForExistence(timeout: 6))

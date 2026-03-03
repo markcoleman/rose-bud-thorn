@@ -798,6 +798,94 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(failedCount, 1)
     }
 
+    func testOnboardingStateStoreDefaultsToUnseenAndPersistsCompletion() {
+        let defaults = UserDefaults(suiteName: "OnboardingStateStoreTests.\(UUID().uuidString)")!
+        let key = "OnboardingStateStoreTests.key"
+
+        let store = OnboardingStateStore(defaults: defaults, key: key)
+        XCTAssertFalse(store.hasCompletedFirstLaunchOnboarding)
+        XCTAssertTrue(store.shouldPresentFirstLaunchOnboarding())
+
+        store.markFirstLaunchOnboardingCompleted()
+        XCTAssertTrue(store.hasCompletedFirstLaunchOnboarding)
+        XCTAssertFalse(store.shouldPresentFirstLaunchOnboarding())
+
+        let reloaded = OnboardingStateStore(defaults: defaults, key: key)
+        XCTAssertTrue(reloaded.hasCompletedFirstLaunchOnboarding)
+        XCTAssertFalse(reloaded.shouldPresentFirstLaunchOnboarding())
+    }
+
+    func testOnboardingFlowControllerAutoAdvancesAfterTenTicks() {
+        var controller = OnboardingFlowController(slideCount: 3)
+
+        for _ in 0..<9 {
+            XCTAssertEqual(controller.tick(), .none)
+        }
+
+        XCTAssertEqual(controller.tick(), .autoAdvanced)
+        XCTAssertTrue(controller.advanceToNextSlide())
+        XCTAssertEqual(controller.selectedIndex, 1)
+        XCTAssertEqual(controller.countdown, OnboardingFlowController.defaultCountdownSeconds)
+    }
+
+    func testOnboardingFlowControllerAutoCompletesOnLastSlide() {
+        var controller = OnboardingFlowController(slideCount: 3)
+        controller.selectSlide(at: 2)
+
+        for _ in 0..<9 {
+            XCTAssertEqual(controller.tick(), .none)
+        }
+
+        XCTAssertEqual(controller.tick(), .autoCompleted)
+    }
+
+    func testOnboardingFlowControllerResetsTimerOnInteraction() {
+        var controller = OnboardingFlowController(slideCount: 3)
+
+        _ = controller.tick()
+        _ = controller.tick()
+        XCTAssertEqual(controller.countdown, 8)
+
+        controller.registerInteraction()
+        XCTAssertEqual(controller.countdown, OnboardingFlowController.defaultCountdownSeconds)
+
+        controller.selectSlide(at: 1)
+        XCTAssertEqual(controller.selectedIndex, 1)
+        XCTAssertEqual(controller.countdown, OnboardingFlowController.defaultCountdownSeconds)
+    }
+
+    func testOnboardingAnalyticsEventsTrackFunnelCounts() async {
+        let defaults = UserDefaults(suiteName: "OnboardingAnalyticsTests.\(UUID().uuidString)")!
+        let store = LocalAnalyticsStore(defaults: defaults, dayCalculator: DayKeyCalculator())
+
+        await store.record(.onboardingStarted)
+        await store.record(.onboardingRoseViewed)
+        await store.record(.onboardingBudViewed)
+        await store.record(.onboardingThornViewed)
+        await store.record(.onboardingAutoAdvanced, count: 2)
+        await store.record(.onboardingSkipped)
+        await store.record(.onboardingCompleted)
+        await store.record(.onboardingReplayOpened)
+
+        let started = await store.totalCount(for: .onboardingStarted)
+        let roseViewed = await store.totalCount(for: .onboardingRoseViewed)
+        let budViewed = await store.totalCount(for: .onboardingBudViewed)
+        let thornViewed = await store.totalCount(for: .onboardingThornViewed)
+        let autoAdvanced = await store.totalCount(for: .onboardingAutoAdvanced)
+        let skipped = await store.totalCount(for: .onboardingSkipped)
+        let completed = await store.totalCount(for: .onboardingCompleted)
+        let replayOpened = await store.totalCount(for: .onboardingReplayOpened)
+
+        XCTAssertEqual(started, 1)
+        XCTAssertEqual(roseViewed, 1)
+        XCTAssertEqual(budViewed, 1)
+        XCTAssertEqual(thornViewed, 1)
+        XCTAssertEqual(autoAdvanced, 2)
+        XCTAssertEqual(skipped, 1)
+        XCTAssertEqual(completed, 1)
+        XCTAssertEqual(replayOpened, 1)
+    }
+
     func testFeatureFlagStoreRoundTripIncludesEngagementFlags() {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!
         let store = FeatureFlagStore(defaults: defaults, key: "flags.test")

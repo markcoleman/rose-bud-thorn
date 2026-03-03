@@ -8,9 +8,15 @@ public struct SettingsView: View {
     @State private var featureFlags: AppFeatureFlags
 
     private let environment: AppEnvironment
+    private let onReplayOnboarding: (() -> Void)?
 
-    public init(lockManager: PrivacyLockManager, environment: AppEnvironment) {
+    public init(
+        lockManager: PrivacyLockManager,
+        environment: AppEnvironment,
+        onReplayOnboarding: (() -> Void)? = nil
+    ) {
         self.environment = environment
+        self.onReplayOnboarding = onReplayOnboarding
         _viewModel = State(initialValue: PrivacyLockViewModel(manager: lockManager))
         _reminderPreferences = State(initialValue: environment.reminderPreferencesStore.load())
         _promptPreferences = State(initialValue: environment.promptPreferencesStore.load())
@@ -87,6 +93,14 @@ public struct SettingsView: View {
             }
             .onChange(of: featureFlags) { _, newValue in
                 environment.featureFlagStore.save(newValue)
+            }
+
+            if let onReplayOnboarding {
+                Section("Onboarding") {
+                    Button("Replay onboarding") {
+                        onReplayOnboarding()
+                    }
+                }
             }
 
             Section("Privacy") {

@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 import CoreModels
 #if !os(macOS)
 import UIKit
@@ -11,6 +12,8 @@ public struct RootAppView: View {
     @State private var captureLaunchRequest: CaptureLaunchRequest?
     @State private var todayRefreshToken = 0
     @State private var summaryLaunchRequest: SummaryLaunchRequest?
+    @State private var onboardingPresentation: OnboardingPresentationSource?
+    @State private var didApplyLaunchOverrides = false
     @Environment(\.scenePhase) private var scenePhase
 
     private let environment: AppEnvironment
@@ -22,6 +25,20 @@ public struct RootAppView: View {
     }
 
     public var body: some View {
+        #if os(macOS)
+        rootContent
+            .sheet(item: $onboardingPresentation) { source in
+                onboardingView(for: source)
+            }
+        #else
+        rootContent
+            .fullScreenCover(item: $onboardingPresentation) { source in
+                onboardingView(for: source)
+            }
+        #endif
+    }
+
+    private var rootContent: some View {
         Group {
             if shouldUseSplitView {
                 splitView
@@ -40,11 +57,23 @@ public struct RootAppView: View {
                 lockManager.lockIfNeeded()
             } else {
                 consumePendingIntentLaunchIfNeeded()
+                presentFirstLaunchOnboardingIfNeeded()
             }
         }
         .onOpenURL(perform: handleDeepLink)
         .task {
+            applyLaunchOverridesIfNeeded()
             consumePendingIntentLaunchIfNeeded()
+            presentFirstLaunchOnboardingIfNeeded()
+        }
+    }
+
+    private func onboardingView(for source: OnboardingPresentationSource) -> some View {
+        OnboardingFlowView(
+            countdownSeconds: onboardingCountdownSeconds,
+            analyticsStore: environment.analyticsStore
+        ) { reason in
+            handleOnboardingDismiss(reason, source: source)
         }
     }
 
@@ -70,7 +99,11 @@ public struct RootAppView: View {
                 .tabItem { Label("Search", systemImage: AppSection.search.systemImage) }
                 .tag(AppSection.search)
 
-            SettingsView(lockManager: lockManager, environment: environment)
+            SettingsView(
+                lockManager: lockManager,
+                environment: environment,
+                onReplayOnboarding: replayOnboardingFromSettings
+            )
                 .tabItem { Label("Settings", systemImage: AppSection.settings.systemImage) }
                 .tag(AppSection.settings)
         }
@@ -111,7 +144,11 @@ public struct RootAppView: View {
         case .search:
             SearchView(environment: environment, selectedDayKey: $selectedDayKey)
         case .settings:
-            SettingsView(lockManager: lockManager, environment: environment)
+            SettingsView(
+                lockManager: lockManager,
+                environment: environment,
+                onReplayOnboarding: replayOnboardingFromSettings
+            )
         }
     }
 
@@ -246,6 +283,66 @@ public struct RootAppView: View {
         handleDeepLink(pendingURL)
     }
 
+    private func applyLaunchOverridesIfNeeded() {
+        guard !didApplyLaunchOverrides else { return }
+        didApplyLaunchOverrides = true
+
+        let launchArguments = ProcessInfo.processInfo.arguments
+        if launchArguments.contains("-reset-onboarding") {
+            environment.onboardingStateStore.reset()
+        }
+    }
+
+    private func presentFirstLaunchOnboardingIfNeeded() {
+        guard onboardingPresentation == nil else { return }
+        guard environment.onboardingStateStore.shouldPresentFirstLaunchOnboarding() else { return }
+        onboardingPresentation = .firstLaunch
+    }
+
+    private func replayOnboardingFromSettings() {
+        Task {
+            await environment.analyticsStore.record(.onboardingReplayOpened)
+        }
+        onboardingPresentation = .settingsReplay
+    }
+
+    private func handleOnboardingDismiss(
+        _ reason: OnboardingDismissReason,
+        source: OnboardingPresentationSource
+    ) {
+        if source == .firstLaunch {
+            environment.onboardingStateStore.markFirstLaunchOnboardingCompleted()
+        }
+
+        onboardingPresentation = nil
+
+        let event: LocalAnalyticsEvent
+        switch reason {
+        case .skipped:
+            event = .onboardingSkipped
+        case .completed, .closed, .autoCompleted:
+            event = .onboardingCompleted
+        }
+
+        Task {
+            await environment.analyticsStore.record(event)
+        }
+    }
+
+    private var onboardingCountdownSeconds: Int {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let flagIndex = arguments.firstIndex(of: "-onboarding-countdown-seconds") else {
+            return OnboardingFlowController.defaultCountdownSeconds
+        }
+        let valueIndex = arguments.index(after: flagIndex)
+        guard arguments.indices.contains(valueIndex),
+              let parsed = Int(arguments[valueIndex]),
+              parsed > 0 else {
+            return OnboardingFlowController.defaultCountdownSeconds
+        }
+        return parsed
+    }
+
     private var tabSwipeGesture: some Gesture {
         DragGesture(minimumDistance: 14, coordinateSpace: .local)
             .onEnded { value in
@@ -298,4 +395,11 @@ public struct RootAppView: View {
         return UIDevice.current.userInterfaceIdiom == .pad
         #endif
     }
+}
+
+private enum OnboardingPresentationSource: String, Identifiable {
+    case firstLaunch
+    case settingsReplay
+
+    var id: String { rawValue }
 }

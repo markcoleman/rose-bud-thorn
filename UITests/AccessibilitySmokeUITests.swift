@@ -6,8 +6,8 @@ final class AccessibilitySmokeUITests: XCTestCase {
     }
 
     func testPrimaryCaptureControlsAreAccessible() {
-        let app = XCUIApplication()
-        app.launch()
+        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
+        dismissOnboardingIfPresented(app)
 
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 6))
         XCTAssertTrue(app.otherElements["today-completion-progress"].exists)
@@ -25,8 +25,8 @@ final class AccessibilitySmokeUITests: XCTestCase {
     }
 
     func testCoreTabNavigationDiscoverability() {
-        let app = XCUIApplication()
-        app.launch()
+        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
+        dismissOnboardingIfPresented(app)
 
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 6))
         XCTAssertTrue(app.tabBars.buttons["Browse"].exists)
@@ -45,8 +45,8 @@ final class AccessibilitySmokeUITests: XCTestCase {
     }
 
     func testEngagementActionsAreHittableWhenPresent() {
-        let app = XCUIApplication()
-        app.launch()
+        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
+        dismissOnboardingIfPresented(app)
 
         let actions = [
             "View Day Details",
@@ -64,8 +64,8 @@ final class AccessibilitySmokeUITests: XCTestCase {
     }
 
     func testBrowseFeedThumbnailIsDiscoverableWhenShown() {
-        let app = XCUIApplication()
-        app.launch()
+        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
+        dismissOnboardingIfPresented(app)
 
         app.tabBars.buttons["Browse"].tap()
         XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 4))
