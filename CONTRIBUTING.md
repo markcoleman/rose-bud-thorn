@@ -22,6 +22,14 @@
   - summary generation
 - Add integration tests for user-visible behavior changes.
 
+## Issues and Requests
+- Use GitHub issue forms for bug reports and feature requests.
+- Include reproducible steps, impact, and environment details.
+
+## Security Reports
+- Do not disclose vulnerabilities in public issues.
+- Follow the private reporting process in `.github/SECURITY.md`.
+
 ## PR Checklist
 - [ ] Build passes (`swift build`)
 - [ ] Tests pass (`swift test`)
