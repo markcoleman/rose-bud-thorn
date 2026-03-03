@@ -8,7 +8,6 @@ import AppKit
 
 public enum DayShareError: LocalizedError, Sendable {
     case notReady(DayShareEligibility)
-    case missingPhotoFile(type: EntryType)
     case renderFailed
     case writeFailed(String)
 
@@ -16,8 +15,6 @@ public enum DayShareError: LocalizedError, Sendable {
         switch self {
         case .notReady(let eligibility):
             return eligibility.disabledReason ?? "This day is not ready to share yet."
-        case .missingPhotoFile(let type):
-            return "Could not find the selected \(type.title) photo to share."
         case .renderFailed:
             return "Unable to generate the share card right now."
         case .writeFailed(let description):
@@ -40,19 +37,12 @@ public actor DayShareService {
     }
 
     public func eligibility(for entry: EntryDay) -> DayShareEligibility {
-        var missing: [EntryType] = []
-
-        for type in EntryType.allCases {
-            if entry.item(for: type).photos.isEmpty {
-                missing.append(type)
-            }
-        }
-
-        if missing.isEmpty {
+        let hasText = EntryType.allCases.contains { !textPreview(for: entry.item(for: $0)).isEmpty }
+        let hasMedia = EntryType.allCases.contains { entry.item(for: $0).hasMedia }
+        if hasText || hasMedia {
             return .ready
         }
-
-        return .missingPhotos(types: missing)
+        return .emptyDay
     }
 
     public func makePayload(
@@ -64,39 +54,14 @@ public actor DayShareService {
             throw DayShareError.notReady(eligibility)
         }
 
-        guard let roseRef = latestPhoto(for: entry.roseItem) else {
-            throw DayShareError.notReady(.missingPhotos(types: [.rose]))
-        }
-        guard let budRef = latestPhoto(for: entry.budItem) else {
-            throw DayShareError.notReady(.missingPhotos(types: [.bud]))
-        }
-        guard let thornRef = latestPhoto(for: entry.thornItem) else {
-            throw DayShareError.notReady(.missingPhotos(types: [.thorn]))
-        }
-
-        let roseURL = resolvePhotoURL(roseRef)
-        let budURL = resolvePhotoURL(budRef)
-        let thornURL = resolvePhotoURL(thornRef)
-
-        guard fileManager.fileExists(atPath: roseURL.path) else {
-            throw DayShareError.missingPhotoFile(type: .rose)
-        }
-        guard fileManager.fileExists(atPath: budURL.path) else {
-            throw DayShareError.missingPhotoFile(type: .bud)
-        }
-        guard fileManager.fileExists(atPath: thornURL.path) else {
-            throw DayShareError.missingPhotoFile(type: .thorn)
-        }
+        let rose = makeSelection(type: .rose, item: entry.roseItem, resolvePhotoURL: resolvePhotoURL)
+        let bud = makeSelection(type: .bud, item: entry.budItem, resolvePhotoURL: resolvePhotoURL)
+        let thorn = makeSelection(type: .thorn, item: entry.thornItem, resolvePhotoURL: resolvePhotoURL)
 
         let dayTitle = PresentationFormatting.localizedDayTitle(for: entry.dayKey)
-        let messageBody = "My Rose, Bud, Thorn for \(dayTitle)."
+        let messageBody = messageBody(dayTitle: dayTitle, selections: [rose, bud, thorn])
 
-        let pngData = try await renderCardPNG(
-            dayTitle: dayTitle,
-            roseURL: roseURL,
-            budURL: budURL,
-            thornURL: thornURL
-        )
+        let pngData = try await renderCardPNG(dayTitle: dayTitle, selections: [rose, bud, thorn])
 
         let outputURL = try makeTemporaryOutputURL(for: entry.dayKey)
         do {
@@ -108,9 +73,9 @@ public actor DayShareService {
         return DayShareCardPayload(
             dayKey: entry.dayKey,
             dayTitle: dayTitle,
-            rose: DayShareCardSelection(type: .rose, ref: roseRef, sourceURL: roseURL),
-            bud: DayShareCardSelection(type: .bud, ref: budRef, sourceURL: budURL),
-            thorn: DayShareCardSelection(type: .thorn, ref: thornRef, sourceURL: thornURL),
+            rose: rose,
+            bud: bud,
+            thorn: thorn,
             outputURL: outputURL,
             messageBody: messageBody
         )
@@ -147,19 +112,12 @@ public actor DayShareService {
             .appendingPathExtension("png")
     }
 
-    private func renderCardPNG(
-        dayTitle: String,
-        roseURL: URL,
-        budURL: URL,
-        thornURL: URL
-    ) async throws -> Data {
+    private func renderCardPNG(dayTitle: String, selections: [DayShareCardSelection]) async throws -> Data {
         let size = CGSize(width: 1200, height: 900)
         guard let pngData: Data = await MainActor.run(body: { () -> Data? in
             let cardView = DayShareCardView(
                 dayTitle: dayTitle,
-                roseURL: roseURL,
-                budURL: budURL,
-                thornURL: thornURL
+                selections: selections
             )
             .frame(width: size.width, height: size.height)
 
@@ -182,5 +140,59 @@ public actor DayShareService {
         }
 
         return pngData
+    }
+
+    private func makeSelection(
+        type: EntryType,
+        item: EntryItem,
+        resolvePhotoURL: @Sendable (PhotoRef) -> URL
+    ) -> DayShareCardSelection {
+        let photoRef = latestPhoto(for: item)
+        let sourceURL: URL?
+        if let photoRef {
+            let resolved = resolvePhotoURL(photoRef)
+            sourceURL = fileManager.fileExists(atPath: resolved.path) ? resolved : nil
+        } else {
+            sourceURL = nil
+        }
+
+        return DayShareCardSelection(
+            type: type,
+            textPreview: textPreview(for: item),
+            ref: photoRef,
+            sourceURL: sourceURL
+        )
+    }
+
+    private func messageBody(dayTitle: String, selections: [DayShareCardSelection]) -> String {
+        let lines = selections.compactMap { selection -> String? in
+            let trimmed = selection.textPreview.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return nil }
+            return "\(selection.type.title): \(trimmed)"
+        }
+
+        guard !lines.isEmpty else {
+            return "My Rose, Bud, Thorn for \(dayTitle)."
+        }
+
+        return """
+        My Rose, Bud, Thorn for \(dayTitle).
+
+        \(lines.joined(separator: "\n"))
+        """
+    }
+
+    private func textPreview(for item: EntryItem) -> String {
+        let short = item.shortText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !short.isEmpty {
+            return String(short.prefix(120))
+        }
+
+        let journal = item.journalTextMarkdown.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !journal.isEmpty {
+            return String(journal.prefix(120))
+        }
+
+        return ""
     }
 }

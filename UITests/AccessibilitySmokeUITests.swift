@@ -36,6 +36,7 @@ final class AccessibilitySmokeUITests: XCTestCase {
 
         app.tabBars.buttons["Browse"].tap()
         XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 4))
+        XCTAssertTrue(app.buttons["Timeline"].exists)
 
         app.tabBars.buttons["Summaries"].tap()
         XCTAssertTrue(app.navigationBars["Summaries"].waitForExistence(timeout: 4))
@@ -73,6 +74,11 @@ final class AccessibilitySmokeUITests: XCTestCase {
         let thumbnail = app.otherElements["browse-feed-thumbnail"].firstMatch
         if thumbnail.waitForExistence(timeout: 2) {
             XCTAssertTrue(thumbnail.isHittable)
+
+            let shareButton = app.buttons["browse-timeline-share-button"].firstMatch
+            if shareButton.exists {
+                XCTAssertTrue(shareButton.isHittable)
+            }
         }
     }
 }

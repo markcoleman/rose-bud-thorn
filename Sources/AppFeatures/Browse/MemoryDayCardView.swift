@@ -3,53 +3,63 @@ import CoreModels
 
 public struct MemoryDayCardView: View {
     public let snapshot: BrowseDaySnapshot
-    public let thumbnailURL: URL?
-    public let isSelected: Bool
-    public let onSelect: () -> Void
+    public let thumbnailURLs: [URL]
+    public let isShareInProgress: Bool
+    public let onOpen: () -> Void
+    public let onShare: () -> Void
 
     public init(
         snapshot: BrowseDaySnapshot,
-        thumbnailURL: URL? = nil,
-        isSelected: Bool,
-        onSelect: @escaping () -> Void
+        thumbnailURLs: [URL] = [],
+        isShareInProgress: Bool = false,
+        onOpen: @escaping () -> Void,
+        onShare: @escaping () -> Void
     ) {
         self.snapshot = snapshot
-        self.thumbnailURL = thumbnailURL
-        self.isSelected = isSelected
-        self.onSelect = onSelect
+        self.thumbnailURLs = Array(thumbnailURLs.prefix(3))
+        self.isShareInProgress = isShareInProgress
+        self.onOpen = onOpen
+        self.onShare = onShare
     }
 
     public var body: some View {
-        Button(action: onSelect) {
-            VStack(alignment: .leading, spacing: 12) {
-                header
-                feedThumbnail
-                emotionalStrip
-                previewRows
-                metadataRow
+        VStack(alignment: .leading, spacing: 12) {
+            Button(action: onOpen) {
+                VStack(alignment: .leading, spacing: 12) {
+                    header
+                    feedPreview
+                    emotionalStrip
+                    previewRows
+                    metadataRow
+                }
+                .contentShape(Rectangle())
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(DesignTokens.surfaceElevated)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? DesignTokens.accent : Color.primary.opacity(0.08), lineWidth: isSelected ? 1.4 : 1)
-            )
-            .shadow(color: .black.opacity(isSelected ? 0.12 : 0.06), radius: isSelected ? 14 : 8, x: 0, y: 6)
+            .buttonStyle(MemoryCardPressStyle())
+
+            footer
         }
-        .buttonStyle(MemoryCardPressStyle())
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(DesignTokens.surfaceElevated)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 6)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibilitySummary)
+        .accessibilityIdentifier("browse-timeline-card")
     }
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(Self.dayTitle(for: snapshot.dayKey))
-                .font(.headline.weight(.semibold))
+            Text(PresentationFormatting.localizedDayTitle(for: snapshot.dayKey))
+                .font(.system(.title3, design: .rounded).weight(.bold))
                 .foregroundStyle(DesignTokens.textPrimaryOnSurface)
+                .lineLimit(1)
 
             if snapshot.favorite {
                 Image(systemName: AppIcon.favoriteOn.systemName)
@@ -63,11 +73,81 @@ public struct MemoryDayCardView: View {
                 .font(.caption.weight(.semibold))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(
-                    Capsule()
-                        .fill(DesignTokens.surface)
-                )
+                .background(Capsule().fill(DesignTokens.surface))
         }
+    }
+
+    private var feedPreview: some View {
+        ZStack(alignment: .bottomTrailing) {
+            heroImage
+            if secondaryThumbnailURLs.count > 0 {
+                HStack(spacing: 6) {
+                    ForEach(Array(secondaryThumbnailURLs.enumerated()), id: \.offset) { _, url in
+                        thumbnailImage(url: url)
+                            .frame(width: 44, height: 44)
+                    }
+                }
+                .padding(8)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 166)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(thumbnailURLs.isEmpty ? "No timeline image" : "Timeline image")
+        .accessibilityIdentifier("browse-feed-thumbnail")
+    }
+
+    private var heroImage: some View {
+        Group {
+            if let heroURL = heroThumbnailURL {
+                AsyncImage(url: heroURL) { phase in
+                    switch phase {
+                    case .empty:
+                        placeholderThumbnail
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .failure:
+                        placeholderThumbnail
+                    @unknown default:
+                        placeholderThumbnail
+                    }
+                }
+            } else {
+                placeholderThumbnail
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(DesignTokens.surface)
+        .clipped()
+    }
+
+    private func thumbnailImage(url: URL) -> some View {
+        AsyncImage(url: url) { phase in
+            switch phase {
+            case .empty:
+                placeholderThumbnail
+            case .success(let image):
+                image
+                    .resizable()
+                    .scaledToFill()
+            case .failure:
+                placeholderThumbnail
+            @unknown default:
+                placeholderThumbnail
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.white.opacity(0.7), lineWidth: 1)
+        )
     }
 
     private var emotionalStrip: some View {
@@ -78,56 +158,6 @@ public struct MemoryDayCardView: View {
         }
     }
 
-    private var feedThumbnail: some View {
-        ZStack(alignment: .bottomLeading) {
-            Group {
-                if let thumbnailURL {
-                    AsyncImage(url: thumbnailURL) { phase in
-                        switch phase {
-                        case .empty:
-                            ZStack {
-                                DesignTokens.surface
-                                ProgressView()
-                            }
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        case .failure:
-                            placeholderThumbnail
-                        @unknown default:
-                            placeholderThumbnail
-                        }
-                    }
-                } else {
-                    placeholderThumbnail
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-
-            Text("Feed")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.black.opacity(0.5), in: Capsule())
-                .padding(8)
-                .accessibilityHidden(true)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 96)
-        .background(DesignTokens.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-        )
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(thumbnailURL == nil ? "No feed thumbnail" : "Feed thumbnail")
-        .accessibilityIdentifier("browse-feed-thumbnail")
-    }
-
     private func stripBlock(color: Color, isActive: Bool) -> some View {
         RoundedRectangle(cornerRadius: 4, style: .continuous)
             .fill(color.opacity(isActive ? 0.95 : 0.2))
@@ -136,7 +166,7 @@ public struct MemoryDayCardView: View {
     }
 
     private var previewRows: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 7) {
             previewRow(symbol: "r.circle.fill", text: snapshot.rosePreview, color: DesignTokens.rose)
             previewRow(symbol: "b.circle.fill", text: snapshot.budPreview, color: DesignTokens.bud)
             previewRow(symbol: "t.circle.fill", text: snapshot.thornPreview, color: DesignTokens.thorn)
@@ -154,7 +184,7 @@ public struct MemoryDayCardView: View {
                 Text(text)
                     .font(.subheadline)
                     .foregroundStyle(DesignTokens.textPrimaryOnSurface)
-                    .lineLimit(1)
+                    .lineLimit(2)
             }
         }
     }
@@ -180,35 +210,45 @@ public struct MemoryDayCardView: View {
         .foregroundStyle(DesignTokens.textSecondaryOnSurface)
     }
 
+    private var footer: some View {
+        HStack(spacing: 10) {
+            Button(action: onOpen) {
+                Label("View Day", systemImage: AppIcon.navigateForward.systemName)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .touchTargetMinSize(ControlTokens.minTouchTarget)
+
+            Button(action: onShare) {
+                if isShareInProgress {
+                    ProgressView()
+                        .frame(width: 22, height: 22)
+                } else {
+                    Image(systemName: AppIcon.shareExport.systemName)
+                        .font(.body.weight(.semibold))
+                }
+            }
+            .buttonStyle(.bordered)
+            .touchTargetMinSize(ControlTokens.minTouchTarget)
+            .disabled(isShareInProgress)
+            .accessibilityLabel("Share day")
+            .accessibilityIdentifier("browse-timeline-share-button")
+        }
+    }
+
+    private var heroThumbnailURL: URL? {
+        thumbnailURLs.first
+    }
+
+    private var secondaryThumbnailURLs: [URL] {
+        Array(thumbnailURLs.dropFirst().prefix(2))
+    }
+
     private var accessibilitySummary: String {
         let moodText = snapshot.mood.map { "Mood \($0) out of 5." } ?? ""
         let favoriteText = snapshot.favorite ? "Favorite day." : ""
         let mediaText = snapshot.hasMedia ? "\(snapshot.mediaCount) media items." : "No media."
-        return "\(Self.dayTitle(for: snapshot.dayKey)). \(snapshot.completionCount) of 3 reflections completed. \(moodText) \(favoriteText) \(mediaText)"
-    }
-
-    private static func dayTitle(for dayKey: LocalDayKey) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = .current
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.dateStyle = .full
-
-        let parts = dayKey.isoDate.split(separator: "-")
-        guard parts.count == 3,
-              let year = Int(parts[0]),
-              let month = Int(parts[1]),
-              let day = Int(parts[2]) else {
-            return dayKey.isoDate
-        }
-
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: dayKey.timeZoneID) ?? .current
-        let date = calendar.date(from: DateComponents(year: year, month: month, day: day))
-        if let date {
-            return formatter.string(from: date)
-        }
-
-        return dayKey.isoDate
+        return "\(PresentationFormatting.localizedDayTitle(for: snapshot.dayKey)). \(snapshot.completionCount) of 3 reflections completed. \(moodText) \(favoriteText) \(mediaText)"
     }
 
     private var placeholderThumbnail: some View {

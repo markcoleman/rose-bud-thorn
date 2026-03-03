@@ -391,6 +391,28 @@ final class AppFeaturesTests: XCTestCase {
 
         let snapshot = BrowseDaySnapshot(entry: entry)
         XCTAssertEqual(snapshot.previewPhotoRef?.id, thorn.id)
+        XCTAssertEqual(snapshot.previewPhotoRefs.map(\.id), [thorn.id, bud.id, rose.id])
+    }
+
+    func testBrowseDaySnapshotPreviewPhotosAreLimitedToThreeMostRecent() {
+        let dayKey = LocalDayKey(isoDate: "2026-03-22", timeZoneID: "America/Los_Angeles")
+        let photoA = PhotoRef(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, relativePath: "rose/attachments/a.jpg", createdAt: Date(timeIntervalSince1970: 100))
+        let photoB = PhotoRef(id: UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!, relativePath: "bud/attachments/b.jpg", createdAt: Date(timeIntervalSince1970: 200))
+        let photoC = PhotoRef(id: UUID(uuidString: "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC")!, relativePath: "thorn/attachments/c.jpg", createdAt: Date(timeIntervalSince1970: 300))
+        let photoD = PhotoRef(id: UUID(uuidString: "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD")!, relativePath: "thorn/attachments/d.jpg", createdAt: Date(timeIntervalSince1970: 400))
+
+        let entry = EntryDay(
+            dayKey: dayKey,
+            roseItem: EntryItem(type: .rose, shortText: "Rose", journalTextMarkdown: "", photos: [photoA], updatedAt: .now),
+            budItem: EntryItem(type: .bud, shortText: "Bud", journalTextMarkdown: "", photos: [photoB], updatedAt: .now),
+            thornItem: EntryItem(type: .thorn, shortText: "Thorn", journalTextMarkdown: "", photos: [photoC, photoD], updatedAt: .now),
+            createdAt: .now,
+            updatedAt: .now
+        )
+
+        let snapshot = BrowseDaySnapshot(entry: entry)
+        XCTAssertEqual(snapshot.previewPhotoRefs.count, 3)
+        XCTAssertEqual(snapshot.previewPhotoRefs.map(\.id), [photoD.id, photoC.id, photoB.id])
     }
 
     func testBrowseViewModelPhotoURLReturnsResolvedURL() throws {
@@ -522,6 +544,20 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(viewModel.sections.first?.days.first?.dayKey, march)
     }
 
+    func testBrowseViewModelTimelineIndexItemsMirrorSectionOrder() async throws {
+        let environment = try makeEnvironment()
+        let la = "America/Los_Angeles"
+        try await environment.entryStore.save(makeEntry(dayKey: LocalDayKey(isoDate: "2026-03-12", timeZoneID: la), rose: "March day"))
+        try await environment.entryStore.save(makeEntry(dayKey: LocalDayKey(isoDate: "2026-02-28", timeZoneID: la), rose: "February day"))
+        try await environment.entryStore.save(makeEntry(dayKey: LocalDayKey(isoDate: "2025-12-01", timeZoneID: la), rose: "December day"))
+
+        let viewModel = BrowseViewModel(environment: environment)
+        await viewModel.loadSnapshots()
+
+        XCTAssertEqual(viewModel.timelineIndexItems.map(\.monthKey), ["2026-03", "2026-02", "2025-12"])
+        XCTAssertFalse(viewModel.timelineIndexItems.first?.label.isEmpty ?? true)
+    }
+
     func testBrowseViewModelFavoritesAndMediaFilters() async throws {
         let environment = try makeEnvironment()
         let la = "America/Los_Angeles"
@@ -626,6 +662,23 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(summaryDay, 2)
     }
 
+    func testLocalAnalyticsStoreTracksBrowseTimelineEvents() async {
+        let defaults = UserDefaults(suiteName: "LocalAnalyticsStoreTests.\(UUID().uuidString)")!
+        let store = LocalAnalyticsStore(defaults: defaults, dayCalculator: DayKeyCalculator())
+
+        await store.record(.browseTimelineFastScrollUsed, count: 2)
+        await store.record(.browseTimelineQuickShareTapped)
+        await store.record(.browseTimelineJumpToDateUsed)
+
+        let fastScrollTotal = await store.totalCount(for: .browseTimelineFastScrollUsed)
+        let quickShareTotal = await store.totalCount(for: .browseTimelineQuickShareTapped)
+        let jumpTotal = await store.totalCount(for: .browseTimelineJumpToDateUsed)
+
+        XCTAssertEqual(fastScrollTotal, 2)
+        XCTAssertEqual(quickShareTotal, 1)
+        XCTAssertEqual(jumpTotal, 1)
+    }
+
     func testTodayViewModelThenVsNowPromptPreservesExistingJournalText() async throws {
         let environment = try makeEnvironment()
         let now = Date(timeIntervalSince1970: 1_772_201_600)
@@ -648,26 +701,25 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertTrue(journal.contains(memory.thenVsNowPrompt))
     }
 
-    func testDayShareEligibilityRequiresOnePhotoPerType() async throws {
+    func testDayShareEligibilityRequiresAnyTextOrMedia() async throws {
         let environment = try makeEnvironment()
         let dayKey = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
         var entry = EntryDay.empty(dayKey: dayKey)
 
-        let roseRef = PhotoRef(id: UUID(), relativePath: "rose/attachments/r.jpg", createdAt: .now)
-        let budRef = PhotoRef(id: UUID(), relativePath: "bud/attachments/b.jpg", createdAt: .now)
-        entry.roseItem.photos = [roseRef]
-        entry.budItem.photos = [budRef]
+        let empty = await environment.dayShareService.eligibility(for: entry)
+        XCTAssertEqual(empty, .emptyDay)
 
-        let incomplete = await environment.dayShareService.eligibility(for: entry)
-        XCTAssertEqual(incomplete, .missingPhotos(types: [.thorn]))
+        entry.roseItem.shortText = "A reflected moment"
+        let readyFromText = await environment.dayShareService.eligibility(for: entry)
+        XCTAssertEqual(readyFromText, .ready)
 
-        let thornRef = PhotoRef(id: UUID(), relativePath: "thorn/attachments/t.jpg", createdAt: .now)
-        entry.thornItem.photos = [thornRef]
-        let ready = await environment.dayShareService.eligibility(for: entry)
-        XCTAssertEqual(ready, .ready)
+        entry.roseItem.shortText = ""
+        entry.budItem.photos = [PhotoRef(id: UUID(), relativePath: "bud/attachments/b.jpg", createdAt: .now)]
+        let readyFromMedia = await environment.dayShareService.eligibility(for: entry)
+        XCTAssertEqual(readyFromMedia, .ready)
     }
 
-    func testDayShareServiceSelectsMostRecentPhotosAndExcludesEntryTextInPayload() async throws {
+    func testDayShareServiceSelectsMostRecentPhotosAndIncludesEntryTextInPayload() async throws {
         let environment = try makeEnvironment()
         let dayKey = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
         let old = Date(timeIntervalSince1970: 100)
@@ -701,10 +753,87 @@ final class AppFeaturesTests: XCTestCase {
             }
         )
 
-        XCTAssertEqual(payload.rose.ref.id, roseNew.id)
-        XCTAssertEqual(payload.bud.ref.id, budNew.id)
-        XCTAssertEqual(payload.thorn.ref.id, thornOnly.id)
-        XCTAssertFalse(payload.messageBody.contains("private text"))
+        XCTAssertEqual(payload.rose.ref?.id, roseNew.id)
+        XCTAssertEqual(payload.bud.ref?.id, budNew.id)
+        XCTAssertEqual(payload.thorn.ref?.id, thornOnly.id)
+        XCTAssertEqual(payload.rose.textPreview, "rose private text")
+        XCTAssertEqual(payload.bud.textPreview, "bud private text")
+        XCTAssertEqual(payload.thorn.textPreview, "thorn private text")
+        XCTAssertTrue(payload.messageBody.contains("Rose: rose private text"))
+        XCTAssertTrue(payload.messageBody.contains("Bud: bud private text"))
+        XCTAssertTrue(payload.messageBody.contains("Thorn: thorn private text"))
+    }
+
+    func testDayShareServiceProducesPayloadForTextOnlyDay() async throws {
+        let environment = try makeEnvironment()
+        let dayKey = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
+        var entry = EntryDay.empty(dayKey: dayKey)
+        entry.roseItem.shortText = "A text-only rose"
+        entry.budItem.journalTextMarkdown = "A text-only bud"
+
+        let payload = try await environment.dayShareService.makePayload(
+            for: entry,
+            resolvePhotoURL: { ref in
+                environment.photoURL(for: ref, day: dayKey)
+            }
+        )
+
+        XCTAssertNil(payload.rose.sourceURL)
+        XCTAssertNil(payload.bud.sourceURL)
+        XCTAssertNil(payload.thorn.sourceURL)
+        XCTAssertTrue(payload.messageBody.contains("Rose: A text-only rose"))
+        XCTAssertTrue(payload.messageBody.contains("Bud: A text-only bud"))
+    }
+
+    func testBrowseViewModelMakeSharePayloadSupportsTextOnlyPartialAndFullMedia() async throws {
+        let environment = try makeEnvironment()
+        let viewModel = BrowseViewModel(environment: environment)
+        let dayText = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
+        let dayPartial = LocalDayKey(isoDate: "2026-03-11", timeZoneID: "America/Los_Angeles")
+        let dayFull = LocalDayKey(isoDate: "2026-03-10", timeZoneID: "America/Los_Angeles")
+
+        var textOnly = EntryDay.empty(dayKey: dayText)
+        textOnly.roseItem.shortText = "Text only"
+        try await environment.entryStore.save(textOnly)
+
+        let partialPhoto = PhotoRef(id: UUID(), relativePath: "rose/attachments/partial.jpg", createdAt: .now)
+        var partial = EntryDay.empty(dayKey: dayPartial)
+        partial.roseItem.shortText = "Partial media"
+        partial.roseItem.photos = [partialPhoto]
+        try await environment.entryStore.save(partial)
+        try writeAttachmentFile(in: environment, dayKey: dayPartial, ref: partialPhoto)
+
+        let rosePhoto = PhotoRef(id: UUID(), relativePath: "rose/attachments/r.jpg", createdAt: .now)
+        let budPhoto = PhotoRef(id: UUID(), relativePath: "bud/attachments/b.jpg", createdAt: .now)
+        let thornPhoto = PhotoRef(id: UUID(), relativePath: "thorn/attachments/t.jpg", createdAt: .now)
+        var full = EntryDay.empty(dayKey: dayFull)
+        full.roseItem.shortText = "Full media rose"
+        full.budItem.shortText = "Full media bud"
+        full.thornItem.shortText = "Full media thorn"
+        full.roseItem.photos = [rosePhoto]
+        full.budItem.photos = [budPhoto]
+        full.thornItem.photos = [thornPhoto]
+        try await environment.entryStore.save(full)
+        try writeAttachmentFile(in: environment, dayKey: dayFull, ref: rosePhoto)
+        try writeAttachmentFile(in: environment, dayKey: dayFull, ref: budPhoto)
+        try writeAttachmentFile(in: environment, dayKey: dayFull, ref: thornPhoto)
+
+        let payloadTextOnly = try await viewModel.makeSharePayload(for: dayText)
+        XCTAssertNil(payloadTextOnly.rose.sourceURL)
+
+        let payloadPartial = try await viewModel.makeSharePayload(for: dayPartial)
+        XCTAssertNotNil(payloadPartial.rose.sourceURL)
+        XCTAssertNil(payloadPartial.bud.sourceURL)
+        XCTAssertNil(payloadPartial.thorn.sourceURL)
+
+        let payloadFull = try await viewModel.makeSharePayload(for: dayFull)
+        XCTAssertNotNil(payloadFull.rose.sourceURL)
+        XCTAssertNotNil(payloadFull.bud.sourceURL)
+        XCTAssertNotNil(payloadFull.thorn.sourceURL)
+
+        await viewModel.disposeSharePayload(payloadTextOnly)
+        await viewModel.disposeSharePayload(payloadPartial)
+        await viewModel.disposeSharePayload(payloadFull)
     }
 
     func testDayShareNudgeStoreSuppressesRepeatedPromptPerDay() {
@@ -740,10 +869,13 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertTrue(model.shouldPresentShareNudge)
 
         model.dismissShareNudge()
+        model.entry.roseItem.photos = []
+        model.entry.budItem.photos = []
         model.entry.thornItem.photos = []
         try await model.saveNow()
         XCTAssertFalse(model.isDayShareReady)
 
+        model.entry.roseItem.photos = [roseRef]
         model.entry.thornItem.photos = [thornRef]
         try await model.saveNow()
         XCTAssertTrue(model.isDayShareReady)

@@ -3,13 +3,19 @@ import CoreModels
 
 public struct DayShareCardSelection: Hashable, Sendable {
     public let type: EntryType
-    public let ref: PhotoRef
-    public let sourceURL: URL
+    public let textPreview: String
+    public let ref: PhotoRef?
+    public let sourceURL: URL?
 
-    public init(type: EntryType, ref: PhotoRef, sourceURL: URL) {
+    public init(type: EntryType, textPreview: String, ref: PhotoRef?, sourceURL: URL?) {
         self.type = type
+        self.textPreview = textPreview
         self.ref = ref
         self.sourceURL = sourceURL
+    }
+
+    public var hasMedia: Bool {
+        sourceURL != nil
     }
 }
 

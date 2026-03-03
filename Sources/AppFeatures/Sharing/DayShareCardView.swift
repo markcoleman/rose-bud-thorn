@@ -11,95 +11,112 @@ private typealias DaySharePlatformImage = NSImage
 
 public struct DayShareCardView: View {
     public let dayTitle: String
-    public let roseURL: URL
-    public let budURL: URL
-    public let thornURL: URL
+    public let selections: [DayShareCardSelection]
 
-    public init(dayTitle: String, roseURL: URL, budURL: URL, thornURL: URL) {
+    public init(dayTitle: String, selections: [DayShareCardSelection]) {
         self.dayTitle = dayTitle
-        self.roseURL = roseURL
-        self.budURL = budURL
-        self.thornURL = thornURL
+        self.selections = selections
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 7) {
                 Text("Rose, Bud, Thorn")
                     .font(.system(size: 52, weight: .black, design: .rounded))
-                    .foregroundStyle(Color(red: 0.11, green: 0.13, blue: 0.17))
+                    .foregroundStyle(DesignTokens.textPrimaryOnSurface)
                 Text(dayTitle)
-                    .font(.system(size: 28, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(red: 0.19, green: 0.24, blue: 0.30))
+                    .font(.system(size: 30, weight: .semibold, design: .rounded))
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
             }
 
-            GeometryReader { geometry in
-                let leftWidth = geometry.size.width * 0.62
-                let rightWidth = max(geometry.size.width - leftWidth - 16, 0)
-                let rightTileHeight = max((geometry.size.height - 16) / 2, 0)
-
-                HStack(spacing: 16) {
-                    DayShareTile(url: roseURL, type: .rose)
-                        .frame(width: leftWidth, height: geometry.size.height)
-
-                    VStack(spacing: 16) {
-                        DayShareTile(url: budURL, type: .bud)
-                            .frame(width: rightWidth, height: rightTileHeight)
-                        DayShareTile(url: thornURL, type: .thorn)
-                            .frame(width: rightWidth, height: rightTileHeight)
-                    }
+            HStack(alignment: .top, spacing: 16) {
+                ForEach(EntryType.allCases, id: \.self) { type in
+                    DayShareSelectionView(selection: selection(for: type), type: type)
                 }
             }
-            .frame(maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .padding(22)
+        .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             LinearGradient(
                 colors: [
-                    Color(red: 0.98, green: 0.95, blue: 0.91),
-                    Color(red: 0.92, green: 0.96, blue: 0.93)
+                    DesignTokens.surface,
+                    DesignTokens.surfaceElevated
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         )
     }
+
+    private func selection(for type: EntryType) -> DayShareCardSelection {
+        selections.first(where: { $0.type == type }) ??
+            DayShareCardSelection(type: type, textPreview: "", ref: nil, sourceURL: nil)
+    }
 }
 
-private struct DayShareTile: View {
-    let url: URL
+private struct DayShareSelectionView: View {
+    let selection: DayShareCardSelection
     let type: EntryType
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            if let image = loadPlatformImage(at: url) {
-                Image(platformImage: image)
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.2))
-            }
+        VStack(alignment: .leading, spacing: 10) {
+            ZStack(alignment: .topLeading) {
+                if let sourceURL = selection.sourceURL, let image = loadPlatformImage(at: sourceURL) {
+                    Image(platformImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
+                } else {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(color(for: type).opacity(0.18))
+                    VStack(spacing: 8) {
+                        Image(systemName: AppIcon.mediaCount.systemName)
+                            .font(.system(size: 32, weight: .semibold))
+                            .foregroundStyle(color(for: type))
+                        Text("No photo")
+                            .font(.system(size: 22, weight: .semibold, design: .rounded))
+                            .foregroundStyle(DesignTokens.textSecondaryOnSurface)
+                    }
+                }
 
-            Text(type.title)
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 9)
-                .foregroundStyle(.white)
-                .background(
-                    Capsule(style: .continuous)
-                        .fill(color(for: type).opacity(0.95))
-                )
-                .padding(12)
+                Text(type.title)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 9)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(color(for: type).opacity(0.95))
+                    )
+                    .padding(12)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 355)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(DesignTokens.dividerSubtle, lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 6)
+
+            Text(textPreview)
+                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                .foregroundStyle(DesignTokens.textPrimaryOnSurface)
+                .lineLimit(4)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(Color.black.opacity(0.10), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var textPreview: String {
+        let trimmed = selection.textPreview.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return "No reflection captured."
+        }
+        return trimmed
     }
 
     private func color(for type: EntryType) -> Color {

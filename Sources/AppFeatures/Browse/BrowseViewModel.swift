@@ -3,6 +3,20 @@ import Observation
 import CoreModels
 import CoreDate
 
+public struct BrowseTimelineIndexItem: Hashable, Sendable, Identifiable {
+    public let monthKey: String
+    public let label: String
+    public let accessibilityLabel: String
+
+    public var id: String { monthKey }
+
+    public init(monthKey: String, label: String, accessibilityLabel: String) {
+        self.monthKey = monthKey
+        self.label = label
+        self.accessibilityLabel = accessibilityLabel
+    }
+}
+
 @MainActor
 @Observable
 public final class BrowseViewModel {
@@ -13,6 +27,7 @@ public final class BrowseViewModel {
     public var selectedYear: String?
     public var quickFilter: BrowseQuickFilter = .all
     public var selectedDate: Date = .now
+    public var timelineIndexItems: [BrowseTimelineIndexItem] = []
     public var errorMessage: String?
     public var isLoading = false
 
@@ -76,6 +91,7 @@ public final class BrowseViewModel {
         sections = []
         availableYears = []
         monthDayLookup = [:]
+        timelineIndexItems = []
         hasLoadedSnapshots = false
     }
 
@@ -120,6 +136,7 @@ public final class BrowseViewModel {
         }
 
         sections = groupedSections(from: filtered)
+        rebuildTimelineIndex()
     }
 
     public func firstMonthKey(forYear year: String?) -> String? {
@@ -133,6 +150,30 @@ public final class BrowseViewModel {
 
     public func date(for dayKey: LocalDayKey) -> Date? {
         dayCalculator.date(for: dayKey)
+    }
+
+    public func loadEntry(dayKey: LocalDayKey) async throws -> EntryDay {
+        try await environment.entryStore.load(day: dayKey)
+    }
+
+    public func makeSharePayload(for dayKey: LocalDayKey) async throws -> DayShareCardPayload {
+        let entry = try await loadEntry(dayKey: dayKey)
+        await environment.analyticsStore.record(.dayShareInitiated)
+        do {
+            return try await environment.dayShareService.makePayload(
+                for: entry,
+                resolvePhotoURL: { [environment, dayKey] ref in
+                    environment.photoURL(for: ref, day: dayKey)
+                }
+            )
+        } catch {
+            await environment.analyticsStore.record(.dayShareFailed)
+            throw error
+        }
+    }
+
+    public func disposeSharePayload(_ payload: DayShareCardPayload) async {
+        await environment.dayShareService.removeTemporaryFile(at: payload.outputURL)
     }
 
     public func photoURL(for ref: PhotoRef?, day: LocalDayKey) -> URL? {
@@ -241,6 +282,16 @@ public final class BrowseViewModel {
         }
     }
 
+    private func rebuildTimelineIndex() {
+        timelineIndexItems = sections.map { section in
+            BrowseTimelineIndexItem(
+                monthKey: section.monthKey,
+                label: Self.timelineIndexLabel(monthKey: section.monthKey),
+                accessibilityLabel: section.title
+            )
+        }
+    }
+
     private func dayDistance(_ lhs: LocalDayKey, to rhs: LocalDayKey) -> Int {
         guard let lhsDate = dayCalculator.date(for: lhs),
               let rhsDate = dayCalculator.date(for: rhs) else {
@@ -279,5 +330,28 @@ public final class BrowseViewModel {
         formatter.locale = .current
         formatter.dateFormat = "LLLL yyyy"
         return formatter.string(from: date)
+    }
+
+    private static func timelineIndexLabel(monthKey: String) -> String {
+        let parts = monthKey.split(separator: "-")
+        guard parts.count == 2,
+              let year = Int(parts[0]),
+              let month = Int(parts[1]) else {
+            return monthKey
+        }
+
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        guard let date = calendar.date(from: DateComponents(year: year, month: month, day: 1)) else {
+            return monthKey
+        }
+
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = .current
+        formatter.dateFormat = "MMM"
+        let monthLabel = formatter.string(from: date)
+        let yearLabel = String(format: "%02d", year % 100)
+        return "\(monthLabel)\n\(yearLabel)"
     }
 }
