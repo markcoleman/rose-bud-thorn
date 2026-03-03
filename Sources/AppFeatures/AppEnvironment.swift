@@ -27,6 +27,7 @@ public struct AppEnvironment: Sendable {
     public let commitmentService: CommitmentService
     public let dayShareService: DayShareService
     public let dayShareNudgeStore: DayShareNudgeStore
+    public let onboardingStateStore: OnboardingStateStore
     public let featureFlags: AppFeatureFlags
 
     public init(configuration: DocumentStoreConfiguration) throws {
@@ -63,6 +64,7 @@ public struct AppEnvironment: Sendable {
         let commitmentService = CommitmentService(configuration: configuration)
         let dayShareService = DayShareService()
         let dayShareNudgeStore = DayShareNudgeStore(defaults: Self.dayShareNudgeDefaults())
+        let onboardingStateStore = OnboardingStateStore(defaults: Self.onboardingDefaults())
 
         self.entryRepository = entryRepository
         self.attachmentRepository = attachmentRepository
@@ -82,6 +84,7 @@ public struct AppEnvironment: Sendable {
         self.commitmentService = commitmentService
         self.dayShareService = dayShareService
         self.dayShareNudgeStore = dayShareNudgeStore
+        self.onboardingStateStore = onboardingStateStore
         self.featureFlags = featureFlags
     }
 
@@ -135,6 +138,13 @@ private extension AppEnvironment {
             return .standard
         }
         return UserDefaults(suiteName: "DayShareNudgeStore.Tests.\(UUID().uuidString)") ?? .standard
+    }
+
+    static func onboardingDefaults() -> UserDefaults {
+        guard isTestProcess else {
+            return .standard
+        }
+        return UserDefaults(suiteName: "OnboardingStateStore.Tests.\(UUID().uuidString)") ?? .standard
     }
 
     static func defaultFeatureFlags() -> AppFeatureFlags {

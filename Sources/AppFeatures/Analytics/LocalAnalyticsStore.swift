@@ -3,6 +3,14 @@ import CoreDate
 import CoreModels
 
 public enum LocalAnalyticsEvent: String, CaseIterable, Codable, Sendable {
+    case onboardingStarted = "onboarding_started"
+    case onboardingRoseViewed = "onboarding_rose_viewed"
+    case onboardingBudViewed = "onboarding_bud_viewed"
+    case onboardingThornViewed = "onboarding_thorn_viewed"
+    case onboardingAutoAdvanced = "onboarding_auto_advanced"
+    case onboardingSkipped = "onboarding_skipped"
+    case onboardingCompleted = "onboarding_completed"
+    case onboardingReplayOpened = "onboarding_replay_opened"
     case todayScreenOpened = "today_screen_opened"
     case completionRingViewed = "completion_ring_viewed"
     case dailyEntryCompleted = "daily_entry_completed"

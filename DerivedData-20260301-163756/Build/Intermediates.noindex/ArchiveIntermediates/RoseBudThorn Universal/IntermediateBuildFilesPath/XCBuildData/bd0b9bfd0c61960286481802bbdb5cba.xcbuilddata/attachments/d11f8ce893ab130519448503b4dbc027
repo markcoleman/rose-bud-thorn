@@ -1,4 +1,0 @@
-module DocumentStore {
-header "DocumentStore-Swift.h"
-export *
-}
