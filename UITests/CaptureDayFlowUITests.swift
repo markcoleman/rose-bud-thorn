@@ -30,6 +30,21 @@ final class CaptureDayFlowUITests: XCTestCase {
         app.tabBars.buttons["Browse"].tap()
         XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 4))
 
+        let timelineMode = app.buttons["Timeline"]
+        if timelineMode.exists {
+            timelineMode.tap()
+        }
+
+        let timelineCard = app.otherElements["browse-timeline-card"].firstMatch
+        if timelineCard.waitForExistence(timeout: 3) {
+            timelineCard.tap()
+            XCTAssertTrue(app.buttons["Save"].firstMatch.waitForExistence(timeout: 4))
+            let backButton = app.navigationBars.buttons["Browse"].firstMatch
+            if backButton.exists {
+                backButton.tap()
+            }
+        }
+
         let calendarMode = app.buttons["Calendar"]
         if calendarMode.exists {
             calendarMode.tap()

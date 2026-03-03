@@ -7,36 +7,33 @@ public struct BrowseShellView: View {
     @State private var browseMode: BrowseMode
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.scenePhase) private var scenePhase
-    private let isTimeCapsuleEnabled: Bool
 
     public enum BrowseMode: String, CaseIterable, Identifiable {
-        case memories
+        case timeline
         case calendar
 
         public var id: String { rawValue }
 
         public var title: String {
             switch self {
-            case .memories: return "Memories"
+            case .timeline: return "Timeline"
             case .calendar: return "Calendar"
             }
         }
     }
 
     public init(environment: AppEnvironment, selectedDayKey: Binding<LocalDayKey?>) {
-        let flags = environment.featureFlagStore.load(defaults: environment.featureFlags)
-        self.isTimeCapsuleEnabled = flags.browseTimeCapsuleEnabled
         self._viewModel = State(initialValue: BrowseViewModel(environment: environment))
         self._selectedDayKey = selectedDayKey
-        self._browseMode = State(initialValue: flags.browseTimeCapsuleEnabled ? .memories : .calendar)
+        self._browseMode = State(initialValue: .timeline)
     }
 
     public var body: some View {
         NavigationStack {
             Group {
                 switch browseMode {
-                case .memories:
-                    TimeCapsuleBrowseView(viewModel: viewModel, selectedDayKey: $selectedDayKey)
+                case .timeline:
+                    TimelineBrowseView(viewModel: viewModel, selectedDayKey: $selectedDayKey)
                 case .calendar:
                     CalendarBrowseView(viewModel: viewModel, selectedDayKey: $selectedDayKey)
                 }
@@ -48,7 +45,7 @@ public struct BrowseShellView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                if let selectedDayKey {
+                if browseMode == .calendar, let selectedDayKey {
                     NavigationLink(value: selectedDayKey) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("View Day Details")
@@ -98,7 +95,7 @@ public struct BrowseShellView: View {
             }
             .task {
                 await viewModel.loadSnapshots()
-                if selectedDayKey == nil {
+                if browseMode == .calendar, selectedDayKey == nil {
                     selectedDayKey = viewModel.days.first
                 }
             }
@@ -125,7 +122,7 @@ public struct BrowseShellView: View {
     }
 
     private var availableModes: [BrowseMode] {
-        isTimeCapsuleEnabled ? BrowseMode.allCases : [.calendar]
+        BrowseMode.allCases
     }
 
     private var refreshPlacement: ToolbarItemPlacement {
