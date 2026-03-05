@@ -1,4 +1,6 @@
 public enum AppIcon: Sendable {
+    case sectionJournal
+    case sectionInsights
     case sectionToday
     case sectionBrowse
     case sectionSummaries
@@ -39,6 +41,10 @@ public enum AppIcon: Sendable {
 
     public var systemName: String {
         switch self {
+        case .sectionJournal:
+            return "book.pages"
+        case .sectionInsights:
+            return "doc.text.magnifyingglass"
         case .sectionToday:
             return "sun.max"
         case .sectionBrowse:

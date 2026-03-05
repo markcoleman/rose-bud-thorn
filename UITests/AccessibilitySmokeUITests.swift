@@ -28,21 +28,16 @@ final class AccessibilitySmokeUITests: XCTestCase {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
         dismissOnboardingIfPresented(app)
 
-        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 6))
-        XCTAssertTrue(app.tabBars.buttons["Browse"].exists)
-        XCTAssertTrue(app.tabBars.buttons["Summaries"].exists)
-        XCTAssertTrue(app.tabBars.buttons["Search"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Journal"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.tabBars.buttons["Insights"].exists)
         XCTAssertTrue(app.tabBars.buttons["Settings"].exists)
 
-        app.tabBars.buttons["Browse"].tap()
-        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 4))
-        XCTAssertTrue(app.buttons["Timeline"].exists)
+        app.tabBars.buttons["Journal"].tap()
+        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 4))
+        XCTAssertTrue(app.textFields["Search entries"].exists)
 
-        app.tabBars.buttons["Summaries"].tap()
-        XCTAssertTrue(app.navigationBars["Summaries"].waitForExistence(timeout: 4))
-
-        app.tabBars.buttons["Search"].tap()
-        XCTAssertTrue(app.navigationBars["Search"].waitForExistence(timeout: 4))
+        app.tabBars.buttons["Insights"].tap()
+        XCTAssertTrue(app.navigationBars["Insights"].waitForExistence(timeout: 4))
     }
 
     func testEngagementActionsAreHittableWhenPresent() {
@@ -65,20 +60,16 @@ final class AccessibilitySmokeUITests: XCTestCase {
     }
 
     func testBrowseFeedThumbnailIsDiscoverableWhenShown() {
-        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
+        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6, seedJournalData: true)
         dismissOnboardingIfPresented(app)
 
-        app.tabBars.buttons["Browse"].tap()
-        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 4))
+        app.tabBars.buttons["Journal"].tap()
+        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 4))
+        app.swipeUp()
 
-        let thumbnail = app.otherElements["browse-feed-thumbnail"].firstMatch
+        let thumbnail = app.images.firstMatch
         if thumbnail.waitForExistence(timeout: 2) {
             XCTAssertTrue(thumbnail.isHittable)
-
-            let shareButton = app.buttons["browse-timeline-share-button"].firstMatch
-            if shareButton.exists {
-                XCTAssertTrue(shareButton.isHittable)
-            }
         }
     }
 }

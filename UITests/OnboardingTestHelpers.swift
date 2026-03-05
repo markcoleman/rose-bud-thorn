@@ -4,12 +4,16 @@ extension XCTestCase {
     @discardableResult
     func launchAppForUITests(
         resetOnboarding: Bool = false,
-        onboardingCountdownSeconds: Int? = nil
+        onboardingCountdownSeconds: Int? = nil,
+        seedJournalData: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments.append("-ui-testing")
         if resetOnboarding {
             app.launchArguments.append("-reset-onboarding")
+        }
+        if seedJournalData {
+            app.launchArguments.append("-seed-journal-ui-data")
         }
         if let onboardingCountdownSeconds {
             app.launchArguments.append("-onboarding-countdown-seconds")

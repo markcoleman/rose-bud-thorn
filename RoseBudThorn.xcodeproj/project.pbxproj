@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A10000010000000000000001 /* RoseBudThornAppleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000001 /* RoseBudThornAppleApp.swift */; };
 		A10000020000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000120000000000000001 /* Assets.xcassets */; };
+		A10000090000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A10000190000000000000001 /* PrivacyInfo.xcprivacy */; };
 		A10000030000000000000001 /* AppFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = A10000310000000000000001 /* AppFeatures */; };
 		A10000070000000000000001 /* RoseBudThornWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000150000000000000001 /* RoseBudThornWidgets.swift */; };
 		A10000080000000000000001 /* RoseBudThorn Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A10000170000000000000001 /* RoseBudThorn Widgets.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -62,6 +63,7 @@
 		A10000130000000000000001 /* RoseBudThorn iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = "RoseBudThorn iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000150000000000000001 /* RoseBudThornWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoseBudThornWidgets.swift; sourceTree = "<group>"; };
 		A10000170000000000000001 /* RoseBudThorn Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = "RoseBudThorn Widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000190000000000000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B10000110000000000000001 /* AppGroupConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupConstants.swift; sourceTree = "<group>"; };
 		B10000130000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B10000140000000000000001 /* PhotoShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoShareViewController.swift; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 			children = (
 				B10000110000000000000001 /* AppGroupConstants.swift */,
 				A10000120000000000000001 /* Assets.xcassets */,
+				A10000190000000000000001 /* PrivacyInfo.xcprivacy */,
 				B10000190000000000000001 /* RoseBudThorn.entitlements */,
 				B10000120000000000000001 /* ShareExtension */,
 				A10000460000000000000001 /* Widgets */,
@@ -286,6 +289,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000020000000000000001 /* Assets.xcassets in Resources */,
+				A10000090000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,6 +457,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Rose Bud Thorn";
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleTypeRole = Editor;\n    CFBundleURLName = \"$(APP_BUNDLE_ID_BASE)\";\n    CFBundleURLSchemes =     (\n        rosebudthorn\n    );\n}";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 					INFOPLIST_KEY_NSCameraUsageDescription = "Capture photos and short videos for your daily reflection.";
 					INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record audio with your 3-second reflection videos.";
 					INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Select a photo from today for your daily reflection.";
@@ -493,6 +498,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Rose Bud Thorn";
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleTypeRole = Editor;\n    CFBundleURLName = \"$(APP_BUNDLE_ID_BASE)\";\n    CFBundleURLSchemes =     (\n        rosebudthorn\n    );\n}";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 					INFOPLIST_KEY_NSCameraUsageDescription = "Capture photos and short videos for your daily reflection.";
 					INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record audio with your 3-second reflection videos.";
 					INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Select a photo from today for your daily reflection.";

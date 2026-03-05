@@ -25,7 +25,7 @@ public struct SummaryListView: View {
             if horizontalSizeClass == .compact {
                 NavigationStack(path: $compactNavigationPath) {
                     compactSummaryList(bindable)
-                        .navigationTitle("Summaries")
+                        .navigationTitle("Insights")
                         #if !os(macOS)
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
@@ -51,7 +51,7 @@ public struct SummaryListView: View {
             } else {
                 NavigationSplitView {
                     regularSummaryList(bindable)
-                        .navigationTitle("Summaries")
+                        .navigationTitle("Insights")
                 } detail: {
                     splitDetail(bindable)
                 }
@@ -248,7 +248,7 @@ public struct SummaryListView: View {
                 Task { await model.dismissMemory(memory) }
             },
             onThenVsNow: { _ in
-                openURL(URL(string: "rosebudthorn://today?source=summaries&focus=resurfacing")!)
+                openURL(URL(string: "rosebudthorn://journal?source=summaries&focus=resurfacing")!)
             }
         )
         .padding(.horizontal)
