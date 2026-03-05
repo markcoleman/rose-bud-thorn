@@ -31,7 +31,8 @@ final class CaptureDayFlowUITests: XCTestCase {
         XCTAssertTrue(dayCard.waitForExistence(timeout: 6))
         dayCard.tap()
 
-        XCTAssertTrue(app.buttons["Save"].firstMatch.waitForExistence(timeout: 6))
+        XCTAssertTrue(app.otherElements["day-polaroid-pager"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.buttons["day-edit-button"].waitForExistence(timeout: 4))
         let backButton = app.navigationBars.buttons.element(boundBy: 0)
         XCTAssertTrue(backButton.waitForExistence(timeout: 4))
         backButton.tap()

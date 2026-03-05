@@ -27,6 +27,7 @@ public struct DayShareCardPayload: Identifiable, Sendable {
     public let thorn: DayShareCardSelection
     public let outputURL: URL
     public let messageBody: String
+    public let renderMetadata: PolaroidStackRenderMetadata?
 
     public init(
         dayKey: LocalDayKey,
@@ -35,7 +36,8 @@ public struct DayShareCardPayload: Identifiable, Sendable {
         bud: DayShareCardSelection,
         thorn: DayShareCardSelection,
         outputURL: URL,
-        messageBody: String
+        messageBody: String,
+        renderMetadata: PolaroidStackRenderMetadata? = nil
     ) {
         self.dayKey = dayKey
         self.dayTitle = dayTitle
@@ -44,6 +46,7 @@ public struct DayShareCardPayload: Identifiable, Sendable {
         self.thorn = thorn
         self.outputURL = outputURL
         self.messageBody = messageBody
+        self.renderMetadata = renderMetadata
     }
 
     public var id: String {

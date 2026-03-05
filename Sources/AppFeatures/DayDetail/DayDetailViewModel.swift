@@ -7,9 +7,11 @@ import CoreModels
 public final class DayDetailViewModel {
     public let dayKey: LocalDayKey
     public var entry: EntryDay
+    public var selectedType: EntryType = .rose
     public var expandedTypes: Set<EntryType> = Set(EntryType.allCases)
     public var errorMessage: String?
     public var isSaving = false
+    public var isRemoving = false
     public var isDayShareFeatureEnabled = true
     public var isDayShareReady = false
     public var dayShareDisabledReason: String?
@@ -89,6 +91,19 @@ public final class DayDetailViewModel {
 
     public func prepareShareSaveIfNeeded() async {
         await save()
+    }
+
+    public func removeDay() async -> Bool {
+        isRemoving = true
+        defer { isRemoving = false }
+
+        do {
+            try await environment.entryStore.delete(day: dayKey)
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
     }
 
     public func makeDaySharePayload() async throws -> DayShareCardPayload {

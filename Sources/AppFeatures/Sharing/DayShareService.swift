@@ -26,14 +26,17 @@ public enum DayShareError: LocalizedError, Sendable {
 public actor DayShareService {
     private let fileManager: FileManager
     private let temporaryRootURL: URL
+    private let polaroidRenderer: PolaroidStackRenderer
 
     public init(
         fileManager: FileManager = .default,
-        temporaryRootURL: URL? = nil
+        temporaryRootURL: URL? = nil,
+        polaroidRenderer: PolaroidStackRenderer = PolaroidStackRenderer()
     ) {
         self.fileManager = fileManager
         self.temporaryRootURL = temporaryRootURL ?? fileManager.temporaryDirectory
             .appendingPathComponent("rosebudthorn-day-share", isDirectory: true)
+        self.polaroidRenderer = polaroidRenderer
     }
 
     public func eligibility(for entry: EntryDay) -> DayShareEligibility {
@@ -61,11 +64,11 @@ public actor DayShareService {
         let dayTitle = PresentationFormatting.localizedDayTitle(for: entry.dayKey)
         let messageBody = messageBody(dayTitle: dayTitle, selections: [rose, bud, thorn])
 
-        let pngData = try await renderCardPNG(dayTitle: dayTitle, selections: [rose, bud, thorn])
+        let renderOutput = try await renderCardPNG(dayTitle: dayTitle, selections: [rose, bud, thorn])
 
         let outputURL = try makeTemporaryOutputURL(for: entry.dayKey)
         do {
-            try pngData.write(to: outputURL, options: .atomic)
+            try renderOutput.pngData.write(to: outputURL, options: .atomic)
         } catch {
             throw DayShareError.writeFailed(error.localizedDescription)
         }
@@ -77,7 +80,8 @@ public actor DayShareService {
             bud: bud,
             thorn: thorn,
             outputURL: outputURL,
-            messageBody: messageBody
+            messageBody: messageBody,
+            renderMetadata: renderOutput.metadata
         )
     }
 
@@ -112,34 +116,18 @@ public actor DayShareService {
             .appendingPathExtension("png")
     }
 
-    private func renderCardPNG(dayTitle: String, selections: [DayShareCardSelection]) async throws -> Data {
-        let size = CGSize(width: 1200, height: 900)
-        guard let pngData: Data = await MainActor.run(body: { () -> Data? in
-            let cardView = DayShareCardView(
+    private func renderCardPNG(
+        dayTitle: String,
+        selections: [DayShareCardSelection]
+    ) async throws -> PolaroidStackRenderOutput {
+        do {
+            return try await polaroidRenderer.render(
                 dayTitle: dayTitle,
                 selections: selections
             )
-            .frame(width: size.width, height: size.height)
-
-            let renderer = ImageRenderer(content: cardView)
-            renderer.proposedSize = ProposedViewSize(width: size.width, height: size.height)
-            #if os(iOS)
-            return renderer.uiImage?.pngData()
-            #elseif os(macOS)
-            guard let image = renderer.nsImage,
-                  let tiffData = image.tiffRepresentation,
-                  let bitmap = NSBitmapImageRep(data: tiffData) else {
-                return nil
-            }
-            return bitmap.representation(using: .png, properties: [:])
-            #else
-            return nil
-            #endif
-        }) else {
+        } catch {
             throw DayShareError.renderFailed
         }
-
-        return pngData
     }
 
     private func makeSelection(

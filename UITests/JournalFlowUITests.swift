@@ -30,7 +30,8 @@ final class JournalFlowUITests: XCTestCase {
         XCTAssertTrue(dayCard.waitForExistence(timeout: 6))
         dayCard.tap()
 
-        XCTAssertTrue(app.buttons["Save"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.otherElements["day-polaroid-pager"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.buttons["day-edit-button"].waitForExistence(timeout: 4))
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
         let searchField = app.textFields["Search entries"]
