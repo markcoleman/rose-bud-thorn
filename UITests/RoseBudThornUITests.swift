@@ -12,8 +12,8 @@ final class RoseBudThornUITests: XCTestCase {
         app.buttons["onboarding-skip"].tap()
 
         XCTAssertTrue(
-            app.navigationBars["Today"].waitForExistence(timeout: 6) ||
-            app.staticTexts["Today"].waitForExistence(timeout: 6)
+            app.navigationBars["Journal"].waitForExistence(timeout: 6) ||
+            app.staticTexts["Journal"].waitForExistence(timeout: 6)
         )
     }
 
@@ -51,8 +51,8 @@ final class RoseBudThornUITests: XCTestCase {
         closeButton.tap()
 
         XCTAssertTrue(
-            app.navigationBars["Today"].waitForExistence(timeout: 6) ||
-            app.staticTexts["Today"].waitForExistence(timeout: 6)
+            app.navigationBars["Journal"].waitForExistence(timeout: 6) ||
+            app.staticTexts["Journal"].waitForExistence(timeout: 6)
         )
     }
 

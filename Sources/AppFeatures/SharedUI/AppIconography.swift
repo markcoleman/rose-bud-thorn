@@ -1,4 +1,6 @@
 public enum AppIcon: Sendable {
+    case sectionJournal
+    case sectionInsights
     case sectionToday
     case sectionBrowse
     case sectionSummaries
@@ -18,6 +20,9 @@ public enum AppIcon: Sendable {
     case cameraUnavailable
     case navigateBackward
     case navigateForward
+    case editDay
+    case more
+    case deleteDay
 
     case favoriteOn
     case favoriteOff
@@ -39,6 +44,10 @@ public enum AppIcon: Sendable {
 
     public var systemName: String {
         switch self {
+        case .sectionJournal:
+            return "book.pages"
+        case .sectionInsights:
+            return "doc.text.magnifyingglass"
         case .sectionToday:
             return "sun.max"
         case .sectionBrowse:
@@ -75,6 +84,12 @@ public enum AppIcon: Sendable {
             return "chevron.left"
         case .navigateForward:
             return "chevron.right"
+        case .editDay:
+            return "pencil"
+        case .more:
+            return "ellipsis.circle"
+        case .deleteDay:
+            return "trash"
         case .favoriteOn:
             return "star.fill"
         case .favoriteOff:

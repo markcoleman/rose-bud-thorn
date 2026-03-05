@@ -23,8 +23,8 @@ extension DeepLinkLaunchingIntent {
 
 public struct CaptureMomentQuickActionIntent: DeepLinkLaunchingIntent {
     public static let title: LocalizedStringResource = "Capture Moment"
-    public static let description = IntentDescription("Open quick capture in Rose, Bud, Thorn.")
-    public static let deepLink = URL(string: "rosebudthorn://today?source=intent")!
+    public static let description = IntentDescription("Open quick capture in your journal.")
+    public static let deepLink = URL(string: "rosebudthorn://journal?source=intent")!
     public static let successDialog = IntentDialog("Opening quick capture in Rose, Bud, Thorn.")
 
     public init() {}
@@ -58,10 +58,10 @@ public struct CaptureThornIntent: DeepLinkLaunchingIntent {
 }
 
 public struct OpenTodayIntent: DeepLinkLaunchingIntent {
-    public static let title: LocalizedStringResource = "Open Today"
-    public static let description = IntentDescription("Open today's entry.")
-    public static let deepLink = URL(string: "rosebudthorn://today?source=intent")!
-    public static let successDialog = IntentDialog("Opening today's entry.")
+    public static let title: LocalizedStringResource = "Open Journal"
+    public static let description = IntentDescription("Open the journal home screen.")
+    public static let deepLink = URL(string: "rosebudthorn://journal?source=intent")!
+    public static let successDialog = IntentDialog("Opening your journal.")
 
     public init() {}
 }

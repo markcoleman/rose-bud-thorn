@@ -1,19 +1,18 @@
 import SwiftUI
-import UniformTypeIdentifiers
 import CoreModels
-#if os(iOS) && !targetEnvironment(macCatalyst)
-import MessageUI
-#endif
+import CoreDate
 
 public struct DayDetailView: View {
     @State private var viewModel: DayDetailViewModel
-    @State private var importerType: EntryType?
     @State private var isPreparingDayShare = false
     @State private var sharePayload: DayShareCardPayload?
+    @State private var isEditorPresented = false
+    @State private var isRemoveConfirmationPresented = false
     #if os(iOS) && !targetEnvironment(macCatalyst)
-    @State private var isMessageComposerPresented = false
     @State private var isActivitySharePresented = false
     #endif
+
+    @Environment(\.dismiss) private var dismiss
 
     public init(environment: AppEnvironment, dayKey: LocalDayKey) {
         _viewModel = State(initialValue: DayDetailViewModel(environment: environment, dayKey: dayKey))
@@ -23,29 +22,19 @@ public struct DayDetailView: View {
         @Bindable var bindable = viewModel
 
         GeometryReader { geometry in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    if bindable.isDayShareFeatureEnabled, let reason = bindable.dayShareDisabledReason {
-                        Text(reason)
-                            .font(.footnote)
-                            .foregroundStyle(DesignTokens.textSecondaryOnSurface)
-                    }
+            let horizontalPadding = DesignTokens.contentHorizontalPadding(for: geometry.size.width)
+            let contentWidth = max(280, geometry.size.width - (horizontalPadding * 2))
 
-                    ForEach(EntryType.allCases, id: \.self) { type in
-                        EntryItemEditorView(
-                            type: type,
-                            shortText: bindable.entry.item(for: type).shortText,
-                            journalText: bindable.entry.item(for: type).journalTextMarkdown,
-                            photos: bindable.entry.item(for: type).photos,
-                            onShortText: { bindable.updateShortText($0, for: type) },
-                            onJournal: { bindable.updateJournal($0, for: type) },
-                            onAddPhoto: { importerType = type },
-                            onRemovePhoto: { ref in
-                                Task { await bindable.removePhoto(ref, for: type) }
-                            },
-                            photoURL: { bindable.photoURL(for: $0) }
-                        )
-                    }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    DayPolaroidStackView(
+                        entry: bindable.entry,
+                        selectedType: bindable.selectedType,
+                        availableWidth: contentWidth,
+                        viewportHeight: geometry.size.height,
+                        photoURL: { bindable.photoURL(for: $0) },
+                        onSelectType: { bindable.selectedType = $0 }
+                    )
 
                     if let error = bindable.errorMessage {
                         ErrorBanner(message: error) {
@@ -53,8 +42,7 @@ public struct DayDetailView: View {
                         }
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, DesignTokens.contentHorizontalPadding(for: geometry.size.width))
+                .padding(.horizontal, horizontalPadding)
                 .padding(.vertical, 14)
             }
         }
@@ -63,55 +51,65 @@ public struct DayDetailView: View {
             ToolbarItemGroup(placement: .primaryAction) {
                 if bindable.isDayShareFeatureEnabled {
                     Button {
-                        Task {
-                            await beginDayShare(model: bindable)
-                        }
+                        Task { await beginDayShare(model: bindable) }
                     } label: {
                         if isPreparingDayShare {
                             ProgressView()
                         } else {
-                            Label("Share", systemImage: AppIcon.shareMessage.systemName)
+                            Label("Share", systemImage: AppIcon.shareExport.systemName)
                         }
                     }
                     .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                     .disabled(!bindable.isDayShareReady || isPreparingDayShare)
-                    .help(bindable.isDayShareReady ? "Share this day in Messages." : (bindable.dayShareDisabledReason ?? "Day sharing is unavailable."))
+                    .accessibilityIdentifier("day-share-button")
                 }
 
-                Button("Save") {
-                    Task { await bindable.save() }
+                Button {
+                    isEditorPresented = true
+                } label: {
+                    Label("Edit", systemImage: AppIcon.editDay.systemName)
                 }
                 .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
-                .keyboardShortcut("s", modifiers: [.command])
-                .disabled(bindable.isSaving)
+                .accessibilityIdentifier("day-edit-button")
+
+                Menu {
+                    Button(role: .destructive) {
+                        isRemoveConfirmationPresented = true
+                    } label: {
+                        Label("Remove", systemImage: AppIcon.deleteDay.systemName)
+                    }
+                } label: {
+                    Image(systemName: AppIcon.more.systemName)
+                }
+                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
+                .accessibilityLabel("More actions")
+                .accessibilityIdentifier("day-more-actions")
             }
         }
         .task {
             await bindable.load()
         }
-        #if os(iOS) && !targetEnvironment(macCatalyst)
-        .sheet(isPresented: $isMessageComposerPresented, onDismiss: {
-            clearSharePayload(bindable)
-        }) {
-            if let payload = sharePayload {
-                MessageComposerView(
-                    bodyText: payload.messageBody,
-                    attachmentURL: payload.outputURL,
-                    attachmentTypeIdentifier: payload.outputTypeIdentifier
-                ) { result in
-                    switch result {
-                    case .sent:
-                        Task { await bindable.recordDayShareSent() }
-                    case .failed:
-                        Task { await bindable.recordDayShareFailed() }
-                    case .cancelled:
-                        break
-                    }
-                    isMessageComposerPresented = false
-                }
-                .ignoresSafeArea()
-            }
+        .navigationDestination(isPresented: $isEditorPresented) {
+            DayEditorView(viewModel: bindable)
         }
+        .confirmationDialog(
+            "Remove this day?",
+            isPresented: $isRemoveConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button("Remove", role: .destructive) {
+                Task {
+                    let removed = await bindable.removeDay()
+                    if removed {
+                        dismiss()
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will remove the Rose, Bud, and Thorn for \(dayMonthDayText(bindable.dayKey)).")
+        }
+        #if os(iOS) && !targetEnvironment(macCatalyst)
         .sheet(isPresented: $isActivitySharePresented, onDismiss: {
             clearSharePayload(bindable)
         }) {
@@ -132,13 +130,13 @@ public struct DayDetailView: View {
         }) { payload in
             NavigationStack {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Share your card")
+                    Text("Share your memory stack")
                         .font(.headline)
                     Text(payload.messageBody)
                         .font(.subheadline)
                         .foregroundStyle(DesignTokens.textSecondaryOnSurface)
                     ShareLink(item: payload.outputURL) {
-                        Label("Share Card", systemImage: AppIcon.shareExport.systemName)
+                        Label("Share Stack", systemImage: AppIcon.shareExport.systemName)
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
@@ -156,22 +154,6 @@ public struct DayDetailView: View {
             }
         }
         #endif
-        .fileImporter(
-            isPresented: Binding(
-                get: { importerType != nil },
-                set: { isPresented in if !isPresented { importerType = nil } }
-            ),
-            allowedContentTypes: [.image]
-        ) { result in
-            guard let type = importerType else { return }
-            if case .success(let url) = result {
-                Task { await bindable.importPhoto(from: url, for: type) }
-            }
-            if case .failure(let error) = result {
-                bindable.errorMessage = error.localizedDescription
-            }
-            importerType = nil
-        }
     }
 
     private func beginDayShare(model: DayDetailViewModel) async {
@@ -204,11 +186,19 @@ public struct DayDetailView: View {
 
     private func presentPreparedSharePayload() {
         #if os(iOS) && !targetEnvironment(macCatalyst)
-        if MFMessageComposeViewController.canSendText() && MFMessageComposeViewController.canSendAttachments() {
-            isMessageComposerPresented = true
-            return
-        }
         isActivitySharePresented = true
         #endif
+    }
+
+    private func dayMonthDayText(_ dayKey: LocalDayKey) -> String {
+        guard let date = DayKeyCalculator().date(for: dayKey) else {
+            return dayKey.isoDate
+        }
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(identifier: dayKey.timeZoneID) ?? .current
+        formatter.dateFormat = "MMMM d"
+        return formatter.string(from: date)
     }
 }

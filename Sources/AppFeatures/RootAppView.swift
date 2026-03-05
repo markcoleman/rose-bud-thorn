@@ -6,11 +6,10 @@ import UIKit
 #endif
 
 public struct RootAppView: View {
-    @State private var selectedSection: AppSection? = .today
-    @State private var selectedTab: AppSection = .today
-    @State private var selectedDayKey: LocalDayKey?
+    @State private var selectedSection: AppSection? = .journal
+    @State private var selectedTab: AppSection = .journal
     @State private var captureLaunchRequest: CaptureLaunchRequest?
-    @State private var todayRefreshToken = 0
+    @State private var journalRefreshToken = 0
     @State private var summaryLaunchRequest: SummaryLaunchRequest?
     @State private var onboardingPresentation: OnboardingPresentationSource?
     @State private var didApplyLaunchOverrides = false
@@ -18,7 +17,6 @@ public struct RootAppView: View {
 
     private let environment: AppEnvironment
     @State private var lockManager = PrivacyLockManager()
-    private let tabOrder = AppSection.allCases
 
     public init(environment: AppEnvironment) {
         self.environment = environment
@@ -63,6 +61,7 @@ public struct RootAppView: View {
         .onOpenURL(perform: handleDeepLink)
         .task {
             applyLaunchOverridesIfNeeded()
+            await seedJournalUITestDataIfNeeded()
             consumePendingIntentLaunchIfNeeded()
             presentFirstLaunchOnboardingIfNeeded()
         }
@@ -79,25 +78,17 @@ public struct RootAppView: View {
 
     private var tabView: some View {
         TabView(selection: $selectedTab) {
-            TodayCaptureView(
+            JournalView(
                 environment: environment,
                 captureLaunchRequest: $captureLaunchRequest,
-                refreshTrigger: todayRefreshToken
+                refreshTrigger: journalRefreshToken
             )
-                .tabItem { Label("Today", systemImage: AppSection.today.systemImage) }
-                .tag(AppSection.today)
-
-            BrowseShellView(environment: environment, selectedDayKey: $selectedDayKey)
-                .tabItem { Label("Browse", systemImage: AppSection.browse.systemImage) }
-                .tag(AppSection.browse)
+                .tabItem { Label("Journal", systemImage: AppSection.journal.systemImage) }
+                .tag(AppSection.journal)
 
             SummaryListView(environment: environment, summaryLaunchRequest: $summaryLaunchRequest)
-                .tabItem { Label("Summaries", systemImage: AppSection.summaries.systemImage) }
-                .tag(AppSection.summaries)
-
-            SearchView(environment: environment, selectedDayKey: $selectedDayKey)
-                .tabItem { Label("Search", systemImage: AppSection.search.systemImage) }
-                .tag(AppSection.search)
+                .tabItem { Label("Insights", systemImage: AppSection.insights.systemImage) }
+                .tag(AppSection.insights)
 
             SettingsView(
                 lockManager: lockManager,
@@ -107,8 +98,6 @@ public struct RootAppView: View {
                 .tabItem { Label("Settings", systemImage: AppSection.settings.systemImage) }
                 .tag(AppSection.settings)
         }
-        .contentShape(Rectangle())
-        .simultaneousGesture(tabSwipeGesture, including: .all)
     }
 
     private var splitView: some View {
@@ -124,25 +113,21 @@ public struct RootAppView: View {
                     .padding(.top, 8)
             }
         } detail: {
-            sectionView(selectedSection ?? .today)
+            sectionView(selectedSection ?? .journal)
         }
     }
 
     @ViewBuilder
     private func sectionView(_ section: AppSection) -> some View {
         switch section {
-        case .today:
-            TodayCaptureView(
+        case .journal:
+            JournalView(
                 environment: environment,
                 captureLaunchRequest: $captureLaunchRequest,
-                refreshTrigger: todayRefreshToken
+                refreshTrigger: journalRefreshToken
             )
-        case .browse:
-            BrowseShellView(environment: environment, selectedDayKey: $selectedDayKey)
-        case .summaries:
+        case .insights:
             SummaryListView(environment: environment, summaryLaunchRequest: $summaryLaunchRequest)
-        case .search:
-            SearchView(environment: environment, selectedDayKey: $selectedDayKey)
         case .settings:
             SettingsView(
                 lockManager: lockManager,
@@ -183,27 +168,21 @@ public struct RootAppView: View {
         let route = (url.host?.lowercased() ?? url.pathComponents.dropFirst().first?.lowercased()) ?? ""
         let source = Self.source(from: url)
         switch route {
-        case "capture", "today":
-            selectSection(.today)
+        case "capture", "today", "browse", "search", "journal":
+            selectSection(.journal)
             if source == "share-extension" {
-                todayRefreshToken &+= 1
+                journalRefreshToken &+= 1
             }
             captureLaunchRequest = Self.captureLaunchRequest(from: url)
-        case "engagement", "on-this-day", "resurfacing":
-            selectSection(.today)
-        case "browse":
-            selectSection(.browse)
-        case "summaries", "summary":
-            selectSection(.summaries)
+        case "summaries", "summary", "insights", "engagement", "on-this-day", "resurfacing":
+            selectSection(.insights)
             summaryLaunchRequest = Self.summaryLaunchRequest(from: url)
         case "weekly-review", "review":
-            selectSection(.summaries)
+            selectSection(.insights)
             summaryLaunchRequest = SummaryLaunchRequest(action: .startWeeklyReview, source: source)
         case "weekly-summary":
-            selectSection(.summaries)
+            selectSection(.insights)
             summaryLaunchRequest = SummaryLaunchRequest(action: .openCurrentWeeklySummary, source: source)
-        case "search":
-            selectSection(.search)
         case "settings":
             selectSection(.settings)
         default:
@@ -293,6 +272,44 @@ public struct RootAppView: View {
         }
     }
 
+    private func seedJournalUITestDataIfNeeded() async {
+        let launchArguments = ProcessInfo.processInfo.arguments
+        guard launchArguments.contains("-seed-journal-ui-data") else { return }
+
+        let dayCalculator = environment.dayCalculator
+        let todayDate = Date.now
+        let yesterdayDate = Calendar.current.date(byAdding: .day, value: -1, to: todayDate) ?? todayDate
+
+        let todayKey = dayCalculator.dayKey(for: todayDate, timeZone: .current)
+        let yesterdayKey = dayCalculator.dayKey(for: yesterdayDate, timeZone: .current)
+
+        do {
+            var todayEntry = try await environment.entryStore.load(day: todayKey)
+            if todayEntry.roseItem.shortText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                todayEntry.roseItem.shortText = "Seeded today rose"
+                todayEntry.roseItem.updatedAt = .now
+                todayEntry.updatedAt = .now
+                try await environment.entryStore.save(todayEntry)
+            }
+
+            var yesterdayEntry = try await environment.entryStore.load(day: yesterdayKey)
+            if yesterdayEntry.roseItem.shortText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                yesterdayEntry.roseItem.shortText = "Seeded yesterday rose"
+                yesterdayEntry.budItem.shortText = "Seeded yesterday bud"
+                yesterdayEntry.thornItem.shortText = "Seeded yesterday thorn"
+                yesterdayEntry.roseItem.updatedAt = .now
+                yesterdayEntry.budItem.updatedAt = .now
+                yesterdayEntry.thornItem.updatedAt = .now
+                yesterdayEntry.updatedAt = .now
+                try await environment.entryStore.save(yesterdayEntry)
+            }
+
+            journalRefreshToken &+= 1
+        } catch {
+            // UI-test seeding is best effort and should never block launch.
+        }
+    }
+
     private func presentFirstLaunchOnboardingIfNeeded() {
         guard onboardingPresentation == nil else { return }
         guard environment.onboardingStateStore.shouldPresentFirstLaunchOnboarding() else { return }
@@ -341,48 +358,6 @@ public struct RootAppView: View {
             return OnboardingFlowController.defaultCountdownSeconds
         }
         return parsed
-    }
-
-    private var tabSwipeGesture: some Gesture {
-        DragGesture(minimumDistance: 14, coordinateSpace: .local)
-            .onEnded { value in
-                handleTabSwipe(value)
-            }
-    }
-
-    private func handleTabSwipe(_ value: DragGesture.Value) {
-        let horizontal = value.translation.width
-        let vertical = value.translation.height
-        let horizontalDominant = abs(horizontal) > abs(vertical) * DesignTokens.tabSwipeHorizontalDominanceRatio
-        guard horizontalDominant else { return }
-
-        let predicted = value.predictedEndTranslation.width
-        let exceedsDistance = abs(horizontal) >= DesignTokens.tabSwipeMinimumTranslation
-        let exceedsPredicted = abs(predicted) >= DesignTokens.tabSwipePredictedEndThreshold
-        guard exceedsDistance || exceedsPredicted else { return }
-
-        let effectiveTranslation = exceedsPredicted ? predicted : horizontal
-        if effectiveTranslation < 0 {
-            moveTab(step: 1)
-        } else if effectiveTranslation > 0 {
-            moveTab(step: -1)
-        }
-    }
-
-    private func moveTab(step: Int) {
-        guard let currentIndex = tabOrder.firstIndex(of: selectedTab) else { return }
-        let nextIndex = currentIndex + step
-        guard tabOrder.indices.contains(nextIndex) else { return }
-
-        let nextTab = tabOrder[nextIndex]
-        guard nextTab != selectedTab else { return }
-
-        withAnimation(MotionTokens.tabSwitch) {
-            selectedTab = nextTab
-            selectedSection = nextTab
-        }
-
-        PlatformFeedback.selectionChanged()
     }
 
     private var shouldUseSplitView: Bool {
