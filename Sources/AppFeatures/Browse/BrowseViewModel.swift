@@ -117,8 +117,6 @@ public final class BrowseViewModel {
         switch quickFilter {
         case .all:
             break
-        case .favorites:
-            filtered = filtered.filter(\.favorite)
         case .media:
             filtered = filtered.filter(\.hasMedia)
         case .thisMonth:

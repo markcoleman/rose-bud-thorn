@@ -1,6 +1,13 @@
 import Foundation
 import CoreModels
 
+public enum JournalSaveFeedbackState: Sendable, Equatable {
+    case draft
+    case saving
+    case saved(Date)
+    case complete(Date?)
+}
+
 public enum JournalMode: Sendable, Equatable {
     case timeline
     case search
@@ -40,16 +47,13 @@ public enum JournalCategoryFilter: String, CaseIterable, Identifiable, Sendable 
 public struct JournalFilters: Sendable, Equatable {
     public var category: JournalCategoryFilter
     public var hasPhotoOnly: Bool
-    public var favoritesOnly: Bool
 
     public init(
         category: JournalCategoryFilter = .all,
-        hasPhotoOnly: Bool = false,
-        favoritesOnly: Bool = false
+        hasPhotoOnly: Bool = false
     ) {
         self.category = category
         self.hasPhotoOnly = hasPhotoOnly
-        self.favoritesOnly = favoritesOnly
     }
 }
 
@@ -71,7 +75,6 @@ public struct EntryDaySummary: Sendable, Hashable, Identifiable {
     public let budHasMedia: Bool
     public let thornHasMedia: Bool
     public let previewPhotoRefs: [PhotoRef]
-    public let favorite: Bool
     public let hasMedia: Bool
     public let updatedAt: Date
 
@@ -87,7 +90,6 @@ public struct EntryDaySummary: Sendable, Hashable, Identifiable {
         self.thornHasMedia = entry.thornItem.hasMedia
         let allPhotos = entry.roseItem.photos + entry.budItem.photos + entry.thornItem.photos
         self.previewPhotoRefs = Self.latestPhotoRefs(in: allPhotos, limit: 3)
-        self.favorite = entry.favorite
         self.hasMedia = entry.roseItem.hasMedia || entry.budItem.hasMedia || entry.thornItem.hasMedia
         self.updatedAt = entry.updatedAt
     }

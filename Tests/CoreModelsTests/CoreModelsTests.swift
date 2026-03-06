@@ -17,7 +17,6 @@ final class CoreModelsTests: XCTestCase {
             thornItem: EntryItem(type: .thorn, shortText: "Busy commute", journalTextMarkdown: "", updatedAt: now),
             tags: ["work", "friends"],
             mood: 4,
-            favorite: true,
             createdAt: now,
             updatedAt: now
         )
@@ -36,7 +35,7 @@ final class CoreModelsTests: XCTestCase {
         XCTAssertEqual(decoded.roseItem.videos.count, 1)
     }
 
-    func testLegacyEntryItemDecodesWithoutVideos() throws {
+    func testLegacyV1EntryDecodesWithoutVideosAndReencodesWithoutFavoriteField() throws {
         let legacyJSON = """
         {
           "schemaVersion": 1,
@@ -80,9 +79,17 @@ final class CoreModelsTests: XCTestCase {
         decoder.dateDecodingStrategy = .iso8601
         let decoded = try decoder.decode(EntryDay.self, from: Data(legacyJSON.utf8))
 
+        XCTAssertEqual(decoded.schemaVersion, 1)
         XCTAssertEqual(decoded.roseItem.videos, [])
         XCTAssertEqual(decoded.budItem.videos, [])
         XCTAssertEqual(decoded.thornItem.videos, [])
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let reencoded = try encoder.encode(decoded)
+        let json = String(decoding: reencoded, as: UTF8.self)
+        XCTAssertFalse(json.contains("\"favorite\""))
     }
 
     func testEmptyEntryFactoryCreatesThreeTypes() {

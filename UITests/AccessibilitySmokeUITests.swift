@@ -13,31 +13,45 @@ final class AccessibilitySmokeUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["today-completion-progress"].exists)
         XCTAssertTrue(app.textFields["Bud for today"].exists)
         XCTAssertTrue(app.textFields["Thorn for today"].exists)
-        let roseCapture = app.buttons["Capture media for Rose"]
-        let budCapture = app.buttons["Capture media for Bud"]
-        let thornCapture = app.buttons["Capture media for Thorn"]
-        XCTAssertTrue(roseCapture.exists)
-        XCTAssertTrue(budCapture.exists)
-        XCTAssertTrue(thornCapture.exists)
-        XCTAssertTrue(roseCapture.isHittable)
-        XCTAssertTrue(budCapture.isHittable)
-        XCTAssertTrue(thornCapture.isHittable)
+        let roseLibrary = app.buttons["reflection-rose-library-button"]
+        let roseCamera = app.buttons["reflection-rose-camera-button"]
+        let budLibrary = app.buttons["reflection-bud-library-button"]
+        let budCamera = app.buttons["reflection-bud-camera-button"]
+        let thornLibrary = app.buttons["reflection-thorn-library-button"]
+        let thornCamera = app.buttons["reflection-thorn-camera-button"]
+
+        XCTAssertTrue(roseLibrary.exists)
+        XCTAssertTrue(roseCamera.exists)
+        XCTAssertTrue(budLibrary.exists)
+        XCTAssertTrue(budCamera.exists)
+        XCTAssertTrue(thornLibrary.exists)
+        XCTAssertTrue(thornCamera.exists)
+
+        XCTAssertTrue(roseLibrary.isHittable)
+        XCTAssertTrue(roseCamera.isHittable)
+        XCTAssertTrue(budLibrary.isHittable)
+        XCTAssertTrue(budCamera.isHittable)
+        XCTAssertTrue(thornLibrary.isHittable)
+        XCTAssertTrue(thornCamera.isHittable)
     }
 
     func testCoreTabNavigationDiscoverability() {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
         dismissOnboardingIfPresented(app)
 
-        XCTAssertTrue(app.tabBars.buttons["Journal"].waitForExistence(timeout: 6))
-        XCTAssertTrue(app.tabBars.buttons["Insights"].exists)
-        XCTAssertTrue(app.tabBars.buttons["Settings"].exists)
+        XCTAssertTrue(app.otherElements["floating-tab-bar"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.buttons["floating-tab-journal"].exists)
+        XCTAssertTrue(app.buttons["floating-tab-insights"].exists)
 
-        app.tabBars.buttons["Journal"].tap()
-        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 4))
-        XCTAssertTrue(app.textFields["Search entries"].exists)
+        app.buttons["floating-tab-journal"].tap()
+        XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 4))
+        XCTAssertFalse(app.buttons["journal-settings-button"].exists)
 
-        app.tabBars.buttons["Insights"].tap()
+        app.buttons["floating-tab-insights"].tap()
         XCTAssertTrue(app.navigationBars["Insights"].waitForExistence(timeout: 4))
+        XCTAssertTrue(app.buttons["insights-more-button"].exists)
+        app.buttons["insights-more-button"].tap()
+        XCTAssertTrue(app.buttons["insights-more-settings"].waitForExistence(timeout: 4))
     }
 
     func testEngagementActionsAreHittableWhenPresent() {
@@ -63,8 +77,8 @@ final class AccessibilitySmokeUITests: XCTestCase {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6, seedJournalData: true)
         dismissOnboardingIfPresented(app)
 
-        app.tabBars.buttons["Journal"].tap()
-        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 4))
+        app.buttons["floating-tab-journal"].tap()
+        XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 4))
         app.swipeUp()
 
         let thumbnail = app.images.firstMatch

@@ -61,12 +61,6 @@ public struct MemoryDayCardView: View {
                 .foregroundStyle(DesignTokens.textPrimaryOnSurface)
                 .lineLimit(1)
 
-            if snapshot.favorite {
-                Image(systemName: AppIcon.favoriteOn.systemName)
-                    .foregroundStyle(.yellow)
-                    .accessibilityHidden(true)
-            }
-
             Spacer(minLength: 0)
 
             Text("\(snapshot.completionCount)/3")
@@ -246,9 +240,8 @@ public struct MemoryDayCardView: View {
 
     private var accessibilitySummary: String {
         let moodText = snapshot.mood.map { "Mood \($0) out of 5." } ?? ""
-        let favoriteText = snapshot.favorite ? "Favorite day." : ""
         let mediaText = snapshot.hasMedia ? "\(snapshot.mediaCount) media items." : "No media."
-        return "\(PresentationFormatting.localizedDayTitle(for: snapshot.dayKey)). \(snapshot.completionCount) of 3 reflections completed. \(moodText) \(favoriteText) \(mediaText)"
+        return "\(PresentationFormatting.localizedDayTitle(for: snapshot.dayKey)). \(snapshot.completionCount) of 3 reflections completed. \(moodText) \(mediaText)"
     }
 
     private var placeholderThumbnail: some View {

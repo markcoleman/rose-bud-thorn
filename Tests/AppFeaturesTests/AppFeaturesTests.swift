@@ -25,7 +25,6 @@ final class AppFeaturesTests: XCTestCase {
         rose: String = "",
         bud: String = "",
         thorn: String = "",
-        favorite: Bool = false,
         mood: Int? = nil,
         hasMedia: Bool = false
     ) -> EntryDay {
@@ -37,7 +36,6 @@ final class AppFeaturesTests: XCTestCase {
             thornItem: EntryItem(type: .thorn, shortText: thorn, journalTextMarkdown: "", updatedAt: .now),
             tags: [],
             mood: mood,
-            favorite: favorite,
             createdAt: .now,
             updatedAt: .now
         )
@@ -558,24 +556,17 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertFalse(viewModel.timelineIndexItems.first?.label.isEmpty ?? true)
     }
 
-    func testBrowseViewModelFavoritesAndMediaFilters() async throws {
+    func testBrowseViewModelMediaFilter() async throws {
         let environment = try makeEnvironment()
         let la = "America/Los_Angeles"
-        let favoriteDay = LocalDayKey(isoDate: "2026-03-15", timeZoneID: la)
         let mediaDay = LocalDayKey(isoDate: "2026-03-14", timeZoneID: la)
         let plainDay = LocalDayKey(isoDate: "2026-03-13", timeZoneID: la)
 
-        try await environment.entryStore.save(makeEntry(dayKey: favoriteDay, rose: "Favorite", favorite: true))
         try await environment.entryStore.save(makeEntry(dayKey: mediaDay, rose: "Media", hasMedia: true))
         try await environment.entryStore.save(makeEntry(dayKey: plainDay, rose: "Plain"))
 
         let viewModel = BrowseViewModel(environment: environment)
         await viewModel.loadSnapshots()
-
-        viewModel.setQuickFilter(.favorites)
-        let favoriteResults = viewModel.sections.flatMap(\.days)
-        XCTAssertEqual(favoriteResults.count, 1)
-        XCTAssertEqual(favoriteResults.first?.dayKey, favoriteDay)
 
         viewModel.setQuickFilter(.media)
         let mediaResults = viewModel.sections.flatMap(\.days)

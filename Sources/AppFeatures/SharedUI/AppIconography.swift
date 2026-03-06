@@ -24,10 +24,7 @@ public enum AppIcon: Sendable {
     case more
     case deleteDay
 
-    case favoriteOn
-    case favoriteOff
     case filterAll
-    case filterFavorites
     case filterMedia
     case filterThisMonth
     case filterOnThisDay
@@ -90,14 +87,8 @@ public enum AppIcon: Sendable {
             return "ellipsis.circle"
         case .deleteDay:
             return "trash"
-        case .favoriteOn:
-            return "star.fill"
-        case .favoriteOff:
-            return "star"
         case .filterAll:
             return "tray.full"
-        case .filterFavorites:
-            return "star.fill"
         case .filterMedia:
             return "photo.on.rectangle.angled"
         case .filterThisMonth:

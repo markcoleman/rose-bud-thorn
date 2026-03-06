@@ -11,10 +11,7 @@ final class RoseBudThornUITests: XCTestCase {
         XCTAssertTrue(app.buttons["onboarding-skip"].waitForExistence(timeout: 4))
         app.buttons["onboarding-skip"].tap()
 
-        XCTAssertTrue(
-            app.navigationBars["Journal"].waitForExistence(timeout: 6) ||
-            app.staticTexts["Journal"].waitForExistence(timeout: 6)
-        )
+        XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 6))
     }
 
     func testOnboardingSwipeUpdatesPageIndicator() {
@@ -50,18 +47,19 @@ final class RoseBudThornUITests: XCTestCase {
         XCTAssertTrue(closeButton.waitForExistence(timeout: 4))
         closeButton.tap()
 
-        XCTAssertTrue(
-            app.navigationBars["Journal"].waitForExistence(timeout: 6) ||
-            app.staticTexts["Journal"].waitForExistence(timeout: 6)
-        )
+        XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 6))
     }
 
     func testSettingsReplayOnboardingReopensFlow() {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
         dismissOnboardingIfPresented(app)
 
-        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 6))
-        app.tabBars.buttons["Settings"].tap()
+        app.buttons["floating-tab-insights"].tap()
+
+        let moreButton = app.buttons["insights-more-button"]
+        XCTAssertTrue(moreButton.waitForExistence(timeout: 6))
+        moreButton.tap()
+        app.buttons["insights-more-settings"].tap()
 
         let replayButton = app.buttons["Replay onboarding"]
         XCTAssertTrue(replayButton.waitForExistence(timeout: 6))

@@ -17,7 +17,6 @@ final class JournalViewModelTests: XCTestCase {
         rose: String = "",
         bud: String = "",
         thorn: String = "",
-        favorite: Bool = false,
         includePhoto: Bool = false
     ) -> EntryDay {
         let photo: [PhotoRef] = includePhoto
@@ -29,7 +28,6 @@ final class JournalViewModelTests: XCTestCase {
             roseItem: EntryItem(type: .rose, shortText: rose, journalTextMarkdown: "", photos: photo, updatedAt: .now),
             budItem: EntryItem(type: .bud, shortText: bud, journalTextMarkdown: "", updatedAt: .now),
             thornItem: EntryItem(type: .thorn, shortText: thorn, journalTextMarkdown: "", updatedAt: .now),
-            favorite: favorite,
             createdAt: .now,
             updatedAt: .now
         )
@@ -75,7 +73,7 @@ final class JournalViewModelTests: XCTestCase {
         XCTAssertFalse(model.hasMoreDays)
     }
 
-    func testFilteringByCategoryPhotoAndFavorites() async throws {
+    func testFilteringByCategoryAndPhoto() async throws {
         let environment = try makeEnvironment()
         let now = Date(timeIntervalSince1970: 1_772_201_600)
         let dayCalculator = DayKeyCalculator()
@@ -88,7 +86,7 @@ final class JournalViewModelTests: XCTestCase {
         try await environment.entryStore.save(makeEntry(dayKey: today, rose: "Today"))
         try await environment.entryStore.save(makeEntry(dayKey: dayA, rose: "Rose only"))
         try await environment.entryStore.save(makeEntry(dayKey: dayB, bud: "Bud only"))
-        try await environment.entryStore.save(makeEntry(dayKey: dayC, rose: "Rose media", favorite: true, includePhoto: true))
+        try await environment.entryStore.save(makeEntry(dayKey: dayC, rose: "Rose media", includePhoto: true))
 
         let model = JournalViewModel(environment: environment, nowProvider: { now }, debounceDuration: .milliseconds(10), pageSize: 45)
         await model.load()
@@ -100,10 +98,6 @@ final class JournalViewModelTests: XCTestCase {
         model.setHasPhotoOnly(true)
         await waitUntil { model.timelineDays.count == 1 }
         XCTAssertTrue(model.timelineDays.first?.hasMedia ?? false)
-
-        model.setFavoritesOnly(true)
-        await waitUntil { model.timelineDays.count == 1 }
-        XCTAssertTrue(model.timelineDays.first?.favorite ?? false)
     }
 
     func testDebouncedSearchUsesLatestQuery() async throws {
@@ -176,6 +170,55 @@ final class JournalViewModelTests: XCTestCase {
 
         model.handleSearchQueryChange("nomatch")
         await waitUntil { model.mode == .search && !model.todayMatchesSearch }
+    }
+
+    func testTodaySaveFeedbackTransitionsFromDraftToSavedToComplete() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, debounceDuration: .milliseconds(10), pageSize: 20)
+
+        await model.load()
+        XCTAssertEqual(model.todaySaveFeedbackState, .draft)
+
+        model.updateTodayShortText("Morning walk", for: .rose)
+        await waitUntil {
+            if case .saved = model.todaySaveFeedbackState { return true }
+            return false
+        }
+
+        model.updateTodayShortText("Project idea", for: .bud)
+        model.updateTodayShortText("Traffic", for: .thorn)
+        await waitUntil {
+            if case .complete = model.todaySaveFeedbackState { return true }
+            return false
+        }
+    }
+
+    func testRemoveTodayPhotoClearsMediaFromEntry() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, debounceDuration: .milliseconds(10), pageSize: 20)
+        await model.load()
+
+        let temporaryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("jpg")
+
+        let jpegBytes = Data([0xFF, 0xD8, 0xFF, 0xD9])
+        try jpegBytes.write(to: temporaryURL, options: .atomic)
+        defer { try? FileManager.default.removeItem(at: temporaryURL) }
+
+        await model.importPhoto(from: temporaryURL, for: .rose, targetDay: model.todayDayKey)
+        await waitUntil { !model.todayEntry.roseItem.photos.isEmpty }
+
+        guard let ref = model.todayEntry.roseItem.photos.first else {
+            XCTFail("Expected imported photo.")
+            return
+        }
+
+        await model.removeTodayPhoto(ref, for: .rose)
+        await waitUntil { model.todayEntry.roseItem.photos.isEmpty }
+
+        let persisted = try await environment.entryStore.load(day: model.todayDayKey)
+        XCTAssertTrue(persisted.roseItem.photos.isEmpty)
     }
 
     private func waitUntil(

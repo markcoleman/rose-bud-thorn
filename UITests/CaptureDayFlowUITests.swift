@@ -13,8 +13,6 @@ final class CaptureDayFlowUITests: XCTestCase {
         )
         dismissOnboardingIfPresented(app)
 
-        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 6))
-
         let roseField = app.textFields["Rose for today"]
         XCTAssertTrue(roseField.waitForExistence(timeout: 6))
         roseField.tap()
@@ -36,14 +34,43 @@ final class CaptureDayFlowUITests: XCTestCase {
         let backButton = app.navigationBars.buttons.element(boundBy: 0)
         XCTAssertTrue(backButton.waitForExistence(timeout: 4))
         backButton.tap()
+        XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 4))
+    }
 
-        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 4))
+    func testCaptureControlsUseLibraryPrimaryAndCameraSecondary() {
+        let app = launchAppForUITests(
+            resetOnboarding: true,
+            onboardingCountdownSeconds: 6
+        )
+        dismissOnboardingIfPresented(app)
 
-        let searchField = app.textFields["Search entries"]
-        XCTAssertTrue(searchField.waitForExistence(timeout: 4))
-        searchField.tap()
-        searchField.typeText("Seeded yesterday")
+        let libraryButton = app.buttons["reflection-rose-library-button"]
+        let cameraButton = app.buttons["reflection-rose-camera-button"]
 
-        XCTAssertTrue(dayCard.waitForExistence(timeout: 6))
+        XCTAssertTrue(libraryButton.waitForExistence(timeout: 6))
+        XCTAssertTrue(cameraButton.exists)
+
+        libraryButton.tap()
+        XCTAssertTrue(app.otherElements["journal-photo-library-presented"].waitForExistence(timeout: 2))
+        dismissPhotoPickerIfNeeded(app)
+
+        cameraButton.tap()
+        XCTAssertTrue(app.buttons["Photo Library"].waitForExistence(timeout: 6))
+    }
+
+    private func dismissPhotoPickerIfNeeded(_ app: XCUIApplication) {
+        let cancel = app.buttons["Cancel"].firstMatch
+        if cancel.waitForExistence(timeout: 1) {
+            cancel.tap()
+            return
+        }
+
+        let close = app.buttons["Close"].firstMatch
+        if close.waitForExistence(timeout: 1) {
+            close.tap()
+            return
+        }
+
+        app.swipeDown()
     }
 }

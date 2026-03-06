@@ -70,6 +70,58 @@ final class DocumentStoreTests: XCTestCase {
         XCTAssertFalse(contents.isEmpty)
     }
 
+    func testLoadMigratesLegacyV1EntryAndRewritesWithoutFavorite() async throws {
+        let root = try makeTempRoot()
+        let configuration = DocumentStoreConfiguration(rootURL: root)
+        let repo = try EntryRepositoryImpl(configuration: configuration)
+        let dayKey = LocalDayKey(isoDate: "2026-03-05", timeZoneID: "America/Los_Angeles")
+        let now = Date(timeIntervalSince1970: 1_772_201_600)
+
+        let entryURL = FileLayout(rootURL: root).entryFileURL(for: dayKey)
+        try FileManager.default.createDirectory(at: entryURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try makeLegacyV1EntryJSON(dayKey: dayKey, updatedAt: now, favorite: true).write(to: entryURL)
+
+        let loaded = try await repo.load(day: dayKey)
+        XCTAssertNotNil(loaded)
+        XCTAssertEqual(loaded?.schemaVersion, EntryDay.currentSchemaVersion)
+        XCTAssertEqual(loaded?.roseItem.shortText, "Legacy rose")
+
+        let migratedData = try Data(contentsOf: entryURL)
+        let migratedObject = try XCTUnwrap(JSONSerialization.jsonObject(with: migratedData) as? [String: Any])
+        XCTAssertEqual(migratedObject["schemaVersion"] as? Int, EntryDay.currentSchemaVersion)
+        XCTAssertNil(migratedObject["favorite"])
+    }
+
+    func testMergeWithLegacyEntryArchivesConflictWithoutFavoriteField() async throws {
+        let root = try makeTempRoot()
+        let configuration = DocumentStoreConfiguration(rootURL: root)
+        let repo = try EntryRepositoryImpl(configuration: configuration)
+        let dayKey = LocalDayKey(isoDate: "2026-03-06", timeZoneID: "America/Los_Angeles")
+
+        let oldDate = Date(timeIntervalSince1970: 1_772_115_200)
+        let newDate = Date(timeIntervalSince1970: 1_772_201_600)
+
+        let entryURL = FileLayout(rootURL: root).entryFileURL(for: dayKey)
+        try FileManager.default.createDirectory(at: entryURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try makeLegacyV1EntryJSON(dayKey: dayKey, updatedAt: oldDate, favorite: true).write(to: entryURL)
+
+        var incoming = makeEntry(day: dayKey.isoDate, updatedAt: newDate)
+        incoming.roseItem.shortText = "Updated rose"
+        try await repo.save(incoming)
+
+        let loaded = try await repo.load(day: dayKey)
+        XCTAssertEqual(loaded?.schemaVersion, EntryDay.currentSchemaVersion)
+        XCTAssertEqual(loaded?.roseItem.shortText, "Updated rose")
+
+        let conflictsRoot = FileLayout(rootURL: root).conflictsRoot.appendingPathComponent(dayKey.isoDate)
+        let contents = try FileManager.default.contentsOfDirectory(at: conflictsRoot, includingPropertiesForKeys: nil)
+        XCTAssertFalse(contents.isEmpty)
+
+        let archiveData = try Data(contentsOf: try XCTUnwrap(contents.first))
+        let archiveJSON = String(decoding: archiveData, as: UTF8.self)
+        XCTAssertFalse(archiveJSON.contains("\"favorite\""))
+    }
+
     func testAttachmentImportAndRemove() async throws {
         let root = try makeTempRoot()
         let configuration = DocumentStoreConfiguration(rootURL: root)
@@ -276,5 +328,57 @@ final class DocumentStoreTests: XCTestCase {
         if !CGImageDestinationFinalize(destination) {
             throw NSError(domain: "DocumentStoreTests", code: 2)
         }
+    }
+
+    private func makeLegacyV1EntryJSON(
+        dayKey: LocalDayKey,
+        updatedAt: Date,
+        favorite: Bool
+    ) throws -> Data {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        let isoTimestamp = formatter.string(from: updatedAt)
+
+        let json: [String: Any] = [
+            "schemaVersion": 1,
+            "dayKey": [
+                "isoDate": dayKey.isoDate,
+                "timeZoneID": dayKey.timeZoneID,
+            ],
+            "roseItem": [
+                "type": "rose",
+                "shortText": "Legacy rose",
+                "journalTextMarkdown": "",
+                "photos": [],
+                "videos": [],
+                "metadata": [:],
+                "updatedAt": isoTimestamp,
+            ],
+            "budItem": [
+                "type": "bud",
+                "shortText": "",
+                "journalTextMarkdown": "",
+                "photos": [],
+                "videos": [],
+                "metadata": [:],
+                "updatedAt": isoTimestamp,
+            ],
+            "thornItem": [
+                "type": "thorn",
+                "shortText": "",
+                "journalTextMarkdown": "",
+                "photos": [],
+                "videos": [],
+                "metadata": [:],
+                "updatedAt": isoTimestamp,
+            ],
+            "tags": [],
+            "mood": NSNull(),
+            "favorite": favorite,
+            "createdAt": isoTimestamp,
+            "updatedAt": isoTimestamp,
+        ]
+
+        return try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
     }
 }

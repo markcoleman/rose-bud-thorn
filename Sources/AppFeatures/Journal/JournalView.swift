@@ -2,6 +2,9 @@ import SwiftUI
 import UniformTypeIdentifiers
 import CoreModels
 import DocumentStore
+#if os(iOS)
+import UIKit
+#endif
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import PhotosUI
 #endif
@@ -21,7 +24,6 @@ public struct JournalView: View {
 
     @State private var navigationSelection: JournalNavigationSelection?
     @State private var showJumpToToday = false
-    @FocusState private var isSearchFieldFocused: Bool
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -44,65 +46,77 @@ public struct JournalView: View {
         NavigationStack {
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 14) {
+                    LazyVStack(alignment: .leading, spacing: 10) {
                         topAnchorMarker
-
-                        topControls(bindable)
 
                         JournalTodayCardView(
                             entry: bindable.todayEntry,
-                            isSaving: bindable.isSavingToday,
-                            lastSavedAt: bindable.lastSavedAt,
-                            todayMatchesSearch: bindable.todayMatchesSearch,
+                            saveFeedbackState: bindable.todaySaveFeedbackState,
                             onShortTextChange: { type, text in
                                 bindable.updateTodayShortText(text, for: type)
                             },
-                            onAddPhoto: { type in
+                            onJournalTextChange: { type, text in
+                                bindable.updateTodayJournalText(text, for: type)
+                            },
+                            onOpenPhotoLibrary: { type in
                                 presentCapture(for: type, dayKey: bindable.todayDayKey)
                             },
-                            onFavoriteChange: { isFavorite in
-                                bindable.updateTodayFavorite(isFavorite)
+                            onOpenCamera: { type in
+                                presentCameraCapture(for: type, dayKey: bindable.todayDayKey)
+                            },
+                            onRemovePhoto: { type, ref in
+                                Task {
+                                    await bindable.removeTodayPhoto(ref, for: type)
+                                }
+                            },
+                            onRemoveVideo: { type, ref in
+                                Task {
+                                    await bindable.removeTodayVideo(ref, for: type)
+                                }
+                            },
+                            onOpenCompletedDay: {
+                                navigationSelection = JournalNavigationSelection(dayKey: bindable.todayDayKey)
                             },
                             photoURL: { ref in
                                 bindable.photoURL(for: ref, day: bindable.todayDayKey)
+                            },
+                            videoURL: { ref in
+                                bindable.videoURL(for: ref, day: bindable.todayDayKey)
                             }
                         )
                         .id(scrollTopID)
 
-                        if bindable.mode == .search {
-                            Text("Results")
+                        if !bindable.timelineDays.isEmpty {
+                            Text("Memories")
                                 .font(.headline)
                                 .foregroundStyle(DesignTokens.textPrimaryOnSurface)
+                                .padding(.top, 2)
                         }
 
-                        if bindable.searchResultsAreEmpty {
-                            noMatchesView(bindable)
-                        } else {
-                            ForEach(bindable.timelineDays) { summary in
-                                JournalDayCardView(
-                                    summary: summary,
-                                    mode: bindable.mode,
-                                    queryText: bindable.searchQuery,
-                                    category: bindable.filters.category,
-                                    photoURL: { ref in
-                                        bindable.photoURL(for: ref, day: summary.dayKey)
-                                    },
-                                    onOpen: {
-                                        navigationSelection = JournalNavigationSelection(dayKey: summary.dayKey)
-                                    }
-                                )
-                                .onAppear {
-                                    Task {
-                                        await bindable.loadMoreIfNeeded(currentDayKey: summary.dayKey)
-                                    }
+                        ForEach(bindable.timelineDays) { summary in
+                            JournalDayCardView(
+                                summary: summary,
+                                mode: .timeline,
+                                queryText: "",
+                                category: .all,
+                                photoURL: { ref in
+                                    bindable.photoURL(for: ref, day: summary.dayKey)
+                                },
+                                onOpen: {
+                                    navigationSelection = JournalNavigationSelection(dayKey: summary.dayKey)
+                                }
+                            )
+                            .onAppear {
+                                Task {
+                                    await bindable.loadMoreIfNeeded(currentDayKey: summary.dayKey)
                                 }
                             }
+                        }
 
-                            if bindable.isLoadingMore {
-                                ProgressView()
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                    .padding(.vertical, 8)
-                            }
+                        if bindable.isLoadingMore {
+                            ProgressView()
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 8)
                         }
 
                         if let error = bindable.errorMessage {
@@ -112,8 +126,8 @@ public struct JournalView: View {
                         }
                     }
                     .padding(.horizontal, horizontalContentPadding)
-                    .padding(.top, 10)
-                    .padding(.bottom, 18)
+                    .padding(.top, 0)
+                    .padding(.bottom, 10)
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
                 .scrollDismissesKeyboard(.interactively)
@@ -144,17 +158,14 @@ public struct JournalView: View {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
                         Button("Done") {
-                            isSearchFieldFocused = false
+                            dismissKeyboard()
                         }
                         .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
                     }
                 }
             }
-            .navigationTitle("Journal")
             #if !os(macOS)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
             #endif
             .navigationDestination(item: $navigationSelection) { destination in
                 DayDetailView(environment: bindable.environment, dayKey: destination.dayKey)
@@ -219,6 +230,13 @@ public struct JournalView: View {
                 selection: $selectedPhotoLibraryItem,
                 matching: .images
             )
+            .overlay(alignment: .topLeading) {
+                if isPhotoLibraryPresented {
+                    Color.clear
+                        .frame(width: 1, height: 1)
+                        .accessibilityIdentifier("journal-photo-library-presented")
+                }
+            }
             .onChange(of: selectedPhotoLibraryItem) { _, item in
                 guard let item, let request = libraryImportRequest else { return }
                 Task {
@@ -247,95 +265,6 @@ public struct JournalView: View {
             )
     }
 
-    private func topControls(_ model: JournalViewModel) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: AppIcon.sectionSearch.systemName)
-                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
-
-                TextField(
-                    "Search entries",
-                    text: Binding(
-                        get: { model.searchQuery },
-                        set: { model.handleSearchQueryChange($0) }
-                    )
-                )
-                .textFieldStyle(.plain)
-                .focused($isSearchFieldFocused)
-
-                if !model.searchQuery.isEmpty {
-                    Button {
-                        model.clearSearch()
-                    } label: {
-                        Image(systemName: AppIcon.closeCircle.systemName)
-                            .foregroundStyle(DesignTokens.textSecondaryOnSurface)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Clear search")
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(DesignTokens.surface)
-            )
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(JournalCategoryFilter.allCases) { category in
-                        Button {
-                            model.setCategory(category)
-                        } label: {
-                            Text(category.title)
-                        }
-                        .buttonStyle(
-                            JournalFilterChipStyle(
-                                isActive: model.filters.category == category
-                            )
-                        )
-                    }
-
-                    Button {
-                        model.setHasPhotoOnly(!model.filters.hasPhotoOnly)
-                    } label: {
-                        Label("Photos", systemImage: AppIcon.filterMedia.systemName)
-                    }
-                    .buttonStyle(JournalFilterChipStyle(isActive: model.filters.hasPhotoOnly))
-
-                    Button {
-                        model.setFavoritesOnly(!model.filters.favoritesOnly)
-                    } label: {
-                        Label("Favorites", systemImage: AppIcon.favoriteOn.systemName)
-                    }
-                    .buttonStyle(JournalFilterChipStyle(isActive: model.filters.favoritesOnly))
-                }
-                .padding(.horizontal, 1)
-            }
-        }
-    }
-
-    private func noMatchesView(_ model: JournalViewModel) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("No matches")
-                .font(.headline)
-            Text("Try a broader search or clear the current query.")
-                .font(.subheadline)
-                .foregroundStyle(DesignTokens.textSecondaryOnSurface)
-
-            Button("Clear search") {
-                model.clearSearch()
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(DesignTokens.surfaceElevated)
-        )
-    }
-
     private func jumpToTodayButton(action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label("↑ Today", systemImage: "arrow.up")
@@ -352,10 +281,10 @@ public struct JournalView: View {
     }
 
     private func scrollToTop(_ proxy: ScrollViewProxy) {
-        isSearchFieldFocused = false
         withAnimation(MotionTokens.quick) {
             proxy.scrollTo(scrollTopID, anchor: .top)
         }
+        dismissKeyboard()
     }
 
     private func consumeLaunchRequestIfNeeded(_ model: JournalViewModel) {
@@ -365,6 +294,14 @@ public struct JournalView: View {
     }
 
     private func presentCapture(for type: EntryType, dayKey: LocalDayKey) {
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        presentPhotoLibrary(for: type, dayKey: dayKey)
+        #else
+        importerRequest = ImportRequest(type: type, dayKey: dayKey, includeMovies: false)
+        #endif
+    }
+
+    private func presentCameraCapture(for type: EntryType, dayKey: LocalDayKey) {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         cameraRequest = CameraCaptureRequest(type: type, dayKey: dayKey)
         #else
@@ -473,6 +410,12 @@ public struct JournalView: View {
         return false
         #endif
     }
+
+    private func dismissKeyboard() {
+        #if os(iOS)
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        #endif
+    }
 }
 
 private struct JournalTopOffsetPreferenceKey: PreferenceKey {
@@ -480,24 +423,6 @@ private struct JournalTopOffsetPreferenceKey: PreferenceKey {
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
-    }
-}
-
-private struct JournalFilterChipStyle: ButtonStyle {
-    let isActive: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.footnote.weight(.semibold))
-            .foregroundStyle(isActive ? Color.white : DesignTokens.textPrimaryOnSurface)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(isActive ? DesignTokens.accent : DesignTokens.surface)
-            )
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .animation(MotionTokens.quick, value: configuration.isPressed)
     }
 }
 

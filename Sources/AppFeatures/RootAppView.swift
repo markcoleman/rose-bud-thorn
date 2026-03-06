@@ -8,11 +8,16 @@ import UIKit
 public struct RootAppView: View {
     @State private var selectedSection: AppSection? = .journal
     @State private var selectedTab: AppSection = .journal
+    @State private var isSettingsPresented = false
+    @State private var isFloatingChromeHidden = false
     @State private var captureLaunchRequest: CaptureLaunchRequest?
     @State private var journalRefreshToken = 0
     @State private var summaryLaunchRequest: SummaryLaunchRequest?
     @State private var onboardingPresentation: OnboardingPresentationSource?
     @State private var didApplyLaunchOverrides = false
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    @State private var isKeyboardVisible = false
+    #endif
     @Environment(\.scenePhase) private var scenePhase
 
     private let environment: AppEnvironment
@@ -41,7 +46,7 @@ public struct RootAppView: View {
             if shouldUseSplitView {
                 splitView
             } else {
-                tabView
+                compactRootView
             }
         }
         .overlay {
@@ -76,28 +81,77 @@ public struct RootAppView: View {
         }
     }
 
-    private var tabView: some View {
-        TabView(selection: $selectedTab) {
-            JournalView(
-                environment: environment,
-                captureLaunchRequest: $captureLaunchRequest,
-                refreshTrigger: journalRefreshToken
-            )
-                .tabItem { Label("Journal", systemImage: AppSection.journal.systemImage) }
-                .tag(AppSection.journal)
-
-            SummaryListView(environment: environment, summaryLaunchRequest: $summaryLaunchRequest)
-                .tabItem { Label("Insights", systemImage: AppSection.insights.systemImage) }
-                .tag(AppSection.insights)
-
-            SettingsView(
-                lockManager: lockManager,
-                environment: environment,
-                onReplayOnboarding: replayOnboardingFromSettings
-            )
-                .tabItem { Label("Settings", systemImage: AppSection.settings.systemImage) }
-                .tag(AppSection.settings)
+    private var compactRootView: some View {
+        ZStack {
+            switch selectedTab {
+            case .insights:
+                SummaryListView(
+                    environment: environment,
+                    summaryLaunchRequest: $summaryLaunchRequest,
+                    onOpenSettings: {
+                        isSettingsPresented = true
+                    }
+                )
+            case .journal:
+                JournalView(
+                    environment: environment,
+                    captureLaunchRequest: $captureLaunchRequest,
+                    refreshTrigger: journalRefreshToken
+                )
+            }
         }
+        .onFloatingChromeHiddenPreference { isHidden in
+            isFloatingChromeHidden = isHidden
+        }
+        .safeAreaInset(edge: .bottom) {
+            #if os(iOS) && !targetEnvironment(macCatalyst)
+            if !isKeyboardVisible && !isFloatingChromeHidden {
+                FloatingAppTabBar(selection: compactTabBinding)
+            }
+            #else
+            if !isFloatingChromeHidden {
+                FloatingAppTabBar(selection: compactTabBinding)
+            }
+            #endif
+        }
+        .sheet(isPresented: $isSettingsPresented) {
+            NavigationStack {
+                SettingsView(
+                    lockManager: lockManager,
+                    environment: environment,
+                    onReplayOnboarding: replayOnboardingFromSettings
+                )
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Done") {
+                            isSettingsPresented = false
+                        }
+                        .accessibilityIdentifier("settings-sheet-close")
+                    }
+                }
+            }
+        }
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            withAnimation(MotionTokens.quick) {
+                isKeyboardVisible = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            withAnimation(MotionTokens.quick) {
+                isKeyboardVisible = false
+            }
+        }
+        #endif
+    }
+
+    private var compactTabBinding: Binding<AppSection> {
+        Binding(
+            get: { selectedTab == .insights ? .insights : .journal },
+            set: { newValue in
+                selectSection(newValue)
+            }
+        )
     }
 
     private var splitView: some View {
@@ -127,12 +181,12 @@ public struct RootAppView: View {
                 refreshTrigger: journalRefreshToken
             )
         case .insights:
-            SummaryListView(environment: environment, summaryLaunchRequest: $summaryLaunchRequest)
-        case .settings:
-            SettingsView(
-                lockManager: lockManager,
+            SummaryListView(
                 environment: environment,
-                onReplayOnboarding: replayOnboardingFromSettings
+                summaryLaunchRequest: $summaryLaunchRequest,
+                onOpenSettings: {
+                    isSettingsPresented = true
+                }
             )
         }
     }
@@ -184,7 +238,8 @@ public struct RootAppView: View {
             selectSection(.insights)
             summaryLaunchRequest = SummaryLaunchRequest(action: .openCurrentWeeklySummary, source: source)
         case "settings":
-            selectSection(.settings)
+            selectSection(.insights)
+            isSettingsPresented = true
         default:
             break
         }

@@ -69,8 +69,11 @@ public struct TodayCaptureView: View {
                                 onShortTextChange: { bindable.updateShortText($0, for: type) },
                                 onJournalTextChange: { bindable.updateJournalText($0, for: type) },
                                 onToggleExpanded: { bindable.toggleExpanded(type) },
-                                onAddCapture: {
+                                onOpenPhotoLibrary: {
                                     presentCapture(for: type, dayKey: bindable.dayKey)
+                                },
+                                onOpenCamera: {
+                                    presentCameraCapture(for: type, dayKey: bindable.dayKey)
                                 },
                                 onRemovePhoto: { photo in
                                     Task { await bindable.removePhoto(photo, for: type) }
@@ -285,6 +288,13 @@ public struct TodayCaptureView: View {
             selection: $selectedPhotoLibraryItem,
             matching: .images
         )
+        .overlay(alignment: .topLeading) {
+            if isPhotoLibraryPresented {
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityIdentifier("today-photo-library-presented")
+            }
+        }
         .onChange(of: selectedPhotoLibraryItem) { _, item in
             guard let item, let request = libraryImportRequest else { return }
             Task {
@@ -486,29 +496,16 @@ public struct TodayCaptureView: View {
 
             ViewThatFits {
                 HStack(spacing: 12) {
-                Picker("Mood", selection: Binding(
-                    get: { model.entry.mood ?? 0 },
-                    set: { newValue in model.setMood(newValue == 0 ? nil : newValue) }
-                )) {
-                    Text("Mood").tag(0)
-                    ForEach(1...5, id: \.self) { value in
-                        Text("\(value)").tag(value)
+                    Picker("Mood", selection: Binding(
+                        get: { model.entry.mood ?? 0 },
+                        set: { newValue in model.setMood(newValue == 0 ? nil : newValue) }
+                    )) {
+                        Text("Mood").tag(0)
+                        ForEach(1...5, id: \.self) { value in
+                            Text("\(value)").tag(value)
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-
-                Button {
-                    model.toggleFavorite()
-                } label: {
-                    Label(
-                        "Favorite",
-                        systemImage: model.entry.favorite
-                            ? AppIcon.favoriteOn.systemName
-                            : AppIcon.favoriteOff.systemName
-                    )
-                }
-                .buttonStyle(.bordered)
-                .touchTargetMinSize(ControlTokens.minTouchTarget)
+                    .pickerStyle(.segmented)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
@@ -522,19 +519,6 @@ public struct TodayCaptureView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-
-                    Button {
-                        model.toggleFavorite()
-                    } label: {
-                        Label(
-                            "Favorite",
-                            systemImage: model.entry.favorite
-                                ? AppIcon.favoriteOn.systemName
-                                : AppIcon.favoriteOff.systemName
-                        )
-                    }
-                    .buttonStyle(.bordered)
-                    .touchTargetMinSize(ControlTokens.minTouchTarget)
                 }
             }
         }
@@ -711,6 +695,14 @@ public struct TodayCaptureView: View {
     }
 
     private func presentCapture(for type: EntryType, dayKey: LocalDayKey) {
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        presentPhotoLibrary(for: type, dayKey: dayKey)
+        #else
+        importerRequest = ImportRequest(type: type, dayKey: dayKey, includeMovies: false)
+        #endif
+    }
+
+    private func presentCameraCapture(for type: EntryType, dayKey: LocalDayKey) {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         cameraRequest = CameraCaptureRequest(type: type, dayKey: dayKey)
         #else
