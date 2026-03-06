@@ -21,7 +21,8 @@ public struct ReflectionBlockView: View {
     public let onShortTextChange: @MainActor @Sendable (String) -> Void
     public let onJournalTextChange: @MainActor @Sendable (String) -> Void
     public let onToggleExpanded: @MainActor @Sendable () -> Void
-    public let onAddCapture: @MainActor @Sendable () -> Void
+    public let onOpenPhotoLibrary: @MainActor @Sendable () -> Void
+    public let onOpenCamera: @MainActor @Sendable () -> Void
     public let onRemovePhoto: @MainActor @Sendable (PhotoRef) -> Void
     public let onRemoveVideo: @MainActor @Sendable (VideoRef) -> Void
     public let photoURL: @MainActor @Sendable (PhotoRef) -> URL
@@ -37,7 +38,8 @@ public struct ReflectionBlockView: View {
         onShortTextChange: @escaping @MainActor @Sendable (String) -> Void,
         onJournalTextChange: @escaping @MainActor @Sendable (String) -> Void,
         onToggleExpanded: @escaping @MainActor @Sendable () -> Void,
-        onAddCapture: @escaping @MainActor @Sendable () -> Void,
+        onOpenPhotoLibrary: @escaping @MainActor @Sendable () -> Void,
+        onOpenCamera: @escaping @MainActor @Sendable () -> Void,
         onRemovePhoto: @escaping @MainActor @Sendable (PhotoRef) -> Void,
         onRemoveVideo: @escaping @MainActor @Sendable (VideoRef) -> Void,
         photoURL: @escaping @MainActor @Sendable (PhotoRef) -> URL,
@@ -52,7 +54,8 @@ public struct ReflectionBlockView: View {
         self.onShortTextChange = onShortTextChange
         self.onJournalTextChange = onJournalTextChange
         self.onToggleExpanded = onToggleExpanded
-        self.onAddCapture = onAddCapture
+        self.onOpenPhotoLibrary = onOpenPhotoLibrary
+        self.onOpenCamera = onOpenCamera
         self.onRemovePhoto = onRemovePhoto
         self.onRemoveVideo = onRemoveVideo
         self.photoURL = photoURL
@@ -128,22 +131,41 @@ public struct ReflectionBlockView: View {
 
             Spacer(minLength: 4)
 
-            Button {
-                onAddCapture()
-            } label: {
-                Label(mediaItems.isEmpty ? "Add" : "Replace", systemImage: AppIcon.camera.systemName)
-                    .labelStyle(.iconOnly)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(typeColor)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(typeColor.opacity(0.18))
-                    )
+            HStack(spacing: 8) {
+                Button {
+                    onOpenPhotoLibrary()
+                } label: {
+                    Image(systemName: AppIcon.photoLibrary.systemName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(typeColor)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(typeColor.opacity(0.24))
+                        )
+                }
+                .buttonStyle(.plain)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
+                .accessibilityLabel("Pick photo for \(type.title)")
+                .accessibilityIdentifier("reflection-\(type.rawValue)-library-button")
+
+                Button {
+                    onOpenCamera()
+                } label: {
+                    Image(systemName: AppIcon.camera.systemName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(typeColor)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(typeColor.opacity(0.18))
+                        )
+                }
+                .buttonStyle(.plain)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
+                .accessibilityLabel("Open camera for \(type.title)")
+                .accessibilityIdentifier("reflection-\(type.rawValue)-camera-button")
             }
-            .buttonStyle(.plain)
-            .touchTargetMinSize(ControlTokens.minTouchTarget)
-            .accessibilityLabel("Capture media for \(type.title)")
 
             Button(isExpanded ? "Done" : "More") {
                 onToggleExpanded()

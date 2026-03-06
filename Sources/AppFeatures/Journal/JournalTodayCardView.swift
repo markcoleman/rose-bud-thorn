@@ -6,7 +6,8 @@ public struct JournalTodayCardView: View {
     public let saveFeedbackState: JournalSaveFeedbackState
     public let onShortTextChange: (EntryType, String) -> Void
     public let onJournalTextChange: (EntryType, String) -> Void
-    public let onAddCapture: (EntryType) -> Void
+    public let onOpenPhotoLibrary: (EntryType) -> Void
+    public let onOpenCamera: (EntryType) -> Void
     public let onRemovePhoto: (EntryType, PhotoRef) -> Void
     public let onRemoveVideo: (EntryType, VideoRef) -> Void
     public let onOpenCompletedDay: () -> Void
@@ -20,7 +21,8 @@ public struct JournalTodayCardView: View {
         saveFeedbackState: JournalSaveFeedbackState,
         onShortTextChange: @escaping (EntryType, String) -> Void,
         onJournalTextChange: @escaping (EntryType, String) -> Void,
-        onAddCapture: @escaping (EntryType) -> Void,
+        onOpenPhotoLibrary: @escaping (EntryType) -> Void,
+        onOpenCamera: @escaping (EntryType) -> Void,
         onRemovePhoto: @escaping (EntryType, PhotoRef) -> Void,
         onRemoveVideo: @escaping (EntryType, VideoRef) -> Void,
         onOpenCompletedDay: @escaping () -> Void,
@@ -31,7 +33,8 @@ public struct JournalTodayCardView: View {
         self.saveFeedbackState = saveFeedbackState
         self.onShortTextChange = onShortTextChange
         self.onJournalTextChange = onJournalTextChange
-        self.onAddCapture = onAddCapture
+        self.onOpenPhotoLibrary = onOpenPhotoLibrary
+        self.onOpenCamera = onOpenCamera
         self.onRemovePhoto = onRemovePhoto
         self.onRemoveVideo = onRemoveVideo
         self.onOpenCompletedDay = onOpenCompletedDay
@@ -86,7 +89,8 @@ public struct JournalTodayCardView: View {
                     onToggleExpanded: {
                         toggleExpanded(type)
                     },
-                    onAddCapture: { onAddCapture(type) },
+                    onOpenPhotoLibrary: { onOpenPhotoLibrary(type) },
+                    onOpenCamera: { onOpenCamera(type) },
                     onRemovePhoto: { onRemovePhoto(type, $0) },
                     onRemoveVideo: { onRemoveVideo(type, $0) },
                     photoURL: photoURL,
@@ -275,7 +279,8 @@ private extension Date {
         saveFeedbackState: .draft,
         onShortTextChange: { _, _ in },
         onJournalTextChange: { _, _ in },
-        onAddCapture: { _ in },
+        onOpenPhotoLibrary: { _ in },
+        onOpenCamera: { _ in },
         onRemovePhoto: { _, _ in },
         onRemoveVideo: { _, _ in },
         onOpenCompletedDay: {},
@@ -297,7 +302,8 @@ private extension Date {
         saveFeedbackState: .saved(.now),
         onShortTextChange: { _, _ in },
         onJournalTextChange: { _, _ in },
-        onAddCapture: { _ in },
+        onOpenPhotoLibrary: { _ in },
+        onOpenCamera: { _ in },
         onRemovePhoto: { _, _ in },
         onRemoveVideo: { _, _ in },
         onOpenCompletedDay: {},
@@ -323,7 +329,8 @@ private extension Date {
         saveFeedbackState: .complete(.now),
         onShortTextChange: { _, _ in },
         onJournalTextChange: { _, _ in },
-        onAddCapture: { _ in },
+        onOpenPhotoLibrary: { _ in },
+        onOpenCamera: { _ in },
         onRemovePhoto: { _, _ in },
         onRemoveVideo: { _, _ in },
         onOpenCompletedDay: {},

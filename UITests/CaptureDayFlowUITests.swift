@@ -36,4 +36,41 @@ final class CaptureDayFlowUITests: XCTestCase {
         backButton.tap()
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 4))
     }
+
+    func testCaptureControlsUseLibraryPrimaryAndCameraSecondary() {
+        let app = launchAppForUITests(
+            resetOnboarding: true,
+            onboardingCountdownSeconds: 6
+        )
+        dismissOnboardingIfPresented(app)
+
+        let libraryButton = app.buttons["reflection-rose-library-button"]
+        let cameraButton = app.buttons["reflection-rose-camera-button"]
+
+        XCTAssertTrue(libraryButton.waitForExistence(timeout: 6))
+        XCTAssertTrue(cameraButton.exists)
+
+        libraryButton.tap()
+        XCTAssertTrue(app.otherElements["journal-photo-library-presented"].waitForExistence(timeout: 2))
+        dismissPhotoPickerIfNeeded(app)
+
+        cameraButton.tap()
+        XCTAssertTrue(app.buttons["Photo Library"].waitForExistence(timeout: 6))
+    }
+
+    private func dismissPhotoPickerIfNeeded(_ app: XCUIApplication) {
+        let cancel = app.buttons["Cancel"].firstMatch
+        if cancel.waitForExistence(timeout: 1) {
+            cancel.tap()
+            return
+        }
+
+        let close = app.buttons["Close"].firstMatch
+        if close.waitForExistence(timeout: 1) {
+            close.tap()
+            return
+        }
+
+        app.swipeDown()
+    }
 }

@@ -58,8 +58,11 @@ public struct JournalView: View {
                             onJournalTextChange: { type, text in
                                 bindable.updateTodayJournalText(text, for: type)
                             },
-                            onAddCapture: { type in
+                            onOpenPhotoLibrary: { type in
                                 presentCapture(for: type, dayKey: bindable.todayDayKey)
+                            },
+                            onOpenCamera: { type in
+                                presentCameraCapture(for: type, dayKey: bindable.todayDayKey)
                             },
                             onRemovePhoto: { type, ref in
                                 Task {
@@ -227,6 +230,13 @@ public struct JournalView: View {
                 selection: $selectedPhotoLibraryItem,
                 matching: .images
             )
+            .overlay(alignment: .topLeading) {
+                if isPhotoLibraryPresented {
+                    Color.clear
+                        .frame(width: 1, height: 1)
+                        .accessibilityIdentifier("journal-photo-library-presented")
+                }
+            }
             .onChange(of: selectedPhotoLibraryItem) { _, item in
                 guard let item, let request = libraryImportRequest else { return }
                 Task {
@@ -284,6 +294,14 @@ public struct JournalView: View {
     }
 
     private func presentCapture(for type: EntryType, dayKey: LocalDayKey) {
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        presentPhotoLibrary(for: type, dayKey: dayKey)
+        #else
+        importerRequest = ImportRequest(type: type, dayKey: dayKey, includeMovies: false)
+        #endif
+    }
+
+    private func presentCameraCapture(for type: EntryType, dayKey: LocalDayKey) {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         cameraRequest = CameraCaptureRequest(type: type, dayKey: dayKey)
         #else

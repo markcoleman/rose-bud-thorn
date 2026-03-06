@@ -14,7 +14,8 @@ public struct EntryRowCard: View {
     public let onShortTextChange: @MainActor @Sendable (String) -> Void
     public let onJournalTextChange: @MainActor @Sendable (String) -> Void
     public let onToggleExpanded: @MainActor @Sendable () -> Void
-    public let onAddCapture: @MainActor @Sendable () -> Void
+    public let onOpenPhotoLibrary: @MainActor @Sendable () -> Void
+    public let onOpenCamera: @MainActor @Sendable () -> Void
     public let onRemovePhoto: @MainActor @Sendable (PhotoRef) -> Void
     public let onRemoveVideo: @MainActor @Sendable (VideoRef) -> Void
     public let photoURL: @MainActor @Sendable (PhotoRef) -> URL
@@ -31,7 +32,8 @@ public struct EntryRowCard: View {
         onShortTextChange: @escaping @MainActor @Sendable (String) -> Void,
         onJournalTextChange: @escaping @MainActor @Sendable (String) -> Void,
         onToggleExpanded: @escaping @MainActor @Sendable () -> Void,
-        onAddCapture: @escaping @MainActor @Sendable () -> Void,
+        onOpenPhotoLibrary: @escaping @MainActor @Sendable () -> Void,
+        onOpenCamera: @escaping @MainActor @Sendable () -> Void,
         onRemovePhoto: @escaping @MainActor @Sendable (PhotoRef) -> Void,
         onRemoveVideo: @escaping @MainActor @Sendable (VideoRef) -> Void,
         photoURL: @escaping @MainActor @Sendable (PhotoRef) -> URL,
@@ -47,7 +49,8 @@ public struct EntryRowCard: View {
         self.onShortTextChange = onShortTextChange
         self.onJournalTextChange = onJournalTextChange
         self.onToggleExpanded = onToggleExpanded
-        self.onAddCapture = onAddCapture
+        self.onOpenPhotoLibrary = onOpenPhotoLibrary
+        self.onOpenCamera = onOpenCamera
         self.onRemovePhoto = onRemovePhoto
         self.onRemoveVideo = onRemoveVideo
         self.photoURL = photoURL
@@ -80,9 +83,9 @@ public struct EntryRowCard: View {
                     .background(
                         RoundedRectangle(cornerRadius: 10)
                             .fill(DesignTokens.surface)
-                    )
+                )
 
-                addCaptureButton
+                captureButtons
             }
 
             if let promptSelection {
@@ -149,20 +152,38 @@ public struct EntryRowCard: View {
     }
 
 
-    private var addCaptureButton: some View {
-        Button(action: onAddCapture) {
-            Image(systemName: AppIcon.camera.systemName)
-                .font(.headline)
-                .foregroundStyle(color(for: type))
-                .frame(width: 46, height: 46)
-                .background(
-                    Circle()
-                        .fill(color(for: type).opacity(0.16))
-                )
+    private var captureButtons: some View {
+        HStack(spacing: 8) {
+            Button(action: onOpenPhotoLibrary) {
+                Image(systemName: AppIcon.photoLibrary.systemName)
+                    .font(.headline)
+                    .foregroundStyle(color(for: type))
+                    .frame(width: 46, height: 46)
+                    .background(
+                        Circle()
+                            .fill(color(for: type).opacity(0.22))
+                    )
+            }
+            .buttonStyle(.plain)
+            .touchTargetMinSize(ControlTokens.minTouchTarget)
+            .accessibilityLabel("Pick photo for \(type.title)")
+            .accessibilityIdentifier("entry-\(type.rawValue)-library-button")
+
+            Button(action: onOpenCamera) {
+                Image(systemName: AppIcon.camera.systemName)
+                    .font(.headline)
+                    .foregroundStyle(color(for: type))
+                    .frame(width: 46, height: 46)
+                    .background(
+                        Circle()
+                            .fill(color(for: type).opacity(0.16))
+                    )
+            }
+            .buttonStyle(.plain)
+            .touchTargetMinSize(ControlTokens.minTouchTarget)
+            .accessibilityLabel("Open camera for \(type.title)")
+            .accessibilityIdentifier("entry-\(type.rawValue)-camera-button")
         }
-        .buttonStyle(.plain)
-        .touchTargetMinSize(ControlTokens.minTouchTarget)
-        .accessibilityLabel("Capture media for \(type.title)")
     }
 
     private var titleBadge: some View {

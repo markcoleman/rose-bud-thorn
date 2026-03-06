@@ -13,15 +13,26 @@ final class AccessibilitySmokeUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["today-completion-progress"].exists)
         XCTAssertTrue(app.textFields["Bud for today"].exists)
         XCTAssertTrue(app.textFields["Thorn for today"].exists)
-        let roseCapture = app.buttons["Capture media for Rose"]
-        let budCapture = app.buttons["Capture media for Bud"]
-        let thornCapture = app.buttons["Capture media for Thorn"]
-        XCTAssertTrue(roseCapture.exists)
-        XCTAssertTrue(budCapture.exists)
-        XCTAssertTrue(thornCapture.exists)
-        XCTAssertTrue(roseCapture.isHittable)
-        XCTAssertTrue(budCapture.isHittable)
-        XCTAssertTrue(thornCapture.isHittable)
+        let roseLibrary = app.buttons["reflection-rose-library-button"]
+        let roseCamera = app.buttons["reflection-rose-camera-button"]
+        let budLibrary = app.buttons["reflection-bud-library-button"]
+        let budCamera = app.buttons["reflection-bud-camera-button"]
+        let thornLibrary = app.buttons["reflection-thorn-library-button"]
+        let thornCamera = app.buttons["reflection-thorn-camera-button"]
+
+        XCTAssertTrue(roseLibrary.exists)
+        XCTAssertTrue(roseCamera.exists)
+        XCTAssertTrue(budLibrary.exists)
+        XCTAssertTrue(budCamera.exists)
+        XCTAssertTrue(thornLibrary.exists)
+        XCTAssertTrue(thornCamera.exists)
+
+        XCTAssertTrue(roseLibrary.isHittable)
+        XCTAssertTrue(roseCamera.isHittable)
+        XCTAssertTrue(budLibrary.isHittable)
+        XCTAssertTrue(budCamera.isHittable)
+        XCTAssertTrue(thornLibrary.isHittable)
+        XCTAssertTrue(thornCamera.isHittable)
     }
 
     func testCoreTabNavigationDiscoverability() {

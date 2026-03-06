@@ -1,13 +1,22 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import CoreModels
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import PhotosUI
+#endif
 #if DEBUG
 import DocumentStore
 #endif
 
 public struct DayEditorView: View {
     @Bindable private var viewModel: DayDetailViewModel
-    @State private var importerType: EntryType?
+    @State private var importerRequest: ImportRequest?
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    @State private var cameraRequest: CameraCaptureRequest?
+    @State private var libraryImportRequest: LibraryImportRequest?
+    @State private var isPhotoLibraryPresented = false
+    @State private var selectedPhotoLibraryItem: PhotosPickerItem?
+    #endif
     @State private var expandedTypes: Set<EntryType> = Set(EntryType.allCases)
 
     public init(viewModel: DayDetailViewModel) {
@@ -33,7 +42,12 @@ public struct DayEditorView: View {
                             onToggleExpanded: {
                                 toggleExpanded(type)
                             },
-                            onAddCapture: { importerType = type },
+                            onOpenPhotoLibrary: {
+                                presentPhotoLibrary(for: type)
+                            },
+                            onOpenCamera: {
+                                presentCameraCapture(for: type)
+                            },
                             onRemovePhoto: { ref in
                                 Task { await viewModel.removePhoto(ref, for: type) }
                             },
@@ -74,31 +88,70 @@ public struct DayEditorView: View {
         }
         .fileImporter(
             isPresented: Binding(
-                get: { importerType != nil },
+                get: { importerRequest != nil },
                 set: { isPresented in
                     if !isPresented {
-                        importerType = nil
+                        importerRequest = nil
                     }
                 }
             ),
-            allowedContentTypes: [.image, .movie]
+            allowedContentTypes: importerAllowedTypes
         ) { result in
-            guard let type = importerType else { return }
+            guard let request = importerRequest else { return }
 
             switch result {
             case .success(let url):
                 if isMovieURL(url) {
-                    Task { await viewModel.importVideo(from: url, for: type) }
+                    Task { await viewModel.importVideo(from: url, for: request.type) }
                 } else {
-                    Task { await viewModel.importPhoto(from: url, for: type) }
+                    Task { await viewModel.importPhoto(from: url, for: request.type) }
                 }
             case .failure(let error):
                 viewModel.errorMessage = error.localizedDescription
             }
 
-            importerType = nil
+            importerRequest = nil
         }
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        .fullScreenCover(item: $cameraRequest) { request in
+            MomentCameraView(
+                entryType: request.type,
+                onFallbackImport: {
+                    importerRequest = ImportRequest(type: request.type, includeMovies: true)
+                },
+                onPickFromLibrary: {
+                    presentPhotoLibrary(for: request.type)
+                },
+                onConfirm: { draft in
+                    await persist(draft: draft, request: request)
+                }
+            )
+        }
+        .photosPicker(
+            isPresented: $isPhotoLibraryPresented,
+            selection: $selectedPhotoLibraryItem,
+            matching: .images
+        )
+        .onChange(of: selectedPhotoLibraryItem) { _, item in
+            guard let item, let request = libraryImportRequest else { return }
+            Task {
+                await importFromPhotoLibrary(item: item, request: request)
+            }
+        }
+        .onChange(of: isPhotoLibraryPresented) { _, isPresented in
+            if !isPresented, selectedPhotoLibraryItem == nil {
+                libraryImportRequest = nil
+            }
+        }
+        #endif
         .floatingChromeHidden()
+    }
+
+    private var importerAllowedTypes: [UTType] {
+        if importerRequest?.includeMovies == true {
+            return [.image, .movie]
+        }
+        return [.image]
     }
 
     private var header: some View {
@@ -150,7 +203,89 @@ public struct DayEditorView: View {
 
         return type.conforms(to: .movie)
     }
+
+    private func presentPhotoLibrary(for type: EntryType) {
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        libraryImportRequest = LibraryImportRequest(type: type)
+        selectedPhotoLibraryItem = nil
+        isPhotoLibraryPresented = true
+        #else
+        importerRequest = ImportRequest(type: type, includeMovies: false)
+        #endif
+    }
+
+    private func presentCameraCapture(for type: EntryType) {
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        cameraRequest = CameraCaptureRequest(type: type)
+        #else
+        importerRequest = ImportRequest(type: type, includeMovies: true)
+        #endif
+    }
+
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    private func importFromPhotoLibrary(
+        item: PhotosPickerItem,
+        request: LibraryImportRequest
+    ) async {
+        defer {
+            selectedPhotoLibraryItem = nil
+            libraryImportRequest = nil
+        }
+
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self) else {
+                viewModel.errorMessage = "The selected photo couldn't be loaded."
+                return
+            }
+
+            let imageType = item.supportedContentTypes.first(where: { $0.conforms(to: .image) })
+            let fileExtension = imageType?.preferredFilenameExtension ?? "jpg"
+            let temporaryURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension(fileExtension)
+
+            try data.write(to: temporaryURL, options: .atomic)
+            defer { try? FileManager.default.removeItem(at: temporaryURL) }
+
+            await viewModel.importPhoto(from: temporaryURL, for: request.type)
+        } catch {
+            viewModel.errorMessage = error.localizedDescription
+        }
+    }
+
+    private func persist(
+        draft: CapturedMediaDraft,
+        request: CameraCaptureRequest
+    ) async -> String? {
+        switch draft {
+        case .photo(let url, _, _):
+            await viewModel.importPhoto(from: url, for: request.type)
+        case .video(let url, _, _, _, _):
+            await viewModel.importVideo(from: url, for: request.type)
+        }
+
+        return viewModel.errorMessage
+    }
+    #endif
 }
+
+private struct ImportRequest: Identifiable {
+    let id = UUID()
+    let type: EntryType
+    let includeMovies: Bool
+}
+
+#if os(iOS) && !targetEnvironment(macCatalyst)
+private struct CameraCaptureRequest: Identifiable {
+    let id = UUID()
+    let type: EntryType
+}
+
+private struct LibraryImportRequest: Identifiable {
+    let id = UUID()
+    let type: EntryType
+}
+#endif
 
 private extension JournalSaveFeedbackState {
     var label: String {

@@ -42,6 +42,7 @@ struct MomentCameraView: View {
                 )
             }
         }
+        .accessibilityIdentifier("moment-camera-view")
         .task {
             await controller.startIfNeeded()
         }
@@ -138,6 +139,7 @@ struct MomentCameraView: View {
                 .touchTargetMinSize(ControlTokens.minTouchTarget)
                 .disabled(controller.isRecording)
                 .padding(.horizontal, 24)
+                .accessibilityIdentifier("moment-camera-library-button")
 
                 zoomControl
 

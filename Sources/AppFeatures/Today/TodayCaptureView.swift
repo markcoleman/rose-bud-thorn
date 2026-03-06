@@ -69,8 +69,11 @@ public struct TodayCaptureView: View {
                                 onShortTextChange: { bindable.updateShortText($0, for: type) },
                                 onJournalTextChange: { bindable.updateJournalText($0, for: type) },
                                 onToggleExpanded: { bindable.toggleExpanded(type) },
-                                onAddCapture: {
+                                onOpenPhotoLibrary: {
                                     presentCapture(for: type, dayKey: bindable.dayKey)
+                                },
+                                onOpenCamera: {
+                                    presentCameraCapture(for: type, dayKey: bindable.dayKey)
                                 },
                                 onRemovePhoto: { photo in
                                     Task { await bindable.removePhoto(photo, for: type) }
@@ -285,6 +288,13 @@ public struct TodayCaptureView: View {
             selection: $selectedPhotoLibraryItem,
             matching: .images
         )
+        .overlay(alignment: .topLeading) {
+            if isPhotoLibraryPresented {
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityIdentifier("today-photo-library-presented")
+            }
+        }
         .onChange(of: selectedPhotoLibraryItem) { _, item in
             guard let item, let request = libraryImportRequest else { return }
             Task {
@@ -685,6 +695,14 @@ public struct TodayCaptureView: View {
     }
 
     private func presentCapture(for type: EntryType, dayKey: LocalDayKey) {
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        presentPhotoLibrary(for: type, dayKey: dayKey)
+        #else
+        importerRequest = ImportRequest(type: type, dayKey: dayKey, includeMovies: false)
+        #endif
+    }
+
+    private func presentCameraCapture(for type: EntryType, dayKey: LocalDayKey) {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         cameraRequest = CameraCaptureRequest(type: type, dayKey: dayKey)
         #else
