@@ -27,6 +27,8 @@ public struct DayDetailView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    reflectionPicker(bindable)
+
                     DayPolaroidStackView(
                         entry: bindable.entry,
                         selectedType: bindable.selectedType,
@@ -56,7 +58,7 @@ public struct DayDetailView: View {
                         if isPreparingDayShare {
                             ProgressView()
                         } else {
-                            Label("Share", systemImage: AppIcon.shareExport.systemName)
+                            Label("Share Memory", systemImage: AppIcon.shareExport.systemName)
                         }
                     }
                     .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
@@ -154,6 +156,32 @@ public struct DayDetailView: View {
             }
         }
         #endif
+    }
+
+    private func reflectionPicker(_ model: DayDetailViewModel) -> some View {
+        Picker("Reflection", selection: Binding(
+            get: { model.selectedType },
+            set: { newValue in
+                withAnimation(MotionTokens.tabSwitch) {
+                    model.selectedType = newValue
+                }
+            }
+        )) {
+            ForEach(EntryType.allCases, id: \.self) { type in
+                Text(type.title).tag(type)
+            }
+        }
+        .pickerStyle(.segmented)
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(DesignTokens.surfaceElevated)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(DesignTokens.dividerSubtle, lineWidth: 1)
+        )
+        .accessibilityIdentifier("day-reflection-segmented")
     }
 
     private func beginDayShare(model: DayDetailViewModel) async {

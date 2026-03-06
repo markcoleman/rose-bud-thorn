@@ -178,6 +178,55 @@ final class JournalViewModelTests: XCTestCase {
         await waitUntil { model.mode == .search && !model.todayMatchesSearch }
     }
 
+    func testTodaySaveFeedbackTransitionsFromDraftToSavedToComplete() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, debounceDuration: .milliseconds(10), pageSize: 20)
+
+        await model.load()
+        XCTAssertEqual(model.todaySaveFeedbackState, .draft)
+
+        model.updateTodayShortText("Morning walk", for: .rose)
+        await waitUntil {
+            if case .saved = model.todaySaveFeedbackState { return true }
+            return false
+        }
+
+        model.updateTodayShortText("Project idea", for: .bud)
+        model.updateTodayShortText("Traffic", for: .thorn)
+        await waitUntil {
+            if case .complete = model.todaySaveFeedbackState { return true }
+            return false
+        }
+    }
+
+    func testRemoveTodayPhotoClearsMediaFromEntry() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, debounceDuration: .milliseconds(10), pageSize: 20)
+        await model.load()
+
+        let temporaryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("jpg")
+
+        let jpegBytes = Data([0xFF, 0xD8, 0xFF, 0xD9])
+        try jpegBytes.write(to: temporaryURL, options: .atomic)
+        defer { try? FileManager.default.removeItem(at: temporaryURL) }
+
+        await model.importPhoto(from: temporaryURL, for: .rose, targetDay: model.todayDayKey)
+        await waitUntil { !model.todayEntry.roseItem.photos.isEmpty }
+
+        guard let ref = model.todayEntry.roseItem.photos.first else {
+            XCTFail("Expected imported photo.")
+            return
+        }
+
+        await model.removeTodayPhoto(ref, for: .rose)
+        await waitUntil { model.todayEntry.roseItem.photos.isEmpty }
+
+        let persisted = try await environment.entryStore.load(day: model.todayDayKey)
+        XCTAssertTrue(persisted.roseItem.photos.isEmpty)
+    }
+
     private func waitUntil(
         timeout: TimeInterval = 2.0,
         condition: @escaping @MainActor () -> Bool

@@ -13,8 +13,6 @@ final class CaptureDayFlowUITests: XCTestCase {
         )
         dismissOnboardingIfPresented(app)
 
-        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 6))
-
         let roseField = app.textFields["Rose for today"]
         XCTAssertTrue(roseField.waitForExistence(timeout: 6))
         roseField.tap()
@@ -36,14 +34,6 @@ final class CaptureDayFlowUITests: XCTestCase {
         let backButton = app.navigationBars.buttons.element(boundBy: 0)
         XCTAssertTrue(backButton.waitForExistence(timeout: 4))
         backButton.tap()
-
-        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 4))
-
-        let searchField = app.textFields["Search entries"]
-        XCTAssertTrue(searchField.waitForExistence(timeout: 4))
-        searchField.tap()
-        searchField.typeText("Seeded yesterday")
-
-        XCTAssertTrue(dayCard.waitForExistence(timeout: 6))
+        XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 4))
     }
 }

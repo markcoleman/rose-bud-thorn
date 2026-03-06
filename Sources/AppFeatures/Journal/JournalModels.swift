@@ -1,6 +1,13 @@
 import Foundation
 import CoreModels
 
+public enum JournalSaveFeedbackState: Sendable, Equatable {
+    case draft
+    case saving
+    case saved(Date)
+    case complete(Date?)
+}
+
 public enum JournalMode: Sendable, Equatable {
     case timeline
     case search

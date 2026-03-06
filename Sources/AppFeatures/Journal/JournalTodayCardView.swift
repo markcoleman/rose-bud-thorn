@@ -3,37 +3,61 @@ import CoreModels
 
 public struct JournalTodayCardView: View {
     public let entry: EntryDay
-    public let isSaving: Bool
-    public let lastSavedAt: Date?
-    public let todayMatchesSearch: Bool
+    public let saveFeedbackState: JournalSaveFeedbackState
     public let onShortTextChange: (EntryType, String) -> Void
-    public let onAddPhoto: (EntryType) -> Void
-    public let onFavoriteChange: (Bool) -> Void
+    public let onJournalTextChange: (EntryType, String) -> Void
+    public let onAddCapture: (EntryType) -> Void
+    public let onRemovePhoto: (EntryType, PhotoRef) -> Void
+    public let onRemoveVideo: (EntryType, VideoRef) -> Void
+    public let onFavoriteTap: () -> Void
+    public let onOpenCompletedDay: () -> Void
     public let photoURL: (PhotoRef) -> URL
+    public let videoURL: (VideoRef) -> URL
+
+    @State private var expandedTypes: Set<EntryType> = []
 
     public init(
         entry: EntryDay,
-        isSaving: Bool,
-        lastSavedAt: Date?,
-        todayMatchesSearch: Bool,
+        saveFeedbackState: JournalSaveFeedbackState,
         onShortTextChange: @escaping (EntryType, String) -> Void,
-        onAddPhoto: @escaping (EntryType) -> Void,
-        onFavoriteChange: @escaping (Bool) -> Void,
-        photoURL: @escaping (PhotoRef) -> URL
+        onJournalTextChange: @escaping (EntryType, String) -> Void,
+        onAddCapture: @escaping (EntryType) -> Void,
+        onRemovePhoto: @escaping (EntryType, PhotoRef) -> Void,
+        onRemoveVideo: @escaping (EntryType, VideoRef) -> Void,
+        onFavoriteTap: @escaping () -> Void,
+        onOpenCompletedDay: @escaping () -> Void,
+        photoURL: @escaping (PhotoRef) -> URL,
+        videoURL: @escaping (VideoRef) -> URL
     ) {
         self.entry = entry
-        self.isSaving = isSaving
-        self.lastSavedAt = lastSavedAt
-        self.todayMatchesSearch = todayMatchesSearch
+        self.saveFeedbackState = saveFeedbackState
         self.onShortTextChange = onShortTextChange
-        self.onAddPhoto = onAddPhoto
-        self.onFavoriteChange = onFavoriteChange
+        self.onJournalTextChange = onJournalTextChange
+        self.onAddCapture = onAddCapture
+        self.onRemovePhoto = onRemovePhoto
+        self.onRemoveVideo = onRemoveVideo
+        self.onFavoriteTap = onFavoriteTap
+        self.onOpenCompletedDay = onOpenCompletedDay
         self.photoURL = photoURL
+        self.videoURL = videoURL
     }
 
     public var body: some View {
+        Group {
+            if entry.isCompleteForDailyCapture {
+                completedTodayCard
+                    .transition(.asymmetric(insertion: .scale.combined(with: .opacity), removal: .opacity))
+            } else {
+                composer
+                    .transition(.asymmetric(insertion: .opacity, removal: .scale.combined(with: .opacity)))
+            }
+        }
+        .animation(MotionTokens.smooth, value: entry.isCompleteForDailyCapture)
+    }
+
+    private var composer: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .firstTextBaseline) {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Today")
                         .font(.headline)
@@ -45,127 +69,300 @@ public struct JournalTodayCardView: View {
 
                 Spacer(minLength: 0)
 
-                Toggle(isOn: Binding(
-                    get: { entry.favorite },
-                    set: { onFavoriteChange($0) }
-                )) {
-                    Image(systemName: entry.favorite ? AppIcon.favoriteOn.systemName : AppIcon.favoriteOff.systemName)
-                        .foregroundStyle(entry.favorite ? Color.yellow : DesignTokens.textSecondaryOnSurface)
-                }
-                .labelsHidden()
-                .toggleStyle(.switch)
-            }
-
-            completionSegments
-
-            if todayMatchesSearch {
-                Label("Today matches search", systemImage: AppIcon.sectionSearch.systemName)
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
-            }
-
-            ForEach(EntryType.allCases, id: \.self) { type in
-                row(for: type)
-            }
-
-            HStack(spacing: 8) {
-                if isSaving {
-                    ProgressView()
-                        .controlSize(.small)
-                } else if let lastSavedAt {
-                    Text("Saved \(lastSavedAt.formatted(date: .omitted, time: .shortened))")
-                        .font(.caption)
-                        .foregroundStyle(DesignTokens.textSecondaryOnSurface)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .trailing)
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(DesignTokens.surfaceElevated)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-        )
-    }
-
-    private var completionSegments: some View {
-        HStack(spacing: 8) {
-            ForEach(EntryType.allCases, id: \.self) { type in
-                let isComplete = !entry.item(for: type).shortText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                    !entry.item(for: type).journalTextMarkdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                    !entry.item(for: type).photos.isEmpty ||
-                    !entry.item(for: type).videos.isEmpty
-
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .fill(color(for: type).opacity(isComplete ? 0.9 : 0.2))
-                    .frame(height: 6)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Today's progress")
-        .accessibilityIdentifier("today-completion-progress")
-    }
-
-    private func row(for type: EntryType) -> some View {
-        let item = entry.item(for: type)
-
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 10) {
-                TextField(
-                    "\(type.title) for today",
-                    text: Binding(
-                        get: { item.shortText },
-                        set: { onShortTextChange(type, $0) }
-                    )
-                )
-                .textFieldStyle(.plain)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(DesignTokens.surface)
-                )
+                saveStatusPill
 
                 Button {
-                    onAddPhoto(type)
+                    onFavoriteTap()
                 } label: {
-                    Image(systemName: AppIcon.camera.systemName)
-                        .font(.headline)
-                        .foregroundStyle(color(for: type))
-                        .frame(width: 42, height: 42)
+                    Image(systemName: entry.favorite ? AppIcon.favoriteOn.systemName : AppIcon.favoriteOff.systemName)
+                        .foregroundStyle(entry.favorite ? .yellow : DesignTokens.textSecondaryOnSurface)
+                        .frame(width: 34, height: 34)
                         .background(
-                            Circle()
-                                .fill(color(for: type).opacity(0.16))
+                            Circle().fill(DesignTokens.surface)
                         )
                 }
                 .buttonStyle(.plain)
                 .touchTargetMinSize(ControlTokens.minTouchTarget)
-                .accessibilityLabel("Capture media for \(type.title)")
+                .accessibilityLabel(entry.favorite ? "Remove favorite" : "Mark as favorite")
             }
 
-            if !item.photos.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(item.photos.prefix(3), id: \.id) { ref in
-                            PhotoThumbnailView(url: photoURL(ref), size: 42)
-                                .frame(width: 42, height: 42)
-                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        }
-                    }
-                    .padding(.vertical, 1)
-                }
+            progressRow
+
+            ForEach(EntryType.allCases, id: \.self) { type in
+                let item = entry.item(for: type)
+
+                ReflectionBlockView(
+                    type: type,
+                    shortText: item.shortText,
+                    journalText: item.journalTextMarkdown,
+                    photos: item.photos,
+                    videos: item.videos,
+                    isExpanded: expandedTypes.contains(type),
+                    onShortTextChange: { onShortTextChange(type, $0) },
+                    onJournalTextChange: { onJournalTextChange(type, $0) },
+                    onToggleExpanded: {
+                        toggleExpanded(type)
+                    },
+                    onAddCapture: { onAddCapture(type) },
+                    onRemovePhoto: { onRemovePhoto(type, $0) },
+                    onRemoveVideo: { onRemoveVideo(type, $0) },
+                    photoURL: photoURL,
+                    videoURL: videoURL
+                )
             }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(DesignTokens.surfaceElevated)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(DesignTokens.dividerSubtle, lineWidth: 1)
+        )
+    }
+
+    private var completedTodayCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            JournalMemoryCardView(
+                dayTitle: "Today",
+                statusText: saveFeedbackState.completedLabel,
+                completionCount: entry.completionCount,
+                favorite: entry.favorite,
+                previewPhotoURLs: previewPhotoURLs,
+                lines: summaryLines,
+                emphasis: .todayComplete,
+                onOpen: onOpenCompletedDay
+            )
+            .accessibilityIdentifier("journal-today-complete-card")
+
+            Button {
+                onOpenCompletedDay()
+            } label: {
+                Label("Open memory", systemImage: "arrow.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
+            }
+            .buttonStyle(.plain)
+            .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
+        }
+    }
+
+    private var progressRow: some View {
+        HStack(spacing: 8) {
+            ForEach(EntryType.allCases, id: \.self) { type in
+                let isComplete = entry.item(for: type).hasAnyContent
+                HStack(spacing: 6) {
+                    Image(systemName: isComplete ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(isComplete ? color(for: type) : DesignTokens.textSecondaryOnSurface)
+
+                    Text(type.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(DesignTokens.textPrimaryOnSurface)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(color(for: type).opacity(isComplete ? 0.20 : 0.10))
+                )
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Today progress \(entry.completionCount) of 3")
+        .accessibilityIdentifier("today-completion-progress")
+    }
+
+    private var saveStatusPill: some View {
+        Text(saveFeedbackState.label)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(saveFeedbackState.color)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(saveFeedbackState.color.opacity(0.14))
+            )
+            .accessibilityLabel(saveFeedbackState.label)
+    }
+
+    private var summaryLines: [EntryDaySummary.Line] {
+        EntryType.allCases.compactMap { type in
+            let item = entry.item(for: type)
+            let text = item.shortText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty {
+                return EntryDaySummary.Line(type: type, text: String(text.prefix(120)))
+            }
+
+            let journal = item.journalTextMarkdown.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !journal.isEmpty {
+                return EntryDaySummary.Line(type: type, text: String(journal.prefix(120)))
+            }
+
+            return nil
+        }
+    }
+
+    private var previewPhotoURLs: [URL] {
+        let refs = [entry.roseItem.photos, entry.budItem.photos, entry.thornItem.photos]
+            .flatMap { $0 }
+            .sorted { lhs, rhs in
+                if lhs.createdAt == rhs.createdAt {
+                    return lhs.id.uuidString > rhs.id.uuidString
+                }
+                return lhs.createdAt > rhs.createdAt
+            }
+
+        return refs.prefix(3).map(photoURL)
+    }
+
+    private func toggleExpanded(_ type: EntryType) {
+        if expandedTypes.contains(type) {
+            expandedTypes.remove(type)
+        } else {
+            expandedTypes.insert(type)
         }
     }
 
     private func color(for type: EntryType) -> Color {
         switch type {
-        case .rose: return DesignTokens.rose
-        case .bud: return DesignTokens.bud
-        case .thorn: return DesignTokens.thorn
+        case .rose:
+            return DesignTokens.rose
+        case .bud:
+            return DesignTokens.bud
+        case .thorn:
+            return DesignTokens.thorn
         }
     }
 }
+
+private extension JournalSaveFeedbackState {
+    var label: String {
+        switch self {
+        case .draft:
+            return "Draft"
+        case .saving:
+            return "Saving"
+        case .saved(let date):
+            return date.relativeSaveLabel
+        case .complete:
+            return "Complete"
+        }
+    }
+
+    var completedLabel: String? {
+        switch self {
+        case .complete(let date):
+            return date?.relativeSaveLabel ?? "Complete"
+        case .saved(let date):
+            return date.relativeSaveLabel
+        case .saving:
+            return "Saving"
+        case .draft:
+            return "Draft"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .draft:
+            return DesignTokens.textSecondaryOnSurface
+        case .saving:
+            return DesignTokens.warning
+        case .saved:
+            return DesignTokens.accent
+        case .complete:
+            return DesignTokens.success
+        }
+    }
+}
+
+private extension Date {
+    var relativeSaveLabel: String {
+        let elapsed = max(0, Int(Date.now.timeIntervalSince(self)))
+        if elapsed < 10 {
+            return "Saved just now"
+        }
+        if elapsed < 60 {
+            return "Saved \(elapsed)s ago"
+        }
+        let minutes = elapsed / 60
+        if minutes < 60 {
+            return "Saved \(minutes)m ago"
+        }
+        return "Saved \(formatted(date: .omitted, time: .shortened))"
+    }
+}
+
+#if DEBUG
+#Preview("Today Empty") {
+    JournalTodayCardView(
+        entry: EntryDay.empty(dayKey: LocalDayKey(isoDate: "2026-03-06", timeZoneID: "America/New_York")),
+        saveFeedbackState: .draft,
+        onShortTextChange: { _, _ in },
+        onJournalTextChange: { _, _ in },
+        onAddCapture: { _ in },
+        onRemovePhoto: { _, _ in },
+        onRemoveVideo: { _, _ in },
+        onFavoriteTap: {},
+        onOpenCompletedDay: {},
+        photoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.jpg") },
+        videoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.mov") }
+    )
+    .padding()
+    .background(DesignTokens.backgroundGradient)
+}
+
+#Preview("Today Partial") {
+    var entry = EntryDay.empty(dayKey: LocalDayKey(isoDate: "2026-03-06", timeZoneID: "America/New_York"))
+    entry.roseItem.shortText = "Quiet sunrise walk"
+    entry.roseItem.updatedAt = .now
+    entry.updatedAt = .now
+
+    return JournalTodayCardView(
+        entry: entry,
+        saveFeedbackState: .saved(.now),
+        onShortTextChange: { _, _ in },
+        onJournalTextChange: { _, _ in },
+        onAddCapture: { _ in },
+        onRemovePhoto: { _, _ in },
+        onRemoveVideo: { _, _ in },
+        onFavoriteTap: {},
+        onOpenCompletedDay: {},
+        photoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.jpg") },
+        videoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.mov") }
+    )
+    .padding()
+    .background(DesignTokens.backgroundGradient)
+}
+
+#Preview("Today Complete") {
+    var entry = EntryDay.empty(dayKey: LocalDayKey(isoDate: "2026-03-06", timeZoneID: "America/New_York"))
+    entry.favorite = true
+    entry.roseItem.shortText = "Quiet sunrise walk"
+    entry.budItem.shortText = "Sketching product ideas"
+    entry.thornItem.shortText = "Afternoon slump"
+    entry.roseItem.updatedAt = .now
+    entry.budItem.updatedAt = .now
+    entry.thornItem.updatedAt = .now
+    entry.updatedAt = .now
+
+    return JournalTodayCardView(
+        entry: entry,
+        saveFeedbackState: .complete(.now),
+        onShortTextChange: { _, _ in },
+        onJournalTextChange: { _, _ in },
+        onAddCapture: { _ in },
+        onRemovePhoto: { _, _ in },
+        onRemoveVideo: { _, _ in },
+        onFavoriteTap: {},
+        onOpenCompletedDay: {},
+        photoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.jpg") },
+        videoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.mov") }
+    )
+    .padding()
+    .background(DesignTokens.backgroundGradient)
+}
+#endif

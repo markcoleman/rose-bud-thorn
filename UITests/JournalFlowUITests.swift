@@ -5,15 +5,13 @@ final class JournalFlowUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testLaunchEditTodayOpenPastDayBackAndSearch() {
+    func testLaunchEditTodayOpenPastDayBackAndOpenSettings() {
         let app = launchAppForUITests(
             resetOnboarding: true,
             onboardingCountdownSeconds: 6,
             seedJournalData: true
         )
         dismissOnboardingIfPresented(app)
-
-        XCTAssertTrue(app.navigationBars["Journal"].waitForExistence(timeout: 6))
 
         let roseField = app.textFields["Rose for today"]
         XCTAssertTrue(roseField.waitForExistence(timeout: 6))
@@ -34,11 +32,13 @@ final class JournalFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["day-edit-button"].waitForExistence(timeout: 4))
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
-        let searchField = app.textFields["Search entries"]
-        XCTAssertTrue(searchField.waitForExistence(timeout: 4))
-        searchField.tap()
-        searchField.typeText("Seeded yesterday")
+        let settingsButton = app.buttons["journal-settings-button"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 4))
+        settingsButton.tap()
 
-        XCTAssertTrue(dayCard.waitForExistence(timeout: 6))
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 6))
+        let doneButton = app.buttons["settings-sheet-close"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 4))
+        doneButton.tap()
     }
 }

@@ -60,6 +60,30 @@ public final class JournalViewModel {
         mode == .search && !todayMatchesSearch && timelineDays.isEmpty && !isLoading
     }
 
+    public var todayCompletionCount: Int {
+        todayEntry.completionCount
+    }
+
+    public var todayHasAnyContent: Bool {
+        todayEntry.roseItem.hasAnyContent || todayEntry.budItem.hasAnyContent || todayEntry.thornItem.hasAnyContent
+    }
+
+    public var todaySaveFeedbackState: JournalSaveFeedbackState {
+        if isSavingToday {
+            return .saving
+        }
+
+        if todayEntry.isCompleteForDailyCapture {
+            return .complete(lastSavedAt)
+        }
+
+        if let lastSavedAt, todayHasAnyContent {
+            return .saved(lastSavedAt)
+        }
+
+        return .draft
+    }
+
     public func load() async {
         await refreshTimeline(debounced: false, invalidateCache: false)
     }
@@ -120,12 +144,26 @@ public final class JournalViewModel {
         scheduleTodayAutosave()
     }
 
+    public func updateTodayJournalText(_ text: String, for type: EntryType) {
+        var item = todayEntry.item(for: type)
+        item.journalTextMarkdown = text
+        item.updatedAt = nowProvider()
+        todayEntry.setItem(item, for: type)
+        todayEntry.updatedAt = nowProvider()
+        updateTodaySearchMatchIfNeeded()
+        scheduleTodayAutosave()
+    }
+
     public func updateTodayFavorite(_ isFavorite: Bool) {
         guard todayEntry.favorite != isFavorite else { return }
         todayEntry.favorite = isFavorite
         todayEntry.updatedAt = nowProvider()
         updateTodaySearchMatchIfNeeded()
         scheduleTodayAutosave()
+    }
+
+    public func toggleTodayFavorite() {
+        updateTodayFavorite(!todayEntry.favorite)
     }
 
     public func importPhoto(
@@ -183,6 +221,34 @@ public final class JournalViewModel {
             targetEntry.setItem(item, for: type)
             targetEntry.updatedAt = nowProvider()
             try await dataSource.saveEntry(targetEntry)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func removeTodayPhoto(_ ref: PhotoRef, for type: EntryType) async {
+        do {
+            try await dataSource.removePhoto(ref, dayKey: todayEntry.dayKey)
+            var item = todayEntry.item(for: type)
+            item.photos.removeAll { $0.id == ref.id }
+            item.updatedAt = nowProvider()
+            todayEntry.setItem(item, for: type)
+            todayEntry.updatedAt = nowProvider()
+            await saveTodayNow()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func removeTodayVideo(_ ref: VideoRef, for type: EntryType) async {
+        do {
+            try await dataSource.removeVideo(ref, dayKey: todayEntry.dayKey)
+            var item = todayEntry.item(for: type)
+            item.videos.removeAll { $0.id == ref.id }
+            item.updatedAt = nowProvider()
+            todayEntry.setItem(item, for: type)
+            todayEntry.updatedAt = nowProvider()
+            await saveTodayNow()
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -4,6 +4,7 @@ import CoreModels
 public struct SummaryListView: View {
     @State private var viewModel: SummaryViewModel
     @Binding private var summaryLaunchRequest: SummaryLaunchRequest?
+    private let onOpenSettings: (() -> Void)?
     @State private var isWeeklyReviewPresented = false
     @State private var compactNavigationPath: [SummaryCompactRoute] = []
     @State private var selectedMemoryDay: LocalDayKey?
@@ -12,10 +13,12 @@ public struct SummaryListView: View {
 
     public init(
         environment: AppEnvironment,
-        summaryLaunchRequest: Binding<SummaryLaunchRequest?> = .constant(nil)
+        summaryLaunchRequest: Binding<SummaryLaunchRequest?> = .constant(nil),
+        onOpenSettings: (() -> Void)? = nil
     ) {
         _viewModel = State(initialValue: SummaryViewModel(environment: environment))
         _summaryLaunchRequest = summaryLaunchRequest
+        self.onOpenSettings = onOpenSettings
     }
 
     public var body: some View {
@@ -26,6 +29,9 @@ public struct SummaryListView: View {
                 NavigationStack(path: $compactNavigationPath) {
                     compactSummaryList(bindable)
                         .navigationTitle("Insights")
+                        .toolbar {
+                            settingsToolbarItem
+                        }
                         #if !os(macOS)
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
@@ -52,6 +58,9 @@ public struct SummaryListView: View {
                 NavigationSplitView {
                     regularSummaryList(bindable)
                         .navigationTitle("Insights")
+                        .toolbar {
+                            settingsToolbarItem
+                        }
                 } detail: {
                     splitDetail(bindable)
                 }
@@ -313,6 +322,30 @@ public struct SummaryListView: View {
     private func showArtifactIfCompact(key: String) {
         guard horizontalSizeClass == .compact else { return }
         compactNavigationPath = [.artifact(key)]
+    }
+
+    @ToolbarContentBuilder
+    private var settingsToolbarItem: some ToolbarContent {
+        if let onOpenSettings {
+            ToolbarItem(placement: settingsToolbarPlacement) {
+                Button {
+                    onOpenSettings()
+                } label: {
+                    Image(systemName: AppIcon.sectionSettings.systemName)
+                }
+                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
+                .accessibilityLabel("Open settings")
+                .accessibilityIdentifier("insights-settings-button")
+            }
+        }
+    }
+
+    private var settingsToolbarPlacement: ToolbarItemPlacement {
+        #if os(macOS)
+        return .automatic
+        #else
+        return .topBarTrailing
+        #endif
     }
 }
 

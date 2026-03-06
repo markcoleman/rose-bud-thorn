@@ -11,6 +11,7 @@ public final class DayDetailViewModel {
     public var expandedTypes: Set<EntryType> = Set(EntryType.allCases)
     public var errorMessage: String?
     public var isSaving = false
+    public var lastSavedAt: Date?
     public var isRemoving = false
     public var isDayShareFeatureEnabled = true
     public var isDayShareReady = false
@@ -63,11 +64,39 @@ public final class DayDetailViewModel {
         }
     }
 
+    public func importVideo(from sourceURL: URL, for type: EntryType) async {
+        do {
+            let ref = try await environment.entryStore.importVideo(from: sourceURL, day: dayKey, type: type)
+            var item = entry.item(for: type)
+            item.videos.append(ref)
+            item.updatedAt = .now
+            entry.setItem(item, for: type)
+            entry.updatedAt = .now
+            await refreshDayShareState()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     public func removePhoto(_ ref: PhotoRef, for type: EntryType) async {
         do {
             try await environment.entryStore.removePhoto(ref, day: dayKey)
             var item = entry.item(for: type)
             item.photos.removeAll { $0.id == ref.id }
+            item.updatedAt = .now
+            entry.setItem(item, for: type)
+            entry.updatedAt = .now
+            await refreshDayShareState()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    public func removeVideo(_ ref: VideoRef, for type: EntryType) async {
+        do {
+            try await environment.entryStore.removeVideo(ref, day: dayKey)
+            var item = entry.item(for: type)
+            item.videos.removeAll { $0.id == ref.id }
             item.updatedAt = .now
             entry.setItem(item, for: type)
             entry.updatedAt = .now
@@ -83,6 +112,7 @@ public final class DayDetailViewModel {
 
         do {
             try await environment.entryStore.save(entry)
+            lastSavedAt = .now
             await refreshDayShareState()
         } catch {
             errorMessage = error.localizedDescription
@@ -136,6 +166,26 @@ public final class DayDetailViewModel {
 
     public func photoURL(for ref: PhotoRef) -> URL {
         environment.photoURL(for: ref, day: dayKey)
+    }
+
+    public func videoURL(for ref: VideoRef) -> URL {
+        environment.videoURL(for: ref, day: dayKey)
+    }
+
+    public var saveFeedbackState: JournalSaveFeedbackState {
+        if isSaving {
+            return .saving
+        }
+
+        if entry.isCompleteForDailyCapture {
+            return .complete(lastSavedAt)
+        }
+
+        let hasAnyContent = entry.roseItem.hasAnyContent || entry.budItem.hasAnyContent || entry.thornItem.hasAnyContent
+        if let lastSavedAt, hasAnyContent {
+            return .saved(lastSavedAt)
+        }
+        return .draft
     }
 
     private func refreshDayShareState() async {
