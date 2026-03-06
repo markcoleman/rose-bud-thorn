@@ -30,7 +30,6 @@ public struct JournalDayCardView: View {
             dayTitle: PresentationFormatting.localizedDayTitle(for: summary.dayKey),
             statusText: nil,
             completionCount: summary.completionCount,
-            favorite: summary.favorite,
             previewPhotoURLs: summary.previewPhotoRefs.prefix(3).map { photoURL($0) },
             lines: displayLines,
             emphasis: .timeline,

@@ -9,6 +9,7 @@ public struct RootAppView: View {
     @State private var selectedSection: AppSection? = .journal
     @State private var selectedTab: AppSection = .journal
     @State private var isSettingsPresented = false
+    @State private var isFloatingChromeHidden = false
     @State private var captureLaunchRequest: CaptureLaunchRequest?
     @State private var journalRefreshToken = 0
     @State private var summaryLaunchRequest: SummaryLaunchRequest?
@@ -91,24 +92,26 @@ public struct RootAppView: View {
                         isSettingsPresented = true
                     }
                 )
-            case .journal, .settings:
+            case .journal:
                 JournalView(
                     environment: environment,
                     captureLaunchRequest: $captureLaunchRequest,
-                    refreshTrigger: journalRefreshToken,
-                    onOpenSettings: {
-                        isSettingsPresented = true
-                    }
+                    refreshTrigger: journalRefreshToken
                 )
             }
         }
+        .onFloatingChromeHiddenPreference { isHidden in
+            isFloatingChromeHidden = isHidden
+        }
         .safeAreaInset(edge: .bottom) {
             #if os(iOS) && !targetEnvironment(macCatalyst)
-            if !isKeyboardVisible {
+            if !isKeyboardVisible && !isFloatingChromeHidden {
                 FloatingAppTabBar(selection: compactTabBinding)
             }
             #else
-            FloatingAppTabBar(selection: compactTabBinding)
+            if !isFloatingChromeHidden {
+                FloatingAppTabBar(selection: compactTabBinding)
+            }
             #endif
         }
         .sheet(isPresented: $isSettingsPresented) {
@@ -175,24 +178,15 @@ public struct RootAppView: View {
             JournalView(
                 environment: environment,
                 captureLaunchRequest: $captureLaunchRequest,
-                refreshTrigger: journalRefreshToken,
-                onOpenSettings: {
-                    selectSection(.settings)
-                }
+                refreshTrigger: journalRefreshToken
             )
         case .insights:
             SummaryListView(
                 environment: environment,
                 summaryLaunchRequest: $summaryLaunchRequest,
                 onOpenSettings: {
-                    selectSection(.settings)
+                    isSettingsPresented = true
                 }
-            )
-        case .settings:
-            SettingsView(
-                lockManager: lockManager,
-                environment: environment,
-                onReplayOnboarding: replayOnboardingFromSettings
             )
         }
     }
@@ -244,21 +238,14 @@ public struct RootAppView: View {
             selectSection(.insights)
             summaryLaunchRequest = SummaryLaunchRequest(action: .openCurrentWeeklySummary, source: source)
         case "settings":
-            if shouldUseSplitView {
-                selectSection(.settings)
-            } else {
-                isSettingsPresented = true
-            }
+            selectSection(.insights)
+            isSettingsPresented = true
         default:
             break
         }
     }
 
     private func selectSection(_ section: AppSection) {
-        if !shouldUseSplitView, section == .settings {
-            isSettingsPresented = true
-            return
-        }
         selectedSection = section
         selectedTab = section
     }

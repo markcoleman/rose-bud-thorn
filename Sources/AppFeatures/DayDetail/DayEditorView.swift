@@ -58,6 +58,9 @@ public struct DayEditorView: View {
             .background(DesignTokens.backgroundGradient.ignoresSafeArea())
         }
         .navigationTitle("Edit Day")
+        #if !os(macOS)
+        .toolbar(.visible, for: .navigationBar)
+        #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Save") {
@@ -95,6 +98,7 @@ public struct DayEditorView: View {
 
             importerType = nil
         }
+        .floatingChromeHidden()
     }
 
     private var header: some View {

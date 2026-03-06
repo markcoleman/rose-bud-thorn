@@ -96,12 +96,6 @@ public final class TodayViewModel {
         scheduleAutosave()
     }
 
-    public func toggleFavorite() {
-        entry.favorite.toggle()
-        entry.updatedAt = .now
-        scheduleAutosave()
-    }
-
     public func importPhoto(from sourceURL: URL, for type: EntryType) async {
         do {
             try await importPhotoNow(from: sourceURL, for: type, targetDay: dayKey)

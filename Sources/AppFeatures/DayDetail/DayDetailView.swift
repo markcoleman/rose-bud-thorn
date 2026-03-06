@@ -49,19 +49,25 @@ public struct DayDetailView: View {
             }
         }
         .navigationTitle(PresentationFormatting.localizedDayTitle(for: bindable.dayKey))
-        .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
+        #if !os(macOS)
+        .toolbar(.visible, for: .navigationBar)
+        #endif
+        .safeAreaInset(edge: .bottom) {
+            HStack(spacing: 10) {
                 if bindable.isDayShareFeatureEnabled {
                     Button {
                         Task { await beginDayShare(model: bindable) }
                     } label: {
                         if isPreparingDayShare {
                             ProgressView()
+                                .frame(maxWidth: .infinity)
                         } else {
                             Label("Share Memory", systemImage: AppIcon.shareExport.systemName)
+                                .frame(maxWidth: .infinity)
                         }
                     }
-                    .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
+                    .buttonStyle(.borderedProminent)
+                    .touchTargetMinSize(ControlTokens.minTouchTarget)
                     .disabled(!bindable.isDayShareReady || isPreparingDayShare)
                     .accessibilityIdentifier("day-share-button")
                 }
@@ -71,7 +77,8 @@ public struct DayDetailView: View {
                 } label: {
                     Label("Edit", systemImage: AppIcon.editDay.systemName)
                 }
-                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
+                .buttonStyle(.bordered)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
                 .accessibilityIdentifier("day-edit-button")
 
                 Menu {
@@ -82,11 +89,16 @@ public struct DayDetailView: View {
                     }
                 } label: {
                     Image(systemName: AppIcon.more.systemName)
+                        .frame(width: 36, height: 36)
                 }
-                .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
+                .buttonStyle(.bordered)
+                .touchTargetMinSize(ControlTokens.minTouchTarget)
                 .accessibilityLabel("More actions")
                 .accessibilityIdentifier("day-more-actions")
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial)
         }
         .task {
             await bindable.load()
@@ -156,6 +168,7 @@ public struct DayDetailView: View {
             }
         }
         #endif
+        .floatingChromeHidden()
     }
 
     private func reflectionPicker(_ model: DayDetailViewModel) -> some View {

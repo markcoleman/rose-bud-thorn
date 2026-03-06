@@ -9,7 +9,6 @@ public struct JournalTodayCardView: View {
     public let onAddCapture: (EntryType) -> Void
     public let onRemovePhoto: (EntryType, PhotoRef) -> Void
     public let onRemoveVideo: (EntryType, VideoRef) -> Void
-    public let onFavoriteTap: () -> Void
     public let onOpenCompletedDay: () -> Void
     public let photoURL: (PhotoRef) -> URL
     public let videoURL: (VideoRef) -> URL
@@ -24,7 +23,6 @@ public struct JournalTodayCardView: View {
         onAddCapture: @escaping (EntryType) -> Void,
         onRemovePhoto: @escaping (EntryType, PhotoRef) -> Void,
         onRemoveVideo: @escaping (EntryType, VideoRef) -> Void,
-        onFavoriteTap: @escaping () -> Void,
         onOpenCompletedDay: @escaping () -> Void,
         photoURL: @escaping (PhotoRef) -> URL,
         videoURL: @escaping (VideoRef) -> URL
@@ -36,7 +34,6 @@ public struct JournalTodayCardView: View {
         self.onAddCapture = onAddCapture
         self.onRemovePhoto = onRemovePhoto
         self.onRemoveVideo = onRemoveVideo
-        self.onFavoriteTap = onFavoriteTap
         self.onOpenCompletedDay = onOpenCompletedDay
         self.photoURL = photoURL
         self.videoURL = videoURL
@@ -56,9 +53,9 @@ public struct JournalTodayCardView: View {
     }
 
     private var composer: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Today")
                         .font(.headline)
                         .foregroundStyle(DesignTokens.textPrimaryOnSurface)
@@ -70,20 +67,6 @@ public struct JournalTodayCardView: View {
                 Spacer(minLength: 0)
 
                 saveStatusPill
-
-                Button {
-                    onFavoriteTap()
-                } label: {
-                    Image(systemName: entry.favorite ? AppIcon.favoriteOn.systemName : AppIcon.favoriteOff.systemName)
-                        .foregroundStyle(entry.favorite ? .yellow : DesignTokens.textSecondaryOnSurface)
-                        .frame(width: 34, height: 34)
-                        .background(
-                            Circle().fill(DesignTokens.surface)
-                        )
-                }
-                .buttonStyle(.plain)
-                .touchTargetMinSize(ControlTokens.minTouchTarget)
-                .accessibilityLabel(entry.favorite ? "Remove favorite" : "Mark as favorite")
             }
 
             progressRow
@@ -111,7 +94,7 @@ public struct JournalTodayCardView: View {
                 )
             }
         }
-        .padding(16)
+        .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(DesignTokens.surfaceElevated)
@@ -128,23 +111,12 @@ public struct JournalTodayCardView: View {
                 dayTitle: "Today",
                 statusText: saveFeedbackState.completedLabel,
                 completionCount: entry.completionCount,
-                favorite: entry.favorite,
                 previewPhotoURLs: previewPhotoURLs,
                 lines: summaryLines,
                 emphasis: .todayComplete,
                 onOpen: onOpenCompletedDay
             )
             .accessibilityIdentifier("journal-today-complete-card")
-
-            Button {
-                onOpenCompletedDay()
-            } label: {
-                Label("Open memory", systemImage: "arrow.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(DesignTokens.textSecondaryOnSurface)
-            }
-            .buttonStyle(.plain)
-            .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
         }
     }
 
@@ -306,7 +278,6 @@ private extension Date {
         onAddCapture: { _ in },
         onRemovePhoto: { _, _ in },
         onRemoveVideo: { _, _ in },
-        onFavoriteTap: {},
         onOpenCompletedDay: {},
         photoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.jpg") },
         videoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.mov") }
@@ -329,7 +300,6 @@ private extension Date {
         onAddCapture: { _ in },
         onRemovePhoto: { _, _ in },
         onRemoveVideo: { _, _ in },
-        onFavoriteTap: {},
         onOpenCompletedDay: {},
         photoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.jpg") },
         videoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.mov") }
@@ -340,7 +310,6 @@ private extension Date {
 
 #Preview("Today Complete") {
     var entry = EntryDay.empty(dayKey: LocalDayKey(isoDate: "2026-03-06", timeZoneID: "America/New_York"))
-    entry.favorite = true
     entry.roseItem.shortText = "Quiet sunrise walk"
     entry.budItem.shortText = "Sketching product ideas"
     entry.thornItem.shortText = "Afternoon slump"
@@ -357,7 +326,6 @@ private extension Date {
         onAddCapture: { _ in },
         onRemovePhoto: { _, _ in },
         onRemoveVideo: { _, _ in },
-        onFavoriteTap: {},
         onOpenCompletedDay: {},
         photoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.jpg") },
         videoURL: { _ in URL(fileURLWithPath: "/tmp/placeholder.mov") }

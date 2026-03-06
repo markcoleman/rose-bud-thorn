@@ -16,7 +16,6 @@ final class JournalDataSourceTests: XCTestCase {
         rose: String = "",
         bud: String = "",
         thorn: String = "",
-        favorite: Bool = false,
         includePhoto: Bool = false
     ) -> EntryDay {
         let photo: [PhotoRef] = includePhoto
@@ -28,7 +27,6 @@ final class JournalDataSourceTests: XCTestCase {
             roseItem: EntryItem(type: .rose, shortText: rose, journalTextMarkdown: "", photos: photo, updatedAt: .now),
             budItem: EntryItem(type: .bud, shortText: bud, journalTextMarkdown: "", updatedAt: .now),
             thornItem: EntryItem(type: .thorn, shortText: thorn, journalTextMarkdown: "", updatedAt: .now),
-            favorite: favorite,
             createdAt: .now,
             updatedAt: .now
         )

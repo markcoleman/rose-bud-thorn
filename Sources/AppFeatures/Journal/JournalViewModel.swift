@@ -114,12 +114,6 @@ public final class JournalViewModel {
         scheduleRefresh(debounced: false)
     }
 
-    public func setFavoritesOnly(_ isEnabled: Bool) {
-        guard filters.favoritesOnly != isEnabled else { return }
-        filters.favoritesOnly = isEnabled
-        scheduleRefresh(debounced: false)
-    }
-
     public func loadMoreIfNeeded(currentDayKey: LocalDayKey?) async {
         guard hasMoreDays, !isLoadingMore, !isLoading else { return }
 
@@ -152,18 +146,6 @@ public final class JournalViewModel {
         todayEntry.updatedAt = nowProvider()
         updateTodaySearchMatchIfNeeded()
         scheduleTodayAutosave()
-    }
-
-    public func updateTodayFavorite(_ isFavorite: Bool) {
-        guard todayEntry.favorite != isFavorite else { return }
-        todayEntry.favorite = isFavorite
-        todayEntry.updatedAt = nowProvider()
-        updateTodaySearchMatchIfNeeded()
-        scheduleTodayAutosave()
-    }
-
-    public func toggleTodayFavorite() {
-        updateTodayFavorite(!todayEntry.favorite)
     }
 
     public func importPhoto(
@@ -416,10 +398,6 @@ public final class JournalViewModel {
             return false
         }
 
-        if filters.favoritesOnly && !summary.favorite {
-            return false
-        }
-
         let lines = summary.lines(for: filters.category)
 
         switch filters.category {
@@ -448,10 +426,6 @@ public final class JournalViewModel {
 
     private func todayMatchesCurrentCriteria() -> Bool {
         if filters.hasPhotoOnly && !todayEntry.hasAnyPhotos {
-            return false
-        }
-
-        if filters.favoritesOnly && !todayEntry.favorite {
             return false
         }
 

@@ -5,7 +5,7 @@ final class JournalFlowUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testLaunchEditTodayOpenPastDayBackAndOpenSettings() {
+    func testLaunchEditTodayOpenPastDayBackAndOpenInsightsSettings() {
         let app = launchAppForUITests(
             resetOnboarding: true,
             onboardingCountdownSeconds: 6,
@@ -32,9 +32,16 @@ final class JournalFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["day-edit-button"].waitForExistence(timeout: 4))
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
-        let settingsButton = app.buttons["journal-settings-button"]
-        XCTAssertTrue(settingsButton.waitForExistence(timeout: 4))
-        settingsButton.tap()
+        XCTAssertFalse(app.buttons["Open memory"].exists)
+
+        let insightsTab = app.buttons["floating-tab-insights"]
+        XCTAssertTrue(insightsTab.waitForExistence(timeout: 4))
+        insightsTab.tap()
+
+        let moreButton = app.buttons["insights-more-button"]
+        XCTAssertTrue(moreButton.waitForExistence(timeout: 6))
+        moreButton.tap()
+        app.buttons["insights-more-settings"].tap()
 
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 6))
         let doneButton = app.buttons["settings-sheet-close"]

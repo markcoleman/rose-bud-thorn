@@ -13,7 +13,6 @@ public struct JournalView: View {
     @State private var viewModel: JournalViewModel
     @Binding private var captureLaunchRequest: CaptureLaunchRequest?
     private let refreshTrigger: Int
-    private let onOpenSettings: (() -> Void)?
 
     @State private var importerRequest: ImportRequest?
     #if os(iOS) && !targetEnvironment(macCatalyst)
@@ -34,13 +33,11 @@ public struct JournalView: View {
     public init(
         environment: AppEnvironment,
         captureLaunchRequest: Binding<CaptureLaunchRequest?> = .constant(nil),
-        refreshTrigger: Int = 0,
-        onOpenSettings: (() -> Void)? = nil
+        refreshTrigger: Int = 0
     ) {
         _viewModel = State(initialValue: JournalViewModel(environment: environment))
         _captureLaunchRequest = captureLaunchRequest
         self.refreshTrigger = refreshTrigger
-        self.onOpenSettings = onOpenSettings
     }
 
     public var body: some View {
@@ -49,7 +46,7 @@ public struct JournalView: View {
         NavigationStack {
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 14) {
+                    LazyVStack(alignment: .leading, spacing: 10) {
                         topAnchorMarker
 
                         JournalTodayCardView(
@@ -73,9 +70,6 @@ public struct JournalView: View {
                                 Task {
                                     await bindable.removeTodayVideo(ref, for: type)
                                 }
-                            },
-                            onFavoriteTap: {
-                                bindable.toggleTodayFavorite()
                             },
                             onOpenCompletedDay: {
                                 navigationSelection = JournalNavigationSelection(dayKey: bindable.todayDayKey)
@@ -129,8 +123,8 @@ public struct JournalView: View {
                         }
                     }
                     .padding(.horizontal, horizontalContentPadding)
-                    .padding(.top, 10)
-                    .padding(.bottom, 18)
+                    .padding(.top, 0)
+                    .padding(.bottom, 10)
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
                 .scrollDismissesKeyboard(.interactively)
@@ -150,19 +144,6 @@ public struct JournalView: View {
                     }
                 }
                 .toolbar {
-                    if let onOpenSettings {
-                        ToolbarItem(placement: settingsToolbarPlacement) {
-                            Button {
-                                onOpenSettings()
-                            } label: {
-                                Image(systemName: AppIcon.sectionSettings.systemName)
-                            }
-                            .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
-                            .accessibilityLabel("Open settings")
-                            .accessibilityIdentifier("journal-settings-button")
-                        }
-                    }
-
                     if !usesFloatingJumpButton && showJumpToToday {
                         ToolbarItem(placement: jumpToolbarPlacement) {
                             jumpToTodayButton {
@@ -181,9 +162,7 @@ public struct JournalView: View {
                 }
             }
             #if !os(macOS)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
             #endif
             .navigationDestination(item: $navigationSelection) { destination in
                 DayDetailView(environment: bindable.environment, dayKey: destination.dayKey)
@@ -399,14 +378,6 @@ public struct JournalView: View {
     }
 
     private var jumpToolbarPlacement: ToolbarItemPlacement {
-        #if os(macOS)
-        return .automatic
-        #else
-        return .topBarTrailing
-        #endif
-    }
-
-    private var settingsToolbarPlacement: ToolbarItemPlacement {
         #if os(macOS)
         return .automatic
         #else

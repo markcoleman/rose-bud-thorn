@@ -10,7 +10,6 @@ public struct JournalMemoryCardView: View {
     public let dayTitle: String
     public let statusText: String?
     public let completionCount: Int
-    public let favorite: Bool
     public let previewPhotoURLs: [URL]
     public let lines: [EntryDaySummary.Line]
     public let emphasis: Emphasis
@@ -20,7 +19,6 @@ public struct JournalMemoryCardView: View {
         dayTitle: String,
         statusText: String?,
         completionCount: Int,
-        favorite: Bool,
         previewPhotoURLs: [URL],
         lines: [EntryDaySummary.Line],
         emphasis: Emphasis = .timeline,
@@ -29,7 +27,6 @@ public struct JournalMemoryCardView: View {
         self.dayTitle = dayTitle
         self.statusText = statusText
         self.completionCount = completionCount
-        self.favorite = favorite
         self.previewPhotoURLs = previewPhotoURLs
         self.lines = lines
         self.emphasis = emphasis
@@ -60,11 +57,6 @@ public struct JournalMemoryCardView: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(DesignTokens.textPrimaryOnSurface)
                     .lineLimit(1)
-
-                if favorite {
-                    Image(systemName: AppIcon.favoriteOn.systemName)
-                        .foregroundStyle(.yellow)
-                }
 
                 Spacer(minLength: 0)
 
@@ -157,7 +149,6 @@ public struct JournalMemoryCardView: View {
         dayTitle: "Tuesday, March 3",
         statusText: nil,
         completionCount: 3,
-        favorite: true,
         previewPhotoURLs: [],
         lines: lines,
         emphasis: .timeline,

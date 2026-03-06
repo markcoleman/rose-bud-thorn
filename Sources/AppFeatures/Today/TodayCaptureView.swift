@@ -486,29 +486,16 @@ public struct TodayCaptureView: View {
 
             ViewThatFits {
                 HStack(spacing: 12) {
-                Picker("Mood", selection: Binding(
-                    get: { model.entry.mood ?? 0 },
-                    set: { newValue in model.setMood(newValue == 0 ? nil : newValue) }
-                )) {
-                    Text("Mood").tag(0)
-                    ForEach(1...5, id: \.self) { value in
-                        Text("\(value)").tag(value)
+                    Picker("Mood", selection: Binding(
+                        get: { model.entry.mood ?? 0 },
+                        set: { newValue in model.setMood(newValue == 0 ? nil : newValue) }
+                    )) {
+                        Text("Mood").tag(0)
+                        ForEach(1...5, id: \.self) { value in
+                            Text("\(value)").tag(value)
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-
-                Button {
-                    model.toggleFavorite()
-                } label: {
-                    Label(
-                        "Favorite",
-                        systemImage: model.entry.favorite
-                            ? AppIcon.favoriteOn.systemName
-                            : AppIcon.favoriteOff.systemName
-                    )
-                }
-                .buttonStyle(.bordered)
-                .touchTargetMinSize(ControlTokens.minTouchTarget)
+                    .pickerStyle(.segmented)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
@@ -522,19 +509,6 @@ public struct TodayCaptureView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-
-                    Button {
-                        model.toggleFavorite()
-                    } label: {
-                        Label(
-                            "Favorite",
-                            systemImage: model.entry.favorite
-                                ? AppIcon.favoriteOn.systemName
-                                : AppIcon.favoriteOff.systemName
-                        )
-                    }
-                    .buttonStyle(.bordered)
-                    .touchTargetMinSize(ControlTokens.minTouchTarget)
                 }
             }
         }

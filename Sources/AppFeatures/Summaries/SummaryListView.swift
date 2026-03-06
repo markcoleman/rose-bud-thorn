@@ -30,7 +30,7 @@ public struct SummaryListView: View {
                     compactSummaryList(bindable)
                         .navigationTitle("Insights")
                         .toolbar {
-                            settingsToolbarItem
+                            insightsMoreToolbarItem
                         }
                         #if !os(macOS)
                         .navigationBarTitleDisplayMode(.inline)
@@ -59,7 +59,7 @@ public struct SummaryListView: View {
                     regularSummaryList(bindable)
                         .navigationTitle("Insights")
                         .toolbar {
-                            settingsToolbarItem
+                            insightsMoreToolbarItem
                         }
                 } detail: {
                     splitDetail(bindable)
@@ -325,17 +325,22 @@ public struct SummaryListView: View {
     }
 
     @ToolbarContentBuilder
-    private var settingsToolbarItem: some ToolbarContent {
+    private var insightsMoreToolbarItem: some ToolbarContent {
         if let onOpenSettings {
             ToolbarItem(placement: settingsToolbarPlacement) {
-                Button {
-                    onOpenSettings()
+                Menu {
+                    Button {
+                        onOpenSettings()
+                    } label: {
+                        Label("Settings", systemImage: AppIcon.sectionSettings.systemName)
+                    }
+                    .accessibilityIdentifier("insights-more-settings")
                 } label: {
-                    Image(systemName: AppIcon.sectionSettings.systemName)
+                    Image(systemName: AppIcon.more.systemName)
                 }
                 .touchTargetMinSize(ControlTokens.minToolbarTouchTarget)
-                .accessibilityLabel("Open settings")
-                .accessibilityIdentifier("insights-settings-button")
+                .accessibilityLabel("More")
+                .accessibilityIdentifier("insights-more-button")
             }
         }
     }

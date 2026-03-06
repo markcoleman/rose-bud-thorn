@@ -8,7 +8,6 @@ public struct BrowseDaySnapshot: Hashable, Sendable, Identifiable {
     public let thornPreview: String
     public let previewPhotoRefs: [PhotoRef]
     public let mood: Int?
-    public let favorite: Bool
     public let hasMedia: Bool
     public let tags: [String]
     public let updatedAt: Date
@@ -25,7 +24,6 @@ public struct BrowseDaySnapshot: Hashable, Sendable, Identifiable {
         previewPhotoRef: PhotoRef?,
         previewPhotoRefs: [PhotoRef] = [],
         mood: Int?,
-        favorite: Bool,
         hasMedia: Bool,
         tags: [String],
         updatedAt: Date,
@@ -41,7 +39,6 @@ public struct BrowseDaySnapshot: Hashable, Sendable, Identifiable {
             self.previewPhotoRefs = Array(previewPhotoRefs.prefix(3))
         }
         self.mood = mood
-        self.favorite = favorite
         self.hasMedia = hasMedia
         self.tags = tags
         self.updatedAt = updatedAt
@@ -68,7 +65,6 @@ public extension BrowseDaySnapshot {
             previewPhotoRef: previewPhotoRefs.first,
             previewPhotoRefs: previewPhotoRefs,
             mood: entry.mood,
-            favorite: entry.favorite,
             hasMedia: mediaCount > 0,
             tags: entry.tags,
             updatedAt: entry.updatedAt,
@@ -86,7 +82,6 @@ public extension BrowseDaySnapshot {
 
 public enum BrowseQuickFilter: String, CaseIterable, Identifiable, Sendable {
     case all
-    case favorites
     case media
     case thisMonth
     case onThisDay
@@ -96,7 +91,6 @@ public enum BrowseQuickFilter: String, CaseIterable, Identifiable, Sendable {
     public var title: String {
         switch self {
         case .all: return "All"
-        case .favorites: return "Favorites"
         case .media: return "Has Media"
         case .thisMonth: return "This Month"
         case .onThisDay: return "On This Day"
@@ -106,7 +100,6 @@ public enum BrowseQuickFilter: String, CaseIterable, Identifiable, Sendable {
     public var systemImage: String {
         switch self {
         case .all: return AppIcon.filterAll.systemName
-        case .favorites: return AppIcon.filterFavorites.systemName
         case .media: return AppIcon.filterMedia.systemName
         case .thisMonth: return AppIcon.filterThisMonth.systemName
         case .onThisDay: return AppIcon.filterOnThisDay.systemName

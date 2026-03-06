@@ -46,12 +46,17 @@ public actor EntryRepositoryImpl: EntryRepository {
         }
 
         do {
-            return try coordinator.coordinateRead(at: url) { readURL in
-                let data = try Data(contentsOf: readURL)
-                let entry = try decoder.decode(EntryDay.self, from: data)
-                try migrationManager.validate(entry: entry)
-                return entry
+            let result = try coordinator.coordinateRead(at: url) { readURL in
+                try decodeAndMigrateEntry(from: readURL)
             }
+
+            if result.migrated {
+                try persistMigratedEntry(result.entry, at: url)
+            }
+
+            return result.entry
+        } catch let error as DomainError {
+            throw error
         } catch {
             throw DomainError.corruptEntry(day)
         }
@@ -88,9 +93,11 @@ public actor EntryRepositoryImpl: EntryRepository {
 
         for file in files {
             do {
-                let data = try Data(contentsOf: file)
-                let entry = try decoder.decode(EntryDay.self, from: data)
-                try migrationManager.validate(entry: entry)
+                let result = try decodeAndMigrateEntry(from: file)
+                let entry = result.entry
+                if result.migrated {
+                    try persistMigratedEntry(entry, at: file)
+                }
 
                 if let range {
                     guard let date = dayCalculator.date(for: entry.dayKey), range.contains(date) else {
@@ -113,9 +120,11 @@ public actor EntryRepositoryImpl: EntryRepository {
         entries.reserveCapacity(files.count)
 
         for file in files {
-            if let entry = try? decoder.decode(EntryDay.self, from: Data(contentsOf: file)) {
-                try migrationManager.validate(entry: entry)
-                entries.append(entry)
+            if let result = try? decodeAndMigrateEntry(from: file) {
+                if result.migrated {
+                    try? persistMigratedEntry(result.entry, at: file)
+                }
+                entries.append(result.entry)
             }
         }
 
@@ -170,8 +179,6 @@ public actor EntryRepositoryImpl: EntryRepository {
             merged.mood = existing.mood
         }
 
-        merged.favorite = existing.favorite || incoming.favorite
-
         let created = min(existing.createdAt, incoming.createdAt)
         let updated = max(existing.updatedAt, incoming.updatedAt)
 
@@ -183,7 +190,6 @@ public actor EntryRepositoryImpl: EntryRepository {
             thornItem: merged.thornItem,
             tags: merged.tags,
             mood: merged.mood,
-            favorite: merged.favorite,
             createdAt: created,
             updatedAt: updated
         )
@@ -209,5 +215,24 @@ public actor EntryRepositoryImpl: EntryRepository {
         let fileName = "\(Int(Date().timeIntervalSince1970))-\(UUID().uuidString).json"
         let destination = dayFolder.appendingPathComponent(fileName)
         try writer.write(data: data, to: destination, fileManager: fileManager)
+    }
+
+    private func decodeAndMigrateEntry(from url: URL) throws -> (entry: EntryDay, migrated: Bool) {
+        let data = try Data(contentsOf: url)
+        let decoded = try decoder.decode(EntryDay.self, from: data)
+        try migrationManager.validate(entry: decoded)
+        let migrated = migrationManager.migrate(entry: decoded)
+        return (migrated, migrated.schemaVersion != decoded.schemaVersion)
+    }
+
+    private func persistMigratedEntry(_ entry: EntryDay, at url: URL) throws {
+        let data = try encoder.encode(entry)
+        do {
+            try coordinator.coordinateWrite(at: url) { writeURL in
+                try writer.write(data: data, to: writeURL, fileManager: fileManager)
+            }
+        } catch {
+            throw DomainError.storageFailure("Failed to write migrated entry at \(url.lastPathComponent): \(error.localizedDescription)")
+        }
     }
 }

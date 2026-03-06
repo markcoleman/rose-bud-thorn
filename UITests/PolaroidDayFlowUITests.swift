@@ -23,6 +23,7 @@ final class PolaroidDayFlowUITests: XCTestCase {
         let pager = app.otherElements["day-polaroid-pager"]
         XCTAssertTrue(pager.waitForExistence(timeout: 6))
         XCTAssertTrue(app.otherElements["day-reflection-segmented"].waitForExistence(timeout: 4))
+        XCTAssertFalse(app.otherElements["floating-tab-bar"].exists)
 
         pager.swipeLeft()
         XCTAssertTrue(app.otherElements["day-polaroid-card-bud"].waitForExistence(timeout: 4))

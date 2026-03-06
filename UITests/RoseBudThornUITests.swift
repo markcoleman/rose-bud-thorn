@@ -54,9 +54,12 @@ final class RoseBudThornUITests: XCTestCase {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
         dismissOnboardingIfPresented(app)
 
-        let settingsButton = app.buttons["journal-settings-button"]
-        XCTAssertTrue(settingsButton.waitForExistence(timeout: 6))
-        settingsButton.tap()
+        app.buttons["floating-tab-insights"].tap()
+
+        let moreButton = app.buttons["insights-more-button"]
+        XCTAssertTrue(moreButton.waitForExistence(timeout: 6))
+        moreButton.tap()
+        app.buttons["insights-more-settings"].tap()
 
         let replayButton = app.buttons["Replay onboarding"]
         XCTAssertTrue(replayButton.waitForExistence(timeout: 6))

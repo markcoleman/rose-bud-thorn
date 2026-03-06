@@ -34,11 +34,13 @@ final class AccessibilitySmokeUITests: XCTestCase {
 
         app.buttons["floating-tab-journal"].tap()
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 4))
-        XCTAssertTrue(app.buttons["journal-settings-button"].exists)
+        XCTAssertFalse(app.buttons["journal-settings-button"].exists)
 
         app.buttons["floating-tab-insights"].tap()
         XCTAssertTrue(app.navigationBars["Insights"].waitForExistence(timeout: 4))
-        XCTAssertTrue(app.buttons["insights-settings-button"].exists)
+        XCTAssertTrue(app.buttons["insights-more-button"].exists)
+        app.buttons["insights-more-button"].tap()
+        XCTAssertTrue(app.buttons["insights-more-settings"].waitForExistence(timeout: 4))
     }
 
     func testEngagementActionsAreHittableWhenPresent() {
