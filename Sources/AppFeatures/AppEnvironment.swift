@@ -2,7 +2,6 @@ import Foundation
 import CoreModels
 import CoreDate
 import DocumentStore
-import SearchIndex
 import Summaries
 
 public struct AppEnvironment: Sendable {
@@ -11,7 +10,6 @@ public struct AppEnvironment: Sendable {
     public let periodCalculator: PeriodKeyCalculator
     public let entryRepository: EntryRepositoryImpl
     public let attachmentRepository: AttachmentRepositoryImpl
-    public let searchIndex: FileSearchIndex
     public let summaryService: SummaryServiceImpl
     public let entryStore: EntryStore
     public let reminderPreferencesStore: ReminderPreferencesStore
@@ -39,9 +37,8 @@ public struct AppEnvironment: Sendable {
 
         let entryRepository = try EntryRepositoryImpl(configuration: configuration)
         let attachmentRepository = try AttachmentRepositoryImpl(configuration: configuration)
-        let searchIndex = try FileSearchIndex(configuration: configuration, entryRepository: entryRepository)
         let summaryService = try SummaryServiceImpl(configuration: configuration, entryRepository: entryRepository)
-        let entryStore = EntryStore(entries: entryRepository, attachments: attachmentRepository, index: searchIndex)
+        let entryStore = EntryStore(entries: entryRepository, attachments: attachmentRepository)
         let reminderPreferencesStore = ReminderPreferencesStore()
         let reminderScheduler = featureFlags.remindersEnabled ? ReminderScheduler.live() : ReminderScheduler()
         let promptPreferencesStore = PromptPreferencesStore()
@@ -68,7 +65,6 @@ public struct AppEnvironment: Sendable {
 
         self.entryRepository = entryRepository
         self.attachmentRepository = attachmentRepository
-        self.searchIndex = searchIndex
         self.summaryService = summaryService
         self.entryStore = entryStore
         self.reminderPreferencesStore = reminderPreferencesStore

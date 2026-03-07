@@ -8,55 +8,6 @@ public enum JournalSaveFeedbackState: Sendable, Equatable {
     case complete(Date?)
 }
 
-public enum JournalMode: Sendable, Equatable {
-    case timeline
-    case search
-}
-
-public enum JournalCategoryFilter: String, CaseIterable, Identifiable, Sendable {
-    case all
-    case rose
-    case bud
-    case thorn
-
-    public var id: String { rawValue }
-
-    public var title: String {
-        switch self {
-        case .all: return "All"
-        case .rose: return "Rose"
-        case .bud: return "Bud"
-        case .thorn: return "Thorn"
-        }
-    }
-
-    var entryTypes: Set<EntryType> {
-        switch self {
-        case .all:
-            return Set(EntryType.allCases)
-        case .rose:
-            return [.rose]
-        case .bud:
-            return [.bud]
-        case .thorn:
-            return [.thorn]
-        }
-    }
-}
-
-public struct JournalFilters: Sendable, Equatable {
-    public var category: JournalCategoryFilter
-    public var hasPhotoOnly: Bool
-
-    public init(
-        category: JournalCategoryFilter = .all,
-        hasPhotoOnly: Bool = false
-    ) {
-        self.category = category
-        self.hasPhotoOnly = hasPhotoOnly
-    }
-}
-
 public struct EntryDaySummary: Sendable, Hashable, Identifiable {
     public struct Line: Sendable, Hashable, Identifiable {
         public let type: EntryType
@@ -101,35 +52,14 @@ public struct EntryDaySummary: Sendable, Hashable, Identifiable {
             .count
     }
 
-    public func lines(for category: JournalCategoryFilter) -> [Line] {
+    public func lines() -> [Line] {
         let allLines: [Line] = [
             Line(type: .rose, text: roseText),
             Line(type: .bud, text: budText),
             Line(type: .thorn, text: thornText)
         ]
 
-        let visible = allLines.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-        switch category {
-        case .all:
-            return visible
-        case .rose:
-            return visible.filter { $0.type == .rose }
-        case .bud:
-            return visible.filter { $0.type == .bud }
-        case .thorn:
-            return visible.filter { $0.type == .thorn }
-        }
-    }
-
-    public func matchingLines(query: String, category: JournalCategoryFilter) -> [Line] {
-        let normalized = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !normalized.isEmpty else {
-            return lines(for: category)
-        }
-
-        return lines(for: category).filter { line in
-            line.text.lowercased().contains(normalized)
-        }
+        return allLines.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
     private static func previewText(from item: EntryItem) -> String {

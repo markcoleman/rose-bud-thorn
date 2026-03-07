@@ -14,21 +14,19 @@ final class PolaroidDayFlowUITests: XCTestCase {
         dismissOnboardingIfPresented(app)
 
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 6))
-        app.swipeUp()
-
-        let dayCard = app.otherElements["journal-day-card"].firstMatch
-        XCTAssertTrue(dayCard.waitForExistence(timeout: 6))
+        let dayCard = journalDayCardButton(in: app)
+        XCTAssertTrue(dayCard.exists)
         dayCard.tap()
 
-        let pager = app.otherElements["day-polaroid-pager"]
-        XCTAssertTrue(pager.waitForExistence(timeout: 6))
-        XCTAssertTrue(app.otherElements["day-reflection-segmented"].waitForExistence(timeout: 4))
-        XCTAssertFalse(app.otherElements["floating-tab-bar"].exists)
+        let pager = dayPolaroidPager(in: app)
+        XCTAssertTrue(pager.exists)
+        XCTAssertTrue(element(withIdentifier: "day-reflection-segmented", in: app).waitForExistence(timeout: 4))
+        XCTAssertFalse(tabBarButton(titled: "Journal", in: app).exists)
 
         pager.swipeLeft()
-        XCTAssertTrue(app.otherElements["day-polaroid-card-bud"].waitForExistence(timeout: 4))
+        XCTAssertTrue(element(withIdentifier: "day-polaroid-card-bud", in: app).waitForExistence(timeout: 4))
         pager.swipeLeft()
-        XCTAssertTrue(app.otherElements["day-polaroid-card-thorn"].waitForExistence(timeout: 4))
+        XCTAssertTrue(element(withIdentifier: "day-polaroid-card-thorn", in: app).waitForExistence(timeout: 4))
 
         let shareButton = app.buttons["day-share-button"]
         XCTAssertTrue(shareButton.waitForExistence(timeout: 4))
@@ -50,8 +48,15 @@ final class PolaroidDayFlowUITests: XCTestCase {
         removeButton.tap()
 
         XCTAssertTrue(app.staticTexts["Remove this day?"].waitForExistence(timeout: 4))
-        XCTAssertTrue(app.buttons["Cancel"].exists)
-        app.buttons["Cancel"].tap()
+        let cancelButton = app.buttons["Cancel"].firstMatch
+        if cancelButton.waitForExistence(timeout: 2) {
+            cancelButton.tap()
+            return
+        }
+
+        let dismissRegion = app.otherElements["PopoverDismissRegion"].firstMatch
+        XCTAssertTrue(dismissRegion.waitForExistence(timeout: 2))
+        dismissRegion.tap()
     }
 
     private func dismissShareUIIfNeeded(_ app: XCUIApplication) {

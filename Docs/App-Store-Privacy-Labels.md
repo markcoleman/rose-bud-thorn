@@ -18,7 +18,7 @@ This file captures the recommended App Store Connect privacy answers for the cur
 
 - Local analytics only: `Sources/AppFeatures/Analytics/LocalAnalyticsStore.swift`
 - Local document storage (app group): `Sources/DocumentStore/DocumentStoreConfiguration.swift`
-- iOS app uses app-group configuration: `Clients/Apple/RoseBudThornAppleApp.swift`
+- iOS app uses app-group configuration: `App/RoseBudThornAppleApp.swift`
 - Camera/microphone/photo usage declarations: `RoseBudThorn.xcodeproj/project.pbxproj`
 
 ## App Store Connect Inputs

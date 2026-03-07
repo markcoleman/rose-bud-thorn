@@ -12,7 +12,6 @@ let package = Package(
         .library(name: "CoreModels", targets: ["CoreModels"]),
         .library(name: "CoreDate", targets: ["CoreDate"]),
         .library(name: "DocumentStore", targets: ["DocumentStore"]),
-        .library(name: "SearchIndex", targets: ["SearchIndex"]),
         .library(name: "Summaries", targets: ["Summaries"]),
         .library(name: "AppFeatures", targets: ["AppFeatures"]),
         .executable(name: "RoseBudThornApp", targets: ["RoseBudThornApp"])
@@ -30,17 +29,12 @@ let package = Package(
             dependencies: ["CoreModels", "CoreDate"]
         ),
         .target(
-            name: "SearchIndex",
-            dependencies: ["CoreModels", "CoreDate", "DocumentStore"],
-            exclude: ["IndexSchema.sql"]
-        ),
-        .target(
             name: "Summaries",
             dependencies: ["CoreModels", "CoreDate", "DocumentStore"]
         ),
         .target(
             name: "AppFeatures",
-            dependencies: ["CoreModels", "CoreDate", "DocumentStore", "SearchIndex", "Summaries"]
+            dependencies: ["CoreModels", "CoreDate", "DocumentStore", "Summaries"]
         ),
         .executableTarget(
             name: "RoseBudThornApp",
@@ -59,16 +53,12 @@ let package = Package(
             dependencies: ["DocumentStore", "CoreModels", "CoreDate"]
         ),
         .testTarget(
-            name: "SearchIndexTests",
-            dependencies: ["SearchIndex", "DocumentStore", "CoreModels", "CoreDate"]
-        ),
-        .testTarget(
             name: "SummariesTests",
             dependencies: ["Summaries", "DocumentStore", "CoreModels", "CoreDate"]
         ),
         .testTarget(
             name: "AppFeaturesTests",
-            dependencies: ["AppFeatures", "DocumentStore", "SearchIndex", "Summaries", "CoreModels", "CoreDate"]
+            dependencies: ["AppFeatures", "DocumentStore", "Summaries", "CoreModels", "CoreDate"]
         )
     ]
 )

@@ -61,35 +61,6 @@ public actor JournalDataSource {
         try await allDayKeys().filter { $0 != dayKey }
     }
 
-    public func search(query: EntrySearchQuery) async throws -> [LocalDayKey] {
-        try await environment.entryStore.search(query)
-    }
-
-    public func fallbackSearch(
-        text: String,
-        categories: Set<EntryType>,
-        hasPhoto: Bool?
-    ) async throws -> [LocalDayKey] {
-        let keys = try await allDayKeys()
-        var results: [LocalDayKey] = []
-        results.reserveCapacity(keys.count)
-
-        for dayKey in keys {
-            let entry = try await loadEntry(dayKey: dayKey)
-
-            if entryMatches(
-                entry,
-                text: text,
-                categories: categories,
-                hasPhoto: hasPhoto
-            ) {
-                results.append(dayKey)
-            }
-        }
-
-        return results.sorted(by: >)
-    }
-
     public func loadSummaries(for dayKeys: [LocalDayKey]) async -> [EntryDaySummary] {
         await loadSummaryPairs(for: dayKeys).compactMap { $0.summary }
     }
@@ -162,36 +133,5 @@ public actor JournalDataSource {
         cachedDayKeys.append(dayKey)
         cachedDayKeys.sort(by: >)
         self.cachedDayKeys = cachedDayKeys
-    }
-
-    private func entryMatches(
-        _ entry: EntryDay,
-        text: String,
-        categories: Set<EntryType>,
-        hasPhoto: Bool?
-    ) -> Bool {
-        if let hasPhoto {
-            if hasPhoto && !entry.hasAnyPhotos { return false }
-            if !hasPhoto && entry.hasAnyPhotos { return false }
-        }
-
-        let normalizedText = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let activeCategories = categories.isEmpty ? Set(EntryType.allCases) : categories
-
-        if normalizedText.isEmpty {
-            return hasAnyContent(in: entry, categories: activeCategories)
-        }
-
-        return activeCategories.contains { type in
-            entry.item(for: type).combinedText.lowercased().contains(normalizedText)
-        }
-    }
-
-    private func hasAnyContent(in entry: EntryDay, categories: Set<EntryType>) -> Bool {
-        categories.contains { type in
-            let item = entry.item(for: type)
-            return !item.shortText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                !item.journalTextMarkdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        }
     }
 }

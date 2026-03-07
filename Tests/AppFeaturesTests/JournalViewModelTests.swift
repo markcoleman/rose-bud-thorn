@@ -52,7 +52,6 @@ final class JournalViewModelTests: XCTestCase {
         let model = JournalViewModel(
             environment: environment,
             nowProvider: { now },
-            debounceDuration: .milliseconds(10),
             pageSize: 2
         )
 
@@ -73,65 +72,9 @@ final class JournalViewModelTests: XCTestCase {
         XCTAssertFalse(model.hasMoreDays)
     }
 
-    func testFilteringByCategoryAndPhoto() async throws {
-        let environment = try makeEnvironment()
-        let now = Date(timeIntervalSince1970: 1_772_201_600)
-        let dayCalculator = DayKeyCalculator()
-
-        let today = dayCalculator.dayKey(for: now, timeZone: .current)
-        let dayA = dayCalculator.dayKey(for: now.addingTimeInterval(-86_400), timeZone: .current)
-        let dayB = dayCalculator.dayKey(for: now.addingTimeInterval(-172_800), timeZone: .current)
-        let dayC = dayCalculator.dayKey(for: now.addingTimeInterval(-259_200), timeZone: .current)
-
-        try await environment.entryStore.save(makeEntry(dayKey: today, rose: "Today"))
-        try await environment.entryStore.save(makeEntry(dayKey: dayA, rose: "Rose only"))
-        try await environment.entryStore.save(makeEntry(dayKey: dayB, bud: "Bud only"))
-        try await environment.entryStore.save(makeEntry(dayKey: dayC, rose: "Rose media", includePhoto: true))
-
-        let model = JournalViewModel(environment: environment, nowProvider: { now }, debounceDuration: .milliseconds(10), pageSize: 45)
-        await model.load()
-
-        model.setCategory(.rose)
-        await waitUntil { model.timelineDays.count == 2 }
-        XCTAssertTrue(model.timelineDays.allSatisfy { !$0.roseText.isEmpty || $0.roseHasMedia })
-
-        model.setHasPhotoOnly(true)
-        await waitUntil { model.timelineDays.count == 1 }
-        XCTAssertTrue(model.timelineDays.first?.hasMedia ?? false)
-    }
-
-    func testDebouncedSearchUsesLatestQuery() async throws {
-        let environment = try makeEnvironment()
-        let now = Date(timeIntervalSince1970: 1_772_201_600)
-        let dayCalculator = DayKeyCalculator()
-
-        let today = dayCalculator.dayKey(for: now, timeZone: .current)
-        let dayA = dayCalculator.dayKey(for: now.addingTimeInterval(-86_400), timeZone: .current)
-        let dayB = dayCalculator.dayKey(for: now.addingTimeInterval(-172_800), timeZone: .current)
-
-        try await environment.entryStore.save(makeEntry(dayKey: today, rose: "today content"))
-        try await environment.entryStore.save(makeEntry(dayKey: dayA, rose: "alpha entry"))
-        try await environment.entryStore.save(makeEntry(dayKey: dayB, rose: "final target"))
-
-        let model = JournalViewModel(environment: environment, nowProvider: { now }, debounceDuration: .milliseconds(25), pageSize: 45)
-        await model.load()
-
-        model.handleSearchQueryChange("al")
-        model.handleSearchQueryChange("alpha")
-        model.handleSearchQueryChange("target")
-
-        await waitUntil {
-            model.mode == .search &&
-            model.timelineDays.count == 1 &&
-            model.timelineDays.first?.dayKey == dayB
-        }
-
-        XCTAssertEqual(model.searchQuery, "target")
-    }
-
     func testTodayEditUpdatesUpdatedAtAndAutosaves() async throws {
         let environment = try makeEnvironment()
-        let model = JournalViewModel(environment: environment, debounceDuration: .milliseconds(10), pageSize: 45)
+        let model = JournalViewModel(environment: environment, pageSize: 45)
 
         await model.load()
         let previousUpdatedAt = model.todayEntry.updatedAt
@@ -154,27 +97,9 @@ final class JournalViewModelTests: XCTestCase {
         XCTAssertEqual(persistedText, "Autosave from Journal")
     }
 
-    func testTodayMatchesSearchWhenQueryHitsTodayText() async throws {
-        let environment = try makeEnvironment()
-        let now = Date(timeIntervalSince1970: 1_772_201_600)
-        let dayCalculator = DayKeyCalculator()
-        let today = dayCalculator.dayKey(for: now, timeZone: .current)
-
-        try await environment.entryStore.save(makeEntry(dayKey: today, rose: "coffee and sun"))
-
-        let model = JournalViewModel(environment: environment, nowProvider: { now }, debounceDuration: .milliseconds(20), pageSize: 45)
-        await model.load()
-
-        model.handleSearchQueryChange("coffee")
-        await waitUntil { model.mode == .search && model.todayMatchesSearch }
-
-        model.handleSearchQueryChange("nomatch")
-        await waitUntil { model.mode == .search && !model.todayMatchesSearch }
-    }
-
     func testTodaySaveFeedbackTransitionsFromDraftToSavedToComplete() async throws {
         let environment = try makeEnvironment()
-        let model = JournalViewModel(environment: environment, debounceDuration: .milliseconds(10), pageSize: 20)
+        let model = JournalViewModel(environment: environment, pageSize: 20)
 
         await model.load()
         XCTAssertEqual(model.todaySaveFeedbackState, .draft)
@@ -195,7 +120,7 @@ final class JournalViewModelTests: XCTestCase {
 
     func testRemoveTodayPhotoClearsMediaFromEntry() async throws {
         let environment = try makeEnvironment()
-        let model = JournalViewModel(environment: environment, debounceDuration: .milliseconds(10), pageSize: 20)
+        let model = JournalViewModel(environment: environment, pageSize: 20)
         await model.load()
 
         let temporaryURL = FileManager.default.temporaryDirectory

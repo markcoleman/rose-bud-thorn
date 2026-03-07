@@ -10,7 +10,6 @@ The app requires offline-first behavior, user-owned files, iCloud Drive compatib
 - Canonical data in file-based `Documents` store.
 - Use JSON for entries and summary metadata.
 - Use Markdown for summary artifacts.
-- Keep search index derivative and rebuildable.
 - Isolate persistence through actors and async APIs.
 
 ## Tradeoffs
@@ -26,4 +25,4 @@ Cons:
 ## Consequences
 - `entry.json` is source of truth.
 - Conflicts are archived non-destructively.
-- Summaries/index can be regenerated from entries.
+- Summaries can be regenerated from entries.

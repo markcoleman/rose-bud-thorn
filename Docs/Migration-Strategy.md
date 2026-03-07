@@ -10,7 +10,6 @@
 - Unsupported future schema versions fail with explicit user-facing error.
 
 ## Recovery
-- If index schema changes, rebuild index from entries.
 - If summary schema changes, regenerate from entries.
 
 ## Rollout

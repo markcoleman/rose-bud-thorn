@@ -17,7 +17,7 @@ final class RoseBudThornUITests: XCTestCase {
     func testOnboardingSwipeUpdatesPageIndicator() {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 8)
 
-        let indicator = app.otherElements["onboarding-page-indicator"]
+        let indicator = element(withIdentifier: "onboarding-page-indicator", in: app)
         XCTAssertTrue(indicator.waitForExistence(timeout: 4))
         XCTAssertEqual(indicator.label, "Page 1 of 3")
 
@@ -29,7 +29,7 @@ final class RoseBudThornUITests: XCTestCase {
     func testOnboardingCountdownAutoAdvances() {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 2)
 
-        let indicator = app.otherElements["onboarding-page-indicator"]
+        let indicator = element(withIdentifier: "onboarding-page-indicator", in: app)
         XCTAssertTrue(indicator.waitForExistence(timeout: 4))
         expectation(for: NSPredicate(format: "label == %@", "Page 2 of 3"), evaluatedWith: indicator)
         waitForExpectations(timeout: 6)
@@ -54,17 +54,20 @@ final class RoseBudThornUITests: XCTestCase {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
         dismissOnboardingIfPresented(app)
 
-        app.buttons["floating-tab-insights"].tap()
+        tapTabBarButton(titled: "Insights", in: app)
 
         let moreButton = app.buttons["insights-more-button"]
         XCTAssertTrue(moreButton.waitForExistence(timeout: 6))
         moreButton.tap()
         app.buttons["insights-more-settings"].tap()
 
-        let replayButton = app.buttons["Replay onboarding"]
-        XCTAssertTrue(replayButton.waitForExistence(timeout: 6))
+        let replayButton = app.buttons["settings-replay-onboarding"].firstMatch
+        if !replayButton.waitForExistence(timeout: 2) || !replayButton.isHittable {
+            _ = scrollToElement(replayButton, in: app)
+        }
+        XCTAssertTrue(replayButton.exists)
         replayButton.tap()
 
-        XCTAssertTrue(app.otherElements["onboarding-page-indicator"].waitForExistence(timeout: 4))
+        XCTAssertTrue(element(withIdentifier: "onboarding-page-indicator", in: app).waitForExistence(timeout: 4))
     }
 }

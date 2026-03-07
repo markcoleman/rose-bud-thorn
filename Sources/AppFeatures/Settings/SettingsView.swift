@@ -99,6 +99,7 @@ public struct SettingsView: View {
                     Button("Replay onboarding") {
                         onReplayOnboarding()
                     }
+                    .accessibilityIdentifier("settings-replay-onboarding")
                 }
             }
 

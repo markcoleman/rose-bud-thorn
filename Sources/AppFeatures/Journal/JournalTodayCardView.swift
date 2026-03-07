@@ -4,30 +4,30 @@ import CoreModels
 public struct JournalTodayCardView: View {
     public let entry: EntryDay
     public let saveFeedbackState: JournalSaveFeedbackState
-    public let onShortTextChange: (EntryType, String) -> Void
-    public let onJournalTextChange: (EntryType, String) -> Void
-    public let onOpenPhotoLibrary: (EntryType) -> Void
-    public let onOpenCamera: (EntryType) -> Void
-    public let onRemovePhoto: (EntryType, PhotoRef) -> Void
-    public let onRemoveVideo: (EntryType, VideoRef) -> Void
-    public let onOpenCompletedDay: () -> Void
-    public let photoURL: (PhotoRef) -> URL
-    public let videoURL: (VideoRef) -> URL
+    public let onShortTextChange: @MainActor @Sendable (EntryType, String) -> Void
+    public let onJournalTextChange: @MainActor @Sendable (EntryType, String) -> Void
+    public let onOpenPhotoLibrary: @MainActor @Sendable (EntryType) -> Void
+    public let onOpenCamera: @MainActor @Sendable (EntryType) -> Void
+    public let onRemovePhoto: @MainActor @Sendable (EntryType, PhotoRef) -> Void
+    public let onRemoveVideo: @MainActor @Sendable (EntryType, VideoRef) -> Void
+    public let onOpenCompletedDay: @MainActor @Sendable () -> Void
+    public let photoURL: @MainActor @Sendable (PhotoRef) -> URL
+    public let videoURL: @MainActor @Sendable (VideoRef) -> URL
 
     @State private var expandedTypes: Set<EntryType> = []
 
     public init(
         entry: EntryDay,
         saveFeedbackState: JournalSaveFeedbackState,
-        onShortTextChange: @escaping (EntryType, String) -> Void,
-        onJournalTextChange: @escaping (EntryType, String) -> Void,
-        onOpenPhotoLibrary: @escaping (EntryType) -> Void,
-        onOpenCamera: @escaping (EntryType) -> Void,
-        onRemovePhoto: @escaping (EntryType, PhotoRef) -> Void,
-        onRemoveVideo: @escaping (EntryType, VideoRef) -> Void,
-        onOpenCompletedDay: @escaping () -> Void,
-        photoURL: @escaping (PhotoRef) -> URL,
-        videoURL: @escaping (VideoRef) -> URL
+        onShortTextChange: @escaping @MainActor @Sendable (EntryType, String) -> Void,
+        onJournalTextChange: @escaping @MainActor @Sendable (EntryType, String) -> Void,
+        onOpenPhotoLibrary: @escaping @MainActor @Sendable (EntryType) -> Void,
+        onOpenCamera: @escaping @MainActor @Sendable (EntryType) -> Void,
+        onRemovePhoto: @escaping @MainActor @Sendable (EntryType, PhotoRef) -> Void,
+        onRemoveVideo: @escaping @MainActor @Sendable (EntryType, VideoRef) -> Void,
+        onOpenCompletedDay: @escaping @MainActor @Sendable () -> Void,
+        photoURL: @escaping @MainActor @Sendable (PhotoRef) -> URL,
+        videoURL: @escaping @MainActor @Sendable (VideoRef) -> URL
     ) {
         self.entry = entry
         self.saveFeedbackState = saveFeedbackState

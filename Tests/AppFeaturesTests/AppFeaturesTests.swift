@@ -15,29 +15,7 @@ final class AppFeaturesTests: XCTestCase {
     private func makeInMemoryEntryStore() -> EntryStore {
         EntryStore(
             entries: InMemoryEntryRepository(),
-            attachments: NoopAttachmentRepository(),
-            index: NoopSearchIndex()
-        )
-    }
-
-    private func makeEntry(
-        dayKey: LocalDayKey,
-        rose: String = "",
-        bud: String = "",
-        thorn: String = "",
-        mood: Int? = nil,
-        hasMedia: Bool = false
-    ) -> EntryDay {
-        let media: [PhotoRef] = hasMedia ? [PhotoRef(id: UUID(), relativePath: "rose/attachments/photo.jpg", createdAt: .now)] : []
-        return EntryDay(
-            dayKey: dayKey,
-            roseItem: EntryItem(type: .rose, shortText: rose, journalTextMarkdown: "", photos: media, updatedAt: .now),
-            budItem: EntryItem(type: .bud, shortText: bud, journalTextMarkdown: "", updatedAt: .now),
-            thornItem: EntryItem(type: .thorn, shortText: thorn, journalTextMarkdown: "", updatedAt: .now),
-            tags: [],
-            mood: mood,
-            createdAt: .now,
-            updatedAt: .now
+            attachments: NoopAttachmentRepository()
         )
     }
 
@@ -69,28 +47,6 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(persisted.roseItem.shortText, "Great coffee")
         XCTAssertEqual(persisted.budItem.shortText, "New project kickoff")
         XCTAssertEqual(persisted.thornItem.journalTextMarkdown, "Commute was rough.")
-    }
-
-    func testSearchViewModelFindsSavedEntry() async throws {
-        let environment = try makeEnvironment()
-        let dayKey = LocalDayKey(isoDate: "2026-02-27", timeZoneID: "America/Los_Angeles")
-
-        let entry = EntryDay(
-            dayKey: dayKey,
-            roseItem: EntryItem(type: .rose, shortText: "sunny bike ride", journalTextMarkdown: "", updatedAt: .now),
-            budItem: EntryItem(type: .bud, shortText: "new idea", journalTextMarkdown: "", updatedAt: .now),
-            thornItem: EntryItem(type: .thorn, shortText: "slow traffic", journalTextMarkdown: "", updatedAt: .now),
-            createdAt: .now,
-            updatedAt: .now
-        )
-
-        try await environment.entryStore.save(entry)
-
-        let searchVM = SearchViewModel(environment: environment)
-        searchVM.queryText = "bike"
-        await searchVM.runSearch()
-
-        XCTAssertEqual(searchVM.results, [dayKey])
     }
 
     func testTodayViewModelImportVideoPersistsEntry() async throws {
@@ -297,9 +253,11 @@ final class AppFeaturesTests: XCTestCase {
 
     func testLocalAnalyticsStorePersistsCountsAcrossReload() async {
         let suite = "LocalAnalyticsStoreTests.\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: suite)!
         let dayCalculator = DayKeyCalculator()
-        let store = LocalAnalyticsStore(defaults: defaults, dayCalculator: dayCalculator)
+        let store = LocalAnalyticsStore(
+            defaults: UserDefaults(suiteName: suite)!,
+            dayCalculator: dayCalculator
+        )
         let tz = TimeZone(identifier: "America/Los_Angeles")!
         let date = Date(timeIntervalSince1970: 1_772_201_600)
         let dayKey = dayCalculator.dayKey(for: date, timeZone: tz)
@@ -312,7 +270,10 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(total, 3)
         XCTAssertEqual(daily, 3)
 
-        let reloaded = LocalAnalyticsStore(defaults: defaults, dayCalculator: dayCalculator)
+        let reloaded = LocalAnalyticsStore(
+            defaults: UserDefaults(suiteName: suite)!,
+            dayCalculator: dayCalculator
+        )
         let reloadedTotal = await reloaded.totalCount(for: .todayScreenOpened)
         let reloadedDaily = await reloaded.dayCount(for: .todayScreenOpened, dayKey: dayKey)
         XCTAssertEqual(reloadedTotal, 3)
@@ -366,65 +327,6 @@ final class AppFeaturesTests: XCTestCase {
         try await viewModel.saveNow()
         let fourthCompletionCount = await environment.analyticsStore.dayCount(for: .dailyEntryCompleted, dayKey: today)
         XCTAssertEqual(fourthCompletionCount, 1)
-    }
-
-    func testBrowseDaySnapshotSelectsNewestPreviewPhotoDeterministically() {
-        let dayKey = LocalDayKey(isoDate: "2026-03-22", timeZoneID: "America/Los_Angeles")
-        let old = Date(timeIntervalSince1970: 100)
-        let newer = Date(timeIntervalSince1970: 200)
-        let tie = Date(timeIntervalSince1970: 200)
-
-        let rose = PhotoRef(id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!, relativePath: "rose/attachments/old.jpg", createdAt: old)
-        let bud = PhotoRef(id: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!, relativePath: "bud/attachments/newer.jpg", createdAt: newer)
-        let thorn = PhotoRef(id: UUID(uuidString: "33333333-3333-3333-3333-333333333333")!, relativePath: "thorn/attachments/tie.jpg", createdAt: tie)
-
-        let entry = EntryDay(
-            dayKey: dayKey,
-            roseItem: EntryItem(type: .rose, shortText: "Rose", journalTextMarkdown: "", photos: [rose], updatedAt: .now),
-            budItem: EntryItem(type: .bud, shortText: "Bud", journalTextMarkdown: "", photos: [bud], updatedAt: .now),
-            thornItem: EntryItem(type: .thorn, shortText: "Thorn", journalTextMarkdown: "", photos: [thorn], updatedAt: .now),
-            createdAt: .now,
-            updatedAt: .now
-        )
-
-        let snapshot = BrowseDaySnapshot(entry: entry)
-        XCTAssertEqual(snapshot.previewPhotoRef?.id, thorn.id)
-        XCTAssertEqual(snapshot.previewPhotoRefs.map(\.id), [thorn.id, bud.id, rose.id])
-    }
-
-    func testBrowseDaySnapshotPreviewPhotosAreLimitedToThreeMostRecent() {
-        let dayKey = LocalDayKey(isoDate: "2026-03-22", timeZoneID: "America/Los_Angeles")
-        let photoA = PhotoRef(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, relativePath: "rose/attachments/a.jpg", createdAt: Date(timeIntervalSince1970: 100))
-        let photoB = PhotoRef(id: UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!, relativePath: "bud/attachments/b.jpg", createdAt: Date(timeIntervalSince1970: 200))
-        let photoC = PhotoRef(id: UUID(uuidString: "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC")!, relativePath: "thorn/attachments/c.jpg", createdAt: Date(timeIntervalSince1970: 300))
-        let photoD = PhotoRef(id: UUID(uuidString: "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD")!, relativePath: "thorn/attachments/d.jpg", createdAt: Date(timeIntervalSince1970: 400))
-
-        let entry = EntryDay(
-            dayKey: dayKey,
-            roseItem: EntryItem(type: .rose, shortText: "Rose", journalTextMarkdown: "", photos: [photoA], updatedAt: .now),
-            budItem: EntryItem(type: .bud, shortText: "Bud", journalTextMarkdown: "", photos: [photoB], updatedAt: .now),
-            thornItem: EntryItem(type: .thorn, shortText: "Thorn", journalTextMarkdown: "", photos: [photoC, photoD], updatedAt: .now),
-            createdAt: .now,
-            updatedAt: .now
-        )
-
-        let snapshot = BrowseDaySnapshot(entry: entry)
-        XCTAssertEqual(snapshot.previewPhotoRefs.count, 3)
-        XCTAssertEqual(snapshot.previewPhotoRefs.map(\.id), [photoD.id, photoC.id, photoB.id])
-    }
-
-    func testBrowseViewModelPhotoURLReturnsResolvedURL() throws {
-        let environment = try makeEnvironment()
-        let viewModel = BrowseViewModel(environment: environment)
-        let dayKey = LocalDayKey(isoDate: "2026-03-22", timeZoneID: "America/Los_Angeles")
-        let ref = PhotoRef(id: UUID(), relativePath: "rose/attachments/image.jpg", createdAt: .now)
-
-        let resolved = viewModel.photoURL(for: ref, day: dayKey)
-        XCTAssertNotNil(resolved)
-        XCTAssertTrue(resolved?.path.hasSuffix("Entries/2026/03/22/rose/attachments/image.jpg") ?? false)
-
-        let nilResolved = viewModel.photoURL(for: nil, day: dayKey)
-        XCTAssertNil(nilResolved)
     }
 
     func testTodayViewModelExposesThreeOfThreeCompletionState() async throws {
@@ -524,79 +426,6 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertNotNil(completed?.completedAt)
     }
 
-    func testBrowseViewModelGroupsMonthSectionsDescending() async throws {
-        let environment = try makeEnvironment()
-        let la = "America/Los_Angeles"
-        let march = LocalDayKey(isoDate: "2026-03-12", timeZoneID: la)
-        let february = LocalDayKey(isoDate: "2026-02-28", timeZoneID: la)
-        let previousYear = LocalDayKey(isoDate: "2025-12-01", timeZoneID: la)
-
-        try await environment.entryStore.save(makeEntry(dayKey: march, rose: "March day"))
-        try await environment.entryStore.save(makeEntry(dayKey: february, rose: "February day"))
-        try await environment.entryStore.save(makeEntry(dayKey: previousYear, rose: "December day"))
-
-        let viewModel = BrowseViewModel(environment: environment)
-        await viewModel.loadSnapshots()
-
-        XCTAssertEqual(viewModel.sections.map(\.monthKey), ["2026-03", "2026-02", "2025-12"])
-        XCTAssertEqual(viewModel.sections.first?.days.first?.dayKey, march)
-    }
-
-    func testBrowseViewModelTimelineIndexItemsMirrorSectionOrder() async throws {
-        let environment = try makeEnvironment()
-        let la = "America/Los_Angeles"
-        try await environment.entryStore.save(makeEntry(dayKey: LocalDayKey(isoDate: "2026-03-12", timeZoneID: la), rose: "March day"))
-        try await environment.entryStore.save(makeEntry(dayKey: LocalDayKey(isoDate: "2026-02-28", timeZoneID: la), rose: "February day"))
-        try await environment.entryStore.save(makeEntry(dayKey: LocalDayKey(isoDate: "2025-12-01", timeZoneID: la), rose: "December day"))
-
-        let viewModel = BrowseViewModel(environment: environment)
-        await viewModel.loadSnapshots()
-
-        XCTAssertEqual(viewModel.timelineIndexItems.map(\.monthKey), ["2026-03", "2026-02", "2025-12"])
-        XCTAssertFalse(viewModel.timelineIndexItems.first?.label.isEmpty ?? true)
-    }
-
-    func testBrowseViewModelMediaFilter() async throws {
-        let environment = try makeEnvironment()
-        let la = "America/Los_Angeles"
-        let mediaDay = LocalDayKey(isoDate: "2026-03-14", timeZoneID: la)
-        let plainDay = LocalDayKey(isoDate: "2026-03-13", timeZoneID: la)
-
-        try await environment.entryStore.save(makeEntry(dayKey: mediaDay, rose: "Media", hasMedia: true))
-        try await environment.entryStore.save(makeEntry(dayKey: plainDay, rose: "Plain"))
-
-        let viewModel = BrowseViewModel(environment: environment)
-        await viewModel.loadSnapshots()
-
-        viewModel.setQuickFilter(.media)
-        let mediaResults = viewModel.sections.flatMap(\.days)
-        XCTAssertEqual(mediaResults.count, 1)
-        XCTAssertEqual(mediaResults.first?.dayKey, mediaDay)
-    }
-
-    func testBrowseViewModelOnThisDayFilterMatchesPastYearsOnly() async throws {
-        let environment = try makeEnvironment()
-        let la = "America/Los_Angeles"
-        let matchingA = LocalDayKey(isoDate: "2025-03-10", timeZoneID: la)
-        let matchingB = LocalDayKey(isoDate: "2024-03-10", timeZoneID: la)
-        let nonMatching = LocalDayKey(isoDate: "2025-03-09", timeZoneID: la)
-        let today = LocalDayKey(isoDate: "2026-03-10", timeZoneID: la)
-
-        try await environment.entryStore.save(makeEntry(dayKey: matchingA, rose: "Match A"))
-        try await environment.entryStore.save(makeEntry(dayKey: matchingB, rose: "Match B"))
-        try await environment.entryStore.save(makeEntry(dayKey: nonMatching, rose: "No match"))
-        try await environment.entryStore.save(makeEntry(dayKey: today, rose: "Today"))
-
-        let fixedNow = Date(timeIntervalSince1970: 1_773_144_000) // 2026-03-10 12:00:00 UTC
-        let viewModel = BrowseViewModel(environment: environment, nowProvider: { fixedNow })
-        await viewModel.loadSnapshots()
-
-        viewModel.setQuickFilter(.onThisDay)
-        let results = Set(viewModel.sections.flatMap(\.days).map(\.dayKey.isoDate))
-
-        XCTAssertEqual(results, Set(["2025-03-10", "2024-03-10"]))
-    }
-
     func testPresentationFormattingSummaryRangeUsesReadableRangeForValidKey() {
         let artifact = SummaryArtifact(
             period: .week,
@@ -639,35 +468,13 @@ final class AppFeaturesTests: XCTestCase {
         let date = Date(timeIntervalSince1970: 1_772_201_600)
         let dayKey = dayCalculator.dayKey(for: date, timeZone: tz)
 
-        await store.record(.browseDayDetailsOpened, at: date, timeZone: tz)
         await store.record(.summaryDayDetailsOpened, count: 2, at: date, timeZone: tz)
 
-        let browseTotal = await store.totalCount(for: .browseDayDetailsOpened)
-        let browseDay = await store.dayCount(for: .browseDayDetailsOpened, dayKey: dayKey)
         let summaryTotal = await store.totalCount(for: .summaryDayDetailsOpened)
         let summaryDay = await store.dayCount(for: .summaryDayDetailsOpened, dayKey: dayKey)
 
-        XCTAssertEqual(browseTotal, 1)
-        XCTAssertEqual(browseDay, 1)
         XCTAssertEqual(summaryTotal, 2)
         XCTAssertEqual(summaryDay, 2)
-    }
-
-    func testLocalAnalyticsStoreTracksBrowseTimelineEvents() async {
-        let defaults = UserDefaults(suiteName: "LocalAnalyticsStoreTests.\(UUID().uuidString)")!
-        let store = LocalAnalyticsStore(defaults: defaults, dayCalculator: DayKeyCalculator())
-
-        await store.record(.browseTimelineFastScrollUsed, count: 2)
-        await store.record(.browseTimelineQuickShareTapped)
-        await store.record(.browseTimelineJumpToDateUsed)
-
-        let fastScrollTotal = await store.totalCount(for: .browseTimelineFastScrollUsed)
-        let quickShareTotal = await store.totalCount(for: .browseTimelineQuickShareTapped)
-        let jumpTotal = await store.totalCount(for: .browseTimelineJumpToDateUsed)
-
-        XCTAssertEqual(fastScrollTotal, 2)
-        XCTAssertEqual(quickShareTotal, 1)
-        XCTAssertEqual(jumpTotal, 1)
     }
 
     func testTodayViewModelThenVsNowPromptPreservesExistingJournalText() async throws {
@@ -774,57 +581,6 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertNil(payload.thorn.sourceURL)
         XCTAssertTrue(payload.messageBody.contains("Rose: A text-only rose"))
         XCTAssertTrue(payload.messageBody.contains("Bud: A text-only bud"))
-    }
-
-    func testBrowseViewModelMakeSharePayloadSupportsTextOnlyPartialAndFullMedia() async throws {
-        let environment = try makeEnvironment()
-        let viewModel = BrowseViewModel(environment: environment)
-        let dayText = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
-        let dayPartial = LocalDayKey(isoDate: "2026-03-11", timeZoneID: "America/Los_Angeles")
-        let dayFull = LocalDayKey(isoDate: "2026-03-10", timeZoneID: "America/Los_Angeles")
-
-        var textOnly = EntryDay.empty(dayKey: dayText)
-        textOnly.roseItem.shortText = "Text only"
-        try await environment.entryStore.save(textOnly)
-
-        let partialPhoto = PhotoRef(id: UUID(), relativePath: "rose/attachments/partial.jpg", createdAt: .now)
-        var partial = EntryDay.empty(dayKey: dayPartial)
-        partial.roseItem.shortText = "Partial media"
-        partial.roseItem.photos = [partialPhoto]
-        try await environment.entryStore.save(partial)
-        try writeAttachmentFile(in: environment, dayKey: dayPartial, ref: partialPhoto)
-
-        let rosePhoto = PhotoRef(id: UUID(), relativePath: "rose/attachments/r.jpg", createdAt: .now)
-        let budPhoto = PhotoRef(id: UUID(), relativePath: "bud/attachments/b.jpg", createdAt: .now)
-        let thornPhoto = PhotoRef(id: UUID(), relativePath: "thorn/attachments/t.jpg", createdAt: .now)
-        var full = EntryDay.empty(dayKey: dayFull)
-        full.roseItem.shortText = "Full media rose"
-        full.budItem.shortText = "Full media bud"
-        full.thornItem.shortText = "Full media thorn"
-        full.roseItem.photos = [rosePhoto]
-        full.budItem.photos = [budPhoto]
-        full.thornItem.photos = [thornPhoto]
-        try await environment.entryStore.save(full)
-        try writeAttachmentFile(in: environment, dayKey: dayFull, ref: rosePhoto)
-        try writeAttachmentFile(in: environment, dayKey: dayFull, ref: budPhoto)
-        try writeAttachmentFile(in: environment, dayKey: dayFull, ref: thornPhoto)
-
-        let payloadTextOnly = try await viewModel.makeSharePayload(for: dayText)
-        XCTAssertNil(payloadTextOnly.rose.sourceURL)
-
-        let payloadPartial = try await viewModel.makeSharePayload(for: dayPartial)
-        XCTAssertNotNil(payloadPartial.rose.sourceURL)
-        XCTAssertNil(payloadPartial.bud.sourceURL)
-        XCTAssertNil(payloadPartial.thorn.sourceURL)
-
-        let payloadFull = try await viewModel.makeSharePayload(for: dayFull)
-        XCTAssertNotNil(payloadFull.rose.sourceURL)
-        XCTAssertNotNil(payloadFull.bud.sourceURL)
-        XCTAssertNotNil(payloadFull.thorn.sourceURL)
-
-        await viewModel.disposeSharePayload(payloadTextOnly)
-        await viewModel.disposeSharePayload(payloadPartial)
-        await viewModel.disposeSharePayload(payloadFull)
     }
 
     func testDayShareNudgeStoreSuppressesRepeatedPromptPerDay() {
@@ -1020,8 +776,7 @@ final class AppFeaturesTests: XCTestCase {
             resurfacingEnabled: true,
             commitmentsEnabled: false,
             dayShareEnabled: false,
-            os26UIEnabled: true,
-            browseTimeCapsuleEnabled: false
+            os26UIEnabled: true
         )
 
         store.save(flags)
@@ -1069,11 +824,4 @@ private actor NoopAttachmentRepository: AttachmentRepository {
     func remove(_ ref: PhotoRef, day: LocalDayKey) async throws {}
 
     func removeVideo(_ ref: VideoRef, day: LocalDayKey) async throws {}
-}
-
-private actor NoopSearchIndex: SearchIndex {
-    func upsert(_ entry: EntryDay) async throws {}
-    func remove(day: LocalDayKey) async throws {}
-    func search(_ query: EntrySearchQuery) async throws -> [LocalDayKey] { [] }
-    func rebuildFromEntries() async throws {}
 }

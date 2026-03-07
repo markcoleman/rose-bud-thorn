@@ -14,13 +14,6 @@ public protocol AttachmentRepository: Sendable {
     func removeVideo(_ ref: VideoRef, day: LocalDayKey) async throws
 }
 
-public protocol SearchIndex: Sendable {
-    func upsert(_ entry: EntryDay) async throws
-    func remove(day: LocalDayKey) async throws
-    func search(_ query: EntrySearchQuery) async throws -> [LocalDayKey]
-    func rebuildFromEntries() async throws
-}
-
 public protocol SummaryService: Sendable {
     func generate(period: SummaryPeriod, key: String) async throws -> SummaryArtifact
     func load(period: SummaryPeriod, key: String) async throws -> SummaryArtifact?

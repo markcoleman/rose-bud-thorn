@@ -375,6 +375,7 @@ public struct RootAppView: View {
         Task {
             await environment.analyticsStore.record(.onboardingReplayOpened)
         }
+        isSettingsPresented = false
         onboardingPresentation = .settingsReplay
     }
 

@@ -96,9 +96,6 @@ public struct JournalView: View {
                         ForEach(bindable.timelineDays) { summary in
                             JournalDayCardView(
                                 summary: summary,
-                                mode: .timeline,
-                                queryText: "",
-                                category: .all,
                                 photoURL: { ref in
                                     bindable.photoURL(for: ref, day: summary.dayKey)
                                 },

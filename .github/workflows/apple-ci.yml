@@ -7,10 +7,9 @@ on:
       - "Sources/**"
       - "Tests/**"
       - "Fixtures/**"
-      - "Scripts/**"
       - "App/**"
-      - "Clients/Apple/**"
       - "UITests/**"
+      - "ci_scripts/**"
       - "RoseBudThorn.xcodeproj/**"
       - "RoseBudThorn.xcworkspace/**"
       - ".github/workflows/apple-ci.yml"
@@ -22,10 +21,9 @@ on:
       - "Sources/**"
       - "Tests/**"
       - "Fixtures/**"
-      - "Scripts/**"
       - "App/**"
-      - "Clients/Apple/**"
       - "UITests/**"
+      - "ci_scripts/**"
       - "RoseBudThorn.xcodeproj/**"
       - "RoseBudThorn.xcworkspace/**"
       - ".github/workflows/apple-ci.yml"
@@ -45,15 +43,14 @@ jobs:
     outputs:
       package: ${{ steps.filter.outputs.package }}
       app: ${{ steps.filter.outputs.app }}
-      ios: ${{ steps.filter.outputs.ios }}
-      catalyst: ${{ steps.filter.outputs.catalyst }}
+      ui: ${{ steps.filter.outputs.ui }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Filter changed files
         id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
           filters: |
             package:
@@ -61,31 +58,21 @@ jobs:
               - 'Sources/**'
               - 'Tests/**'
               - 'Fixtures/**'
-              - 'Scripts/**'
             app:
               - 'App/**'
-              - 'Clients/Apple/**'
               - 'Sources/**'
-              - 'UITests/**'
               - 'RoseBudThorn.xcodeproj/**'
               - 'RoseBudThorn.xcworkspace/**'
-            ios:
+              - 'ci_scripts/**'
+            ui:
               - 'App/**'
-              - 'Clients/Apple/**'
-              - 'Sources/**'
-              - 'UITests/**'
-              - 'RoseBudThorn.xcodeproj/**'
-              - 'RoseBudThorn.xcworkspace/**'
-            catalyst:
-              - 'App/**'
-              - 'Clients/Apple/**'
               - 'Sources/**'
               - 'UITests/**'
               - 'RoseBudThorn.xcodeproj/**'
               - 'RoseBudThorn.xcworkspace/**'
 
-  package-test-os26:
-    name: Swift package build + test (OS26 lane)
+  package-test:
+    name: Swift package build + test
     runs-on: macos-26
     needs: changes
     if: needs.changes.outputs.package == 'true'
@@ -93,10 +80,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@c51a66b42363123fa82a6cfe02c60af4281dab93 # v1
         with:
           xcode-version: latest-stable
 
@@ -106,10 +93,11 @@ jobs:
           swift --version
 
       - name: Cache SwiftPM dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
         with:
           path: |
             ~/.swiftpm
+            ~/Library/Caches/org.swift.swiftpm
           key: ${{ runner.os }}-${{ runner.arch }}-spm-${{ hashFiles('Package.swift') }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-spm-
@@ -117,184 +105,75 @@ jobs:
       - name: Resolve package dependencies
         run: swift package resolve
 
-      - name: Build package
-        run: swift build -Xswiftc -warnings-as-errors
+      - name: Build package (strict)
+        run: swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
 
-      - name: Test package
-        run: swift test --parallel
+      - name: Test package (strict)
+        run: swift test --parallel -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
 
-  build-ios:
-    name: Build iOS app (macos-26)
+  build-app:
+    name: Build app (${{ matrix.lane }})
     runs-on: macos-26
     needs: changes
-    if: needs.changes.outputs.ios == 'true'
+    if: needs.changes.outputs.app == 'true'
     timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: iOS
+            destination: generic/platform=iOS Simulator
+          - lane: Mac Catalyst
+            destination: platform=macOS,variant=Mac Catalyst
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@c51a66b42363123fa82a6cfe02c60af4281dab93 # v1
         with:
           xcode-version: latest-stable
 
-      - name: Cache SwiftPM + DerivedData (iOS)
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/Library/Developer/Xcode/DerivedData
-            ~/.swiftpm
-          key: ${{ runner.os }}-${{ runner.arch }}-ios-build-${{ hashFiles('Package.swift', 'RoseBudThorn.xcodeproj/project.pbxproj', 'Sources/**/*.swift', 'App/**/*.swift', 'Clients/Apple/**/*.swift', 'UITests/**/*.swift') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-ios-build-${{ hashFiles('Package.swift', 'RoseBudThorn.xcodeproj/project.pbxproj') }}-
-            ${{ runner.os }}-${{ runner.arch }}-ios-build-
-
-      - name: Build iOS
+      - name: Build app
         run: |
           xcodebuild \
             -project "RoseBudThorn.xcodeproj" \
             -scheme "RoseBudThorn Universal" \
-            -destination "generic/platform=iOS Simulator" \
+            -destination "${{ matrix.destination }}" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \
             build
 
-  build-catalyst:
-    name: Build Mac Catalyst app (macos-26)
+  ui-smoke:
+    name: UI smoke test
     runs-on: macos-26
     needs: changes
-    if: needs.changes.outputs.catalyst == 'true'
+    if: github.event_name == 'pull_request' && needs.changes.outputs.ui == 'true'
     timeout-minutes: 35
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@c51a66b42363123fa82a6cfe02c60af4281dab93 # v1
         with:
           xcode-version: latest-stable
 
-      - name: Cache SwiftPM + DerivedData (Catalyst)
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/Library/Developer/Xcode/DerivedData
-            ~/.swiftpm
-          key: ${{ runner.os }}-${{ runner.arch }}-catalyst-build-${{ hashFiles('Package.swift', 'RoseBudThorn.xcodeproj/project.pbxproj', 'Sources/**/*.swift', 'App/**/*.swift', 'Clients/Apple/**/*.swift', 'UITests/**/*.swift') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-catalyst-build-${{ hashFiles('Package.swift', 'RoseBudThorn.xcodeproj/project.pbxproj') }}-
-            ${{ runner.os }}-${{ runner.arch }}-catalyst-build-
-
-      - name: Build Mac Catalyst
+      - name: Run UI smoke test
         run: |
           xcodebuild \
             -project "RoseBudThorn.xcodeproj" \
             -scheme "RoseBudThorn Universal" \
-            -destination "platform=macOS,variant=Mac Catalyst" \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+            -destination "platform=iOS Simulator,name=iPhone 17" \
+            -resultBundlePath "/tmp/RoseBudThorn-ui-smoke.xcresult" \
+            -only-testing:RoseBudThornUITests/RoseBudThornUITests/testFirstLaunchShowsOnboardingThenSkipOpensToday \
+            test
 
-  xcode-test-ios:
-    name: Xcode iOS tests (macos-26)
-    runs-on: macos-26
-    needs: changes
-    if: needs.changes.outputs.app == 'true'
-    timeout-minutes: 40
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Validate iOS test build (build-for-testing)
-        run: |
-          set -euo pipefail
-          RESULT_PATH="/tmp/RoseBudThorn-ios-tests.xcresult"
-          for attempt in 1 2; do
-            echo "iOS build-for-testing attempt ${attempt}"
-            rm -rf "${RESULT_PATH}"
-            set +e
-            xcodebuild \
-              -project "RoseBudThorn.xcodeproj" \
-              -scheme "RoseBudThorn Universal" \
-              -destination "generic/platform=iOS Simulator" \
-              -resultBundlePath "${RESULT_PATH}" \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGN_IDENTITY="" \
-              build-for-testing
-            status=$?
-            set -e
-            if [ "${status}" -eq 0 ]; then
-              break
-            fi
-            if [ "${attempt}" -eq 2 ]; then
-              exit "${status}"
-            fi
-            sleep 10
-          done
-
-      - name: Upload iOS xcresult on failure
+      - name: Upload UI smoke xcresult on failure
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: xcresult-ios-tests
-          path: /tmp/RoseBudThorn-ios-tests.xcresult
-
-  xcode-test-catalyst:
-    name: Xcode Mac Catalyst tests (macos-26)
-    runs-on: macos-26
-    needs: changes
-    if: needs.changes.outputs.app == 'true'
-    timeout-minutes: 40
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Validate Mac Catalyst test build (build-for-testing)
-        run: |
-          set -euo pipefail
-          RESULT_PATH="/tmp/RoseBudThorn-catalyst-tests.xcresult"
-          for attempt in 1 2; do
-            echo "Mac Catalyst build-for-testing attempt ${attempt}"
-            rm -rf "${RESULT_PATH}"
-            set +e
-            xcodebuild \
-              -project "RoseBudThorn.xcodeproj" \
-              -scheme "RoseBudThorn Universal" \
-              -destination "platform=macOS,variant=Mac Catalyst" \
-              -resultBundlePath "${RESULT_PATH}" \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGN_IDENTITY="" \
-              build-for-testing
-            status=$?
-            set -e
-            if [ "${status}" -eq 0 ]; then
-              break
-            fi
-            if [ "${attempt}" -eq 2 ]; then
-              exit "${status}"
-            fi
-            sleep 10
-          done
-
-      - name: Upload Mac Catalyst xcresult on failure
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: xcresult-catalyst-tests
-          path: /tmp/RoseBudThorn-catalyst-tests.xcresult
+          name: xcresult-ui-smoke
+          path: /tmp/RoseBudThorn-ui-smoke.xcresult

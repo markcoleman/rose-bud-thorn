@@ -28,7 +28,27 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C10000510000000000000001"
+               BuildableName = "RoseBudThornUITests.xctest"
+               BlueprintName = "RoseBudThornUITests"
+               ReferencedContainer = "container:RoseBudThorn.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A10000510000000000000001"
+            BuildableName = "RoseBudThorn iOS.app"
+            BlueprintName = "RoseBudThorn iOS"
+            ReferencedContainer = "container:RoseBudThorn.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
