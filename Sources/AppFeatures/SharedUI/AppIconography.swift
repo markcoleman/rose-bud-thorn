@@ -2,9 +2,7 @@ public enum AppIcon: Sendable {
     case sectionJournal
     case sectionInsights
     case sectionToday
-    case sectionBrowse
     case sectionSummaries
-    case sectionSearch
     case sectionSettings
 
     case lockShield
@@ -47,12 +45,8 @@ public enum AppIcon: Sendable {
             return "doc.text.magnifyingglass"
         case .sectionToday:
             return "sun.max"
-        case .sectionBrowse:
-            return "calendar"
         case .sectionSummaries:
             return "doc.text.magnifyingglass"
-        case .sectionSearch:
-            return "magnifyingglass"
         case .sectionSettings:
             return "gearshape"
         case .lockShield:

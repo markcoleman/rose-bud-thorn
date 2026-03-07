@@ -2,7 +2,6 @@ import Foundation
 import CoreModels
 import CoreDate
 import DocumentStore
-import SearchIndex
 
 enum SharedPhotoImportError: LocalizedError {
     case unsupportedItem
@@ -28,7 +27,6 @@ struct SharedPhotoImportService {
     private let dayCalculator: DayKeyCalculator
     private let entryRepository: EntryRepositoryImpl
     private let attachmentRepository: AttachmentRepositoryImpl
-    private let searchIndex: FileSearchIndex
 
     init(
         appGroupID: String = AppGroupConstants.appGroupIdentifier,
@@ -38,11 +36,9 @@ struct SharedPhotoImportService {
         let configuration = try DocumentStoreConfiguration.appGroup(appGroupID: appGroupID)
         let entryRepository = try EntryRepositoryImpl(configuration: configuration)
         let attachmentRepository = try AttachmentRepositoryImpl(configuration: configuration)
-        let searchIndex = try FileSearchIndex(configuration: configuration, entryRepository: entryRepository)
 
         self.entryRepository = entryRepository
         self.attachmentRepository = attachmentRepository
-        self.searchIndex = searchIndex
     }
 
     @discardableResult
@@ -68,7 +64,6 @@ struct SharedPhotoImportService {
         entry.updatedAt = .now
 
         try await entryRepository.save(entry)
-        try await searchIndex.upsert(entry)
         return dayKey
     }
 }

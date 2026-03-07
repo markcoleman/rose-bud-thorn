@@ -7,15 +7,10 @@ import CoreModels
 public final class JournalViewModel {
     public private(set) var todayEntry: EntryDay
     public private(set) var timelineDays: [EntryDaySummary] = []
-    public private(set) var mode: JournalMode = .timeline
-    public private(set) var filters = JournalFilters()
-
-    public var searchQuery = ""
 
     public private(set) var isLoading = false
     public private(set) var isLoadingMore = false
     public private(set) var hasMoreDays = false
-    public private(set) var todayMatchesSearch = false
     public var errorMessage: String?
 
     public private(set) var isSavingToday = false
@@ -24,27 +19,23 @@ public final class JournalViewModel {
     public let environment: AppEnvironment
     private let dataSource: JournalDataSource
     private let nowProvider: @Sendable () -> Date
-    private let debounceDuration: Duration
     private let pageSize: Int
     private let loadBatchSize = 18
 
     private var sourceDayKeys: [LocalDayKey] = []
     private var sourceCursor = 0
 
-    private var refreshTask: Task<Void, Never>?
     private var saveTask: Task<Void, Never>?
     private var activeRefreshID = UUID()
 
     public init(
         environment: AppEnvironment,
         nowProvider: @escaping @Sendable () -> Date = { .now },
-        debounceDuration: Duration = .milliseconds(300),
         pageSize: Int = 45,
         dataSource: JournalDataSource? = nil
     ) {
         self.environment = environment
         self.nowProvider = nowProvider
-        self.debounceDuration = debounceDuration
         self.pageSize = pageSize
         self.dataSource = dataSource ?? JournalDataSource(environment: environment, nowProvider: nowProvider)
 
@@ -54,10 +45,6 @@ public final class JournalViewModel {
 
     public var todayDayKey: LocalDayKey {
         todayEntry.dayKey
-    }
-
-    public var searchResultsAreEmpty: Bool {
-        mode == .search && !todayMatchesSearch && timelineDays.isEmpty && !isLoading
     }
 
     public var todayCompletionCount: Int {
@@ -85,33 +72,11 @@ public final class JournalViewModel {
     }
 
     public func load() async {
-        await refreshTimeline(debounced: false, invalidateCache: false)
+        await refreshTimeline(invalidateCache: false)
     }
 
     public func reloadFromExternalChange() async {
-        await refreshTimeline(debounced: false, invalidateCache: true)
-    }
-
-    public func handleSearchQueryChange(_ text: String) {
-        searchQuery = text
-        scheduleRefresh(debounced: true)
-    }
-
-    public func clearSearch() {
-        searchQuery = ""
-        scheduleRefresh(debounced: false)
-    }
-
-    public func setCategory(_ category: JournalCategoryFilter) {
-        guard filters.category != category else { return }
-        filters.category = category
-        scheduleRefresh(debounced: false)
-    }
-
-    public func setHasPhotoOnly(_ isEnabled: Bool) {
-        guard filters.hasPhotoOnly != isEnabled else { return }
-        filters.hasPhotoOnly = isEnabled
-        scheduleRefresh(debounced: false)
+        await refreshTimeline(invalidateCache: true)
     }
 
     public func loadMoreIfNeeded(currentDayKey: LocalDayKey?) async {
@@ -134,7 +99,6 @@ public final class JournalViewModel {
         item.updatedAt = nowProvider()
         todayEntry.setItem(item, for: type)
         todayEntry.updatedAt = nowProvider()
-        updateTodaySearchMatchIfNeeded()
         scheduleTodayAutosave()
     }
 
@@ -144,7 +108,6 @@ public final class JournalViewModel {
         item.updatedAt = nowProvider()
         todayEntry.setItem(item, for: type)
         todayEntry.updatedAt = nowProvider()
-        updateTodaySearchMatchIfNeeded()
         scheduleTodayAutosave()
     }
 
@@ -253,7 +216,6 @@ public final class JournalViewModel {
         do {
             try await dataSource.saveToday(todayEntry)
             lastSavedAt = nowProvider()
-            updateTodaySearchMatchIfNeeded()
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -270,24 +232,7 @@ public final class JournalViewModel {
         }
     }
 
-    private func scheduleRefresh(debounced: Bool) {
-        refreshTask?.cancel()
-        refreshTask = Task { [weak self] in
-            guard let self else { return }
-            if debounced {
-                try? await Task.sleep(for: self.debounceDuration)
-                guard !Task.isCancelled else { return }
-            }
-            await self.refreshTimeline(debounced: false, invalidateCache: false)
-        }
-    }
-
-    private func refreshTimeline(debounced: Bool, invalidateCache: Bool) async {
-        if debounced {
-            scheduleRefresh(debounced: true)
-            return
-        }
-
+    private func refreshTimeline(invalidateCache: Bool) async {
         let refreshID = UUID()
         activeRefreshID = refreshID
         isLoading = true
@@ -302,14 +247,7 @@ public final class JournalViewModel {
             guard isCurrent(refreshID) else { return }
 
             todayEntry = loadedToday
-            updateMode()
-            updateTodaySearchMatchIfNeeded()
-
-            if mode == .timeline {
-                sourceDayKeys = try await dataSource.allPastDayKeys(excluding: loadedToday.dayKey)
-            } else {
-                sourceDayKeys = try await buildSearchSourceDayKeys(excluding: loadedToday.dayKey)
-            }
+            sourceDayKeys = try await dataSource.allPastDayKeys(excluding: loadedToday.dayKey)
 
             guard isCurrent(refreshID) else { return }
             sourceCursor = 0
@@ -328,32 +266,6 @@ public final class JournalViewModel {
 
         guard isCurrent(refreshID) else { return }
         isLoading = false
-    }
-
-    private func buildSearchSourceDayKeys(excluding todayKey: LocalDayKey) async throws -> [LocalDayKey] {
-        let queryText = normalizedQueryText
-        let categories = filters.category.entryTypes
-        let hasPhotoFilter = filters.hasPhotoOnly ? true : nil
-
-        let query = EntrySearchQuery(
-            text: queryText,
-            categories: categories,
-            hasPhoto: hasPhotoFilter,
-            dateRange: nil
-        )
-
-        let results: [LocalDayKey]
-        do {
-            results = try await dataSource.search(query: query)
-        } catch {
-            results = try await dataSource.fallbackSearch(
-                text: queryText,
-                categories: categories,
-                hasPhoto: hasPhotoFilter
-            )
-        }
-
-        return results.filter { $0 != todayKey }
     }
 
     private func appendNextPage(for refreshID: UUID) async {
@@ -377,8 +289,6 @@ public final class JournalViewModel {
             for pair in pairs {
                 consumedCount += 1
                 guard let summary = pair.summary else { continue }
-                guard summaryMatchesCurrentFilters(summary) else { continue }
-
                 page.append(summary)
                 if page.count >= pageSize {
                     break
@@ -391,55 +301,6 @@ public final class JournalViewModel {
         guard isCurrent(refreshID) else { return }
         timelineDays.append(contentsOf: page)
         hasMoreDays = sourceCursor < sourceDayKeys.count
-    }
-
-    private func summaryMatchesCurrentFilters(_ summary: EntryDaySummary) -> Bool {
-        if filters.hasPhotoOnly && !summary.hasMedia {
-            return false
-        }
-
-        let lines = summary.lines(for: filters.category)
-
-        switch filters.category {
-        case .all:
-            return !lines.isEmpty || summary.hasMedia
-        case .rose:
-            return !summary.roseText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || summary.roseHasMedia
-        case .bud:
-            return !summary.budText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || summary.budHasMedia
-        case .thorn:
-            return !summary.thornText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || summary.thornHasMedia
-        }
-    }
-
-    private func updateMode() {
-        mode = normalizedQueryText.isEmpty ? .timeline : .search
-    }
-
-    private func updateTodaySearchMatchIfNeeded() {
-        if mode == .search {
-            todayMatchesSearch = todayMatchesCurrentCriteria()
-        } else {
-            todayMatchesSearch = false
-        }
-    }
-
-    private func todayMatchesCurrentCriteria() -> Bool {
-        if filters.hasPhotoOnly && !todayEntry.hasAnyPhotos {
-            return false
-        }
-
-        let categories = filters.category.entryTypes
-        let query = normalizedQueryText
-        guard !query.isEmpty else { return false }
-
-        return categories.contains { type in
-            todayEntry.item(for: type).combinedText.lowercased().contains(query)
-        }
-    }
-
-    private var normalizedQueryText: String {
-        searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
     private func isCurrent(_ refreshID: UUID) -> Bool {

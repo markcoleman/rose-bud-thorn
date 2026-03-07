@@ -23,13 +23,12 @@ final class CaptureDayFlowUITests: XCTestCase {
             doneButton.tap()
         }
 
-        app.swipeUp()
-
-        let dayCard = app.otherElements["journal-day-card"].firstMatch
-        XCTAssertTrue(dayCard.waitForExistence(timeout: 6))
+        let dayCard = journalDayCardButton(in: app)
+        XCTAssertTrue(dayCard.exists)
         dayCard.tap()
 
-        XCTAssertTrue(app.otherElements["day-polaroid-pager"].waitForExistence(timeout: 6))
+        let pager = dayPolaroidPager(in: app)
+        XCTAssertTrue(pager.exists)
         XCTAssertTrue(app.buttons["day-edit-button"].waitForExistence(timeout: 4))
         let backButton = app.navigationBars.buttons.element(boundBy: 0)
         XCTAssertTrue(backButton.waitForExistence(timeout: 4))
@@ -55,7 +54,23 @@ final class CaptureDayFlowUITests: XCTestCase {
         dismissPhotoPickerIfNeeded(app)
 
         cameraButton.tap()
-        XCTAssertTrue(app.buttons["Photo Library"].waitForExistence(timeout: 6))
+        allowSystemPermissionAlertIfPresent()
+
+        let cameraRoot = element(withIdentifier: "moment-camera-view", in: app)
+        var cameraPresented =
+            cameraRoot.waitForExistence(timeout: 6) ||
+            app.activityIndicators["moment-camera-view"].waitForExistence(timeout: 2) ||
+            app.buttons["moment-camera-library-button"].waitForExistence(timeout: 2) ||
+            app.buttons["Import from Files"].waitForExistence(timeout: 2)
+        if !cameraPresented {
+            allowSystemPermissionAlertIfPresent(timeout: 1)
+            cameraPresented =
+                cameraRoot.waitForExistence(timeout: 2) ||
+                app.activityIndicators["moment-camera-view"].waitForExistence(timeout: 1) ||
+                app.buttons["moment-camera-library-button"].waitForExistence(timeout: 1) ||
+                app.buttons["Import from Files"].waitForExistence(timeout: 1)
+        }
+        XCTAssertTrue(cameraPresented)
     }
 
     private func dismissPhotoPickerIfNeeded(_ app: XCUIApplication) {

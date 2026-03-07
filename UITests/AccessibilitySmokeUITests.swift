@@ -39,15 +39,16 @@ final class AccessibilitySmokeUITests: XCTestCase {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6)
         dismissOnboardingIfPresented(app)
 
-        XCTAssertTrue(app.otherElements["floating-tab-bar"].waitForExistence(timeout: 6))
-        XCTAssertTrue(app.buttons["floating-tab-journal"].exists)
-        XCTAssertTrue(app.buttons["floating-tab-insights"].exists)
+        let journalTab = tabBarButton(titled: "Journal", in: app)
+        let insightsTab = tabBarButton(titled: "Insights", in: app)
+        XCTAssertTrue(journalTab.waitForExistence(timeout: 6))
+        XCTAssertTrue(insightsTab.waitForExistence(timeout: 6))
 
-        app.buttons["floating-tab-journal"].tap()
+        journalTab.tap()
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 4))
         XCTAssertFalse(app.buttons["journal-settings-button"].exists)
 
-        app.buttons["floating-tab-insights"].tap()
+        insightsTab.tap()
         XCTAssertTrue(app.navigationBars["Insights"].waitForExistence(timeout: 4))
         XCTAssertTrue(app.buttons["insights-more-button"].exists)
         app.buttons["insights-more-button"].tap()
@@ -77,7 +78,7 @@ final class AccessibilitySmokeUITests: XCTestCase {
         let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 6, seedJournalData: true)
         dismissOnboardingIfPresented(app)
 
-        app.buttons["floating-tab-journal"].tap()
+        tapTabBarButton(titled: "Journal", in: app)
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 4))
         app.swipeUp()
 

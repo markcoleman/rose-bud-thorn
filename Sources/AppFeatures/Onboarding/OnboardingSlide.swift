@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct OnboardingSlide: Identifiable {
+public struct OnboardingSlide: Identifiable, Sendable {
     public let id: String
     public let imageName: String
     public let headline: String

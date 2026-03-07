@@ -9,7 +9,6 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
     public var commitmentsEnabled: Bool
     public var dayShareEnabled: Bool
     public var os26UIEnabled: Bool
-    public var browseTimeCapsuleEnabled: Bool
 
     public init(
         remindersEnabled: Bool = true,
@@ -19,8 +18,7 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
         resurfacingEnabled: Bool = true,
         commitmentsEnabled: Bool = true,
         dayShareEnabled: Bool = true,
-        os26UIEnabled: Bool = true,
-        browseTimeCapsuleEnabled: Bool = true
+        os26UIEnabled: Bool = true
     ) {
         self.remindersEnabled = remindersEnabled
         self.streaksEnabled = streaksEnabled
@@ -30,7 +28,6 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
         self.commitmentsEnabled = commitmentsEnabled
         self.dayShareEnabled = dayShareEnabled
         self.os26UIEnabled = os26UIEnabled
-        self.browseTimeCapsuleEnabled = browseTimeCapsuleEnabled
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -42,7 +39,6 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
         case commitmentsEnabled
         case dayShareEnabled
         case os26UIEnabled
-        case browseTimeCapsuleEnabled
     }
 
     public init(from decoder: Decoder) throws {
@@ -55,6 +51,5 @@ public struct AppFeatureFlags: Sendable, Codable, Equatable {
         commitmentsEnabled = try container.decodeIfPresent(Bool.self, forKey: .commitmentsEnabled) ?? true
         dayShareEnabled = try container.decodeIfPresent(Bool.self, forKey: .dayShareEnabled) ?? true
         os26UIEnabled = try container.decodeIfPresent(Bool.self, forKey: .os26UIEnabled) ?? true
-        browseTimeCapsuleEnabled = try container.decodeIfPresent(Bool.self, forKey: .browseTimeCapsuleEnabled) ?? true
     }
 }

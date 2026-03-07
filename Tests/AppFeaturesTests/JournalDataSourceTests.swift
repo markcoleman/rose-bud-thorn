@@ -51,33 +51,6 @@ final class JournalDataSourceTests: XCTestCase {
         XCTAssertEqual(keys, [yesterday, twoDaysAgo])
     }
 
-    func testFallbackSearchHonorsCategoryAndPhotoFilters() async throws {
-        let environment = try makeEnvironment()
-        let dayA = LocalDayKey(isoDate: "2026-03-04", timeZoneID: "America/Los_Angeles")
-        let dayB = LocalDayKey(isoDate: "2026-03-03", timeZoneID: "America/Los_Angeles")
-        let dayC = LocalDayKey(isoDate: "2026-03-02", timeZoneID: "America/Los_Angeles")
-
-        try await environment.entryStore.save(makeEntry(dayKey: dayA, rose: "bike ride", includePhoto: false))
-        try await environment.entryStore.save(makeEntry(dayKey: dayB, bud: "bike route", includePhoto: true))
-        try await environment.entryStore.save(makeEntry(dayKey: dayC, thorn: "quiet day", includePhoto: true))
-
-        let dataSource = JournalDataSource(environment: environment)
-
-        let budMatches = try await dataSource.fallbackSearch(
-            text: "bike",
-            categories: [.bud],
-            hasPhoto: nil
-        )
-        XCTAssertEqual(budMatches, [dayB])
-
-        let photoMatches = try await dataSource.fallbackSearch(
-            text: "bike",
-            categories: Set(EntryType.allCases),
-            hasPhoto: true
-        )
-        XCTAssertEqual(photoMatches, [dayB])
-    }
-
     func testLoadSummariesPreservesInputOrder() async throws {
         let environment = try makeEnvironment()
         let dayA = LocalDayKey(isoDate: "2026-03-04", timeZoneID: "America/Los_Angeles")

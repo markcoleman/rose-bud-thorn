@@ -23,7 +23,12 @@
 		B10000070000000000000001 /* CoreModels in Frameworks */ = {isa = PBXBuildFile; productRef = B10000310000000000000001 /* CoreModels */; };
 		B10000080000000000000001 /* CoreDate in Frameworks */ = {isa = PBXBuildFile; productRef = B10000320000000000000001 /* CoreDate */; };
 		B10000090000000000000001 /* DocumentStore in Frameworks */ = {isa = PBXBuildFile; productRef = B10000330000000000000001 /* DocumentStore */; };
-		B100000A00000000000000001 /* SearchIndex in Frameworks */ = {isa = PBXBuildFile; productRef = B10000340000000000000001 /* SearchIndex */; };
+		C10000010000000000000001 /* AccessibilitySmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000110000000000000001 /* AccessibilitySmokeUITests.swift */; };
+		C10000020000000000000001 /* CaptureDayFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000120000000000000001 /* CaptureDayFlowUITests.swift */; };
+		C10000030000000000000001 /* JournalFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000130000000000000001 /* JournalFlowUITests.swift */; };
+		C10000040000000000000001 /* OnboardingTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000140000000000000001 /* OnboardingTestHelpers.swift */; };
+		C10000050000000000000001 /* PolaroidDayFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000150000000000000001 /* PolaroidDayFlowUITests.swift */; };
+		C10000060000000000000001 /* RoseBudThornUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000160000000000000001 /* RoseBudThornUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +45,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = B10000510000000000000001;
 			remoteInfo = "RoseBudThorn Share";
+		};
+		C10000D10000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000810000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000510000000000000001;
+			remoteInfo = "RoseBudThorn iOS";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -74,6 +86,13 @@
 		B10000170000000000000001 /* RoseBudThornShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RoseBudThornShare.entitlements; sourceTree = "<group>"; };
 		B10000180000000000000001 /* RoseBudThorn Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = "RoseBudThorn Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000190000000000000001 /* RoseBudThorn.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RoseBudThorn.entitlements; sourceTree = "<group>"; };
+		C10000110000000000000001 /* AccessibilitySmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilitySmokeUITests.swift; sourceTree = "<group>"; };
+		C10000120000000000000001 /* CaptureDayFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDayFlowUITests.swift; sourceTree = "<group>"; };
+		C10000130000000000000001 /* JournalFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalFlowUITests.swift; sourceTree = "<group>"; };
+		C10000140000000000000001 /* OnboardingTestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTestHelpers.swift; sourceTree = "<group>"; };
+		C10000150000000000000001 /* PolaroidDayFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolaroidDayFlowUITests.swift; sourceTree = "<group>"; };
+		C10000160000000000000001 /* RoseBudThornUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoseBudThornUITests.swift; sourceTree = "<group>"; };
+		C10000170000000000000001 /* RoseBudThornUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = RoseBudThornUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,7 +118,13 @@
 				B10000080000000000000001 /* CoreDate in Frameworks */,
 				B10000090000000000000001 /* DocumentStore in Frameworks */,
 				B10000070000000000000001 /* CoreModels in Frameworks */,
-				B100000A00000000000000001 /* SearchIndex in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C10000210000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,24 +134,17 @@
 		A10000410000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				A10000420000000000000001 /* Clients */,
 				A10000430000000000000001 /* App */,
+				C10000470000000000000001 /* UITests */,
 				A10000440000000000000001 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		A10000420000000000000001 /* Clients */ = {
-			isa = PBXGroup;
-			children = (
-				A10000450000000000000001 /* Apple */,
-			);
-			path = Clients;
 			sourceTree = "<group>";
 		};
 		A10000430000000000000001 /* App */ = {
 			isa = PBXGroup;
 				children = (
 					B10000110000000000000001 /* AppGroupConstants.swift */,
+					A10000110000000000000001 /* RoseBudThornAppleApp.swift */,
 					A10000120000000000000001 /* Assets.xcassets */,
 					A100001A00000000000000001 /* LaunchScreen.storyboard */,
 					A10000190000000000000001 /* PrivacyInfo.xcprivacy */,
@@ -143,6 +161,7 @@
 				A10000130000000000000001 /* RoseBudThorn iOS.app */,
 				B10000180000000000000001 /* RoseBudThorn Share.appex */,
 				A10000170000000000000001 /* RoseBudThorn Widgets.appex */,
+				C10000170000000000000001 /* RoseBudThornUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -159,20 +178,25 @@
 			path = ShareExtension;
 			sourceTree = "<group>";
 		};
-		A10000450000000000000001 /* Apple */ = {
-			isa = PBXGroup;
-			children = (
-				A10000110000000000000001 /* RoseBudThornAppleApp.swift */,
-			);
-			path = Apple;
-			sourceTree = "<group>";
-		};
 		A10000460000000000000001 /* Widgets */ = {
 			isa = PBXGroup;
 			children = (
 				A10000150000000000000001 /* RoseBudThornWidgets.swift */,
 			);
 			path = Widgets;
+			sourceTree = "<group>";
+		};
+		C10000470000000000000001 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				C10000110000000000000001 /* AccessibilitySmokeUITests.swift */,
+				C10000120000000000000001 /* CaptureDayFlowUITests.swift */,
+				C10000130000000000000001 /* JournalFlowUITests.swift */,
+				C10000140000000000000001 /* OnboardingTestHelpers.swift */,
+				C10000150000000000000001 /* PolaroidDayFlowUITests.swift */,
+				C10000160000000000000001 /* RoseBudThornUITests.swift */,
+			);
+			path = UITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -235,11 +259,27 @@
 				B10000320000000000000001 /* CoreDate */,
 				B10000330000000000000001 /* DocumentStore */,
 				B10000310000000000000001 /* CoreModels */,
-				B10000340000000000000001 /* SearchIndex */,
 			);
 			productName = "RoseBudThorn Share";
 			productReference = B10000180000000000000001 /* RoseBudThorn Share.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		C10000510000000000000001 /* RoseBudThornUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C10000710000000000000001 /* Build configuration list for PBXNativeTarget "RoseBudThornUITests" */;
+			buildPhases = (
+				C10000610000000000000001 /* Sources */,
+				C10000210000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C10000C10000000000000001 /* PBXTargetDependency */,
+			);
+			name = RoseBudThornUITests;
+			productName = RoseBudThornUITests;
+			productReference = C10000170000000000000001 /* RoseBudThornUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -260,6 +300,10 @@
 					};
 					B10000510000000000000001 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					C10000510000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = A10000510000000000000001;
 					};
 				};
 			};
@@ -282,6 +326,7 @@
 				A10000510000000000000001 /* RoseBudThorn iOS */,
 				A10000530000000000000001 /* RoseBudThorn Widgets */,
 				B10000510000000000000001 /* RoseBudThorn Share */,
+				C10000510000000000000001 /* RoseBudThornUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -328,6 +373,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C10000610000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C10000010000000000000001 /* AccessibilitySmokeUITests.swift in Sources */,
+				C10000020000000000000001 /* CaptureDayFlowUITests.swift in Sources */,
+				C10000030000000000000001 /* JournalFlowUITests.swift in Sources */,
+				C10000040000000000000001 /* OnboardingTestHelpers.swift in Sources */,
+				C10000050000000000000001 /* PolaroidDayFlowUITests.swift in Sources */,
+				C10000060000000000000001 /* RoseBudThornUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -342,6 +400,11 @@
 			platformFilter = ios;
 			target = B10000510000000000000001 /* RoseBudThorn Share */;
 			targetProxy = B10000D10000000000000001 /* PBXContainerItemProxy */;
+		};
+		C10000C10000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000510000000000000001 /* RoseBudThorn iOS */;
+			targetProxy = C10000D10000000000000001 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -649,6 +712,46 @@
 			};
 			name = Release;
 		};
+		C10000A10000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CUUXST9H3K;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID_BASE).uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "RoseBudThorn iOS";
+			};
+			name = Debug;
+		};
+		C10000A20000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CUUXST9H3K;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID_BASE).uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "RoseBudThorn iOS";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -688,6 +791,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C10000710000000000000001 /* Build configuration list for PBXNativeTarget "RoseBudThornUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C10000A10000000000000001 /* Debug */,
+				C10000A20000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -717,11 +829,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A10000300000000000000001 /* XCLocalSwiftPackageReference "" */;
 			productName = DocumentStore;
-		};
-		B10000340000000000000001 /* SearchIndex */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A10000300000000000000001 /* XCLocalSwiftPackageReference "" */;
-			productName = SearchIndex;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

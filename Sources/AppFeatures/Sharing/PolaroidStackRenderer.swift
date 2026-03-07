@@ -69,7 +69,7 @@ public enum PolaroidStackRendererError: LocalizedError, Sendable {
     }
 }
 
-public struct PolaroidStackRenderer {
+public struct PolaroidStackRenderer: @unchecked Sendable {
     private let fileManager: FileManager
 
     public init(fileManager: FileManager = .default) {

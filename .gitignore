@@ -129,3 +129,5 @@ iOSInjectionProject/
 *.xcresult
 DerivedData-*
 tmp*
+.swiftpm/
+.spm/
