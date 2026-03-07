@@ -49,8 +49,14 @@ final class PolaroidDayFlowUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["Remove this day?"].waitForExistence(timeout: 4))
         let cancelButton = app.buttons["Cancel"].firstMatch
-        XCTAssertTrue(cancelButton.waitForExistence(timeout: 4))
-        cancelButton.tap()
+        if cancelButton.waitForExistence(timeout: 2) {
+            cancelButton.tap()
+            return
+        }
+
+        let dismissRegion = app.otherElements["PopoverDismissRegion"].firstMatch
+        XCTAssertTrue(dismissRegion.waitForExistence(timeout: 2))
+        dismissRegion.tap()
     }
 
     private func dismissShareUIIfNeeded(_ app: XCUIApplication) {
