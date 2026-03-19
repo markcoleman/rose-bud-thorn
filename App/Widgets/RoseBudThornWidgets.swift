@@ -13,7 +13,7 @@ private struct TodayReflectionEntry: TimelineEntry {
 }
 
 private struct TodayReflectionProvider: TimelineProvider {
-    private let photoRotationMinutes = 10
+    private let photoRotationMinutes = 2
 
     func placeholder(in context: Context) -> TodayReflectionEntry {
         TodayReflectionEntry(
@@ -147,11 +147,18 @@ private struct TodayReflectionWidgetView: View {
         }
         .widgetURL(todayURL)
         .containerBackground(for: .widget) {
-            LinearGradient(
-                colors: [Color(.secondarySystemBackground), Color(.systemBackground)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            ZStack {
+                Color(.systemBackground)
+                LinearGradient(
+                    colors: [
+                        EntryType.rose.widgetTint.opacity(0.10),
+                        EntryType.bud.widgetTint.opacity(0.08),
+                        EntryType.thorn.widgetTint.opacity(0.08),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
         }
     }
 
@@ -165,12 +172,17 @@ private struct TodayReflectionWidgetView: View {
             case .inProgress, .complete:
                 if let currentPhoto {
                     photoCard(photo: currentPhoto, cornerRadius: 14)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .overlay(alignment: .topLeading) {
                             progressBadge
                                 .padding(8)
                         }
                         .overlay(alignment: .bottomTrailing) {
                             pageBadge
+                                .padding(8)
+                        }
+                        .overlay(alignment: .bottomLeading) {
+                            autoCycleBadge
                                 .padding(8)
                         }
                 } else {
@@ -184,44 +196,38 @@ private struct TodayReflectionWidgetView: View {
         VStack(alignment: .leading, spacing: 10) {
             header
 
-            if let snapshot, !snapshot.photos.isEmpty {
-                HStack(spacing: 8) {
-                    ForEach(Array(snapshot.photos.prefix(3))) { photo in
-                        photoCard(photo: photo, cornerRadius: 10)
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: 84)
-            } else if displayContent.state == .privacyLocked {
+            if displayContent.state == .privacyLocked {
                 lockedInline
-            } else {
+            } else if displayContent.state == .notStarted {
                 notStartedInline
+            } else {
+                sectionPhotoStrip(tileHeight: 44, labelFont: .caption2, cornerRadius: 14)
             }
-
-            sectionStatusRow
         }
-        .padding(14)
+        .padding(12)
     }
 
     private var largeBody: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
 
-            if let snapshot, !snapshot.photos.isEmpty {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                    ForEach(Array(snapshot.photos.prefix(4))) { photo in
-                        photoCard(photo: photo, cornerRadius: 10)
-                            .frame(height: 88)
+            if displayContent.state == .privacyLocked {
+                lockedInline
+            } else if displayContent.state == .notStarted {
+                notStartedInline
+            } else {
+                sectionPhotoStrip(tileHeight: 56, labelFont: .caption, cornerRadius: 15)
+                VStack(spacing: 8) {
+                    ForEach(EntryType.allCases, id: \.self) { type in
+                        Link(destination: focusURL(type)) {
+                            textRow(type: type, excerpt: displayContent.excerpt(for: type))
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
-            } else if displayContent.state == .privacyLocked {
-                lockedInline
-            } else {
-                notStartedInline
             }
-
-            sectionStatusRow
         }
-        .padding(16)
+        .padding(14)
     }
 
     private var extraLargeBody: some View {
@@ -230,7 +236,7 @@ private struct TodayReflectionWidgetView: View {
                 lockedCard
             } else if let currentPhoto {
                 photoCard(photo: currentPhoto, cornerRadius: 14)
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 notStartedCard
             }
@@ -275,20 +281,12 @@ private struct TodayReflectionWidgetView: View {
         }
     }
 
-    private var sectionStatusRow: some View {
-        HStack(spacing: 8) {
-            ForEach(EntryType.allCases, id: \.self) { type in
-                Link(destination: focusURL(type)) {
-                    HStack(spacing: 4) {
-                        Image(systemName: displayContent.excerpt(for: type).isEmpty ? "circle" : "checkmark.circle.fill")
-                        Text(type.title)
-                    }
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(displayContent.excerpt(for: type).isEmpty ? .secondary : type.widgetTint)
-                }
-                .buttonStyle(.plain)
-            }
-        }
+    private var autoCycleBadge: some View {
+        Text("Auto")
+            .font(.caption2.weight(.semibold))
+            .padding(.horizontal, 7)
+            .padding(.vertical, 4)
+            .background(.ultraThinMaterial, in: Capsule())
     }
 
     private var progressBadge: some View {
@@ -301,7 +299,7 @@ private struct TodayReflectionWidgetView: View {
 
     private var pageBadge: some View {
         let count = snapshot?.photos.count ?? 0
-        let index = min((snapshot?.photos.count ?? 1) - 1, entry.currentPhotoIndex) + 1
+        let index = count > 0 ? (entry.currentPhotoIndex % count) + 1 : 1
         return Text("\(index)/\(max(count, 1))")
             .font(.caption2.weight(.semibold))
             .padding(.horizontal, 7)
@@ -351,17 +349,29 @@ private struct TodayReflectionWidgetView: View {
     }
 
     private var lockedInline: some View {
-        Text("Privacy Lock is on. Open app to view photos.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
+        VStack(alignment: .leading, spacing: 4) {
+            Label("Privacy Lock is on", systemImage: "lock.fill")
+                .font(.caption.weight(.semibold))
+            Text("Open the app to view photos and reflections.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, minHeight: 84, alignment: .leading)
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.thinMaterial))
     }
 
     private var notStartedInline: some View {
-        Text("No photos yet. Start your Rose, Bud, Thorn to fill this widget.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Start your Rose, Bud, Thorn")
+                .font(.caption.weight(.semibold))
+            Text("Add a photo or reflection to fill this widget.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, minHeight: 84, alignment: .leading)
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.thinMaterial))
     }
 
     private func textRow(type: EntryType, excerpt: String) -> some View {
@@ -379,7 +389,77 @@ private struct TodayReflectionWidgetView: View {
                     .foregroundStyle(excerpt.isEmpty ? .tertiary : .secondary)
                     .lineLimit(2)
             }
+            Spacer(minLength: 0)
+            Image(systemName: excerpt.isEmpty ? "plus.circle" : "checkmark.circle.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(excerpt.isEmpty ? .secondary : type.widgetTint)
         }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(type.widgetTint.opacity(0.18), lineWidth: 0.8)
+                )
+        )
+    }
+
+    private func sectionPhotoStrip(
+        tileHeight: CGFloat,
+        labelFont: Font,
+        cornerRadius: CGFloat
+    ) -> some View {
+        HStack(spacing: 8) {
+            ForEach(EntryType.allCases, id: \.self) { type in
+                Link(destination: focusURL(type)) {
+                    sectionPhotoTile(
+                        type: type,
+                        tileHeight: tileHeight,
+                        labelFont: labelFont
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.8)
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
+
+    private func sectionPhotoTile(type: EntryType, tileHeight: CGFloat, labelFont: Font) -> some View {
+        let hasContent = !displayContent.excerpt(for: type).isEmpty
+        return VStack(alignment: .center, spacing: 5) {
+            ZStack(alignment: .topTrailing) {
+                photoCard(photo: latestPhoto(for: type), cornerRadius: 10)
+                Image(systemName: hasContent ? "checkmark.circle.fill" : "circle")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(hasContent ? type.widgetTint : .secondary)
+                    .padding(4)
+            }
+            .frame(height: tileHeight)
+            .clipped()
+
+            Text(type.title)
+                .font(labelFont.weight(.semibold))
+                .foregroundStyle(type.widgetTint)
+                .lineLimit(1)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func latestPhoto(for type: EntryType) -> WidgetTodaySnapshotPhoto? {
+        snapshot?.photos.first(where: { $0.type == type })
     }
 
     private func photoCard(photo: WidgetTodaySnapshotPhoto?, cornerRadius: CGFloat) -> some View {
@@ -398,7 +478,6 @@ private struct TodayReflectionWidgetView: View {
                     }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
     }
 
@@ -442,11 +521,11 @@ private extension EntryType {
     var widgetTint: Color {
         switch self {
         case .rose:
-            return Color(red: 0.84, green: 0.34, blue: 0.44)
+            return Color(red: 0.95, green: 0.30, blue: 0.72)
         case .bud:
-            return Color(red: 0.33, green: 0.64, blue: 0.42)
+            return Color(red: 0.24, green: 0.80, blue: 0.49)
         case .thorn:
-            return Color(red: 0.52, green: 0.39, blue: 0.34)
+            return Color(red: 0.40, green: 0.34, blue: 0.86)
         }
     }
 
