@@ -72,6 +72,28 @@ final class AppFeaturesTests: XCTestCase {
         XCTAssertEqual(request?.source, "widget")
     }
 
+    func testCaptureLaunchRequestParserIgnoresFocusOnlyDeepLink() {
+        let url = URL(string: "rosebudthorn://today?source=widget&focus=bud")!
+        let request = RootAppView.captureLaunchRequest(from: url)
+
+        XCTAssertNil(request)
+    }
+
+    func testCaptureFocusLaunchRequestParserParsesFocusDeepLink() {
+        let url = URL(string: "rosebudthorn://today?source=widget&focus=thorn")!
+        let request = RootAppView.captureFocusLaunchRequest(from: url)
+
+        XCTAssertEqual(request?.type, .thorn)
+        XCTAssertEqual(request?.source, "widget")
+    }
+
+    func testCaptureFocusLaunchRequestParserRejectsUnknownFocus() {
+        let url = URL(string: "rosebudthorn://journal?source=summaries&focus=resurfacing")!
+        let request = RootAppView.captureFocusLaunchRequest(from: url)
+
+        XCTAssertNil(request)
+    }
+
     func testSummaryLaunchRequestParserParsesWeeklySummaryDeepLink() {
         let url = URL(string: "rosebudthorn://summary?period=week&action=open-current&source=intent")!
         let request = RootAppView.summaryLaunchRequest(from: url)
@@ -294,6 +316,26 @@ final class AppFeaturesTests: XCTestCase {
         let daily = await store.dayCount(for: .completionRingViewed, dayKey: dayKey)
         XCTAssertEqual(total, 1)
         XCTAssertEqual(daily, 1)
+    }
+
+    func testLocalAnalyticsStoreRecordsWidgetEvents() async {
+        let defaults = UserDefaults(suiteName: "LocalAnalyticsStoreTests.\(UUID().uuidString)")!
+        let dayCalculator = DayKeyCalculator()
+        let store = LocalAnalyticsStore(defaults: defaults, dayCalculator: dayCalculator)
+        let timeZone = TimeZone(identifier: "America/New_York")!
+        let date = Date(timeIntervalSince1970: 1_774_380_400) // 2026-03-19T10:00:00Z
+        let dayKey = dayCalculator.dayKey(for: date, timeZone: timeZone)
+
+        await store.record(.widgetOpened, at: date, timeZone: timeZone)
+        await store.record(.widgetSectionFocused, at: date, timeZone: timeZone)
+
+        let openedCount = await store.totalCount(for: .widgetOpened)
+        let focusedCount = await store.totalCount(for: .widgetSectionFocused)
+        let focusedDayCount = await store.dayCount(for: .widgetSectionFocused, dayKey: dayKey)
+
+        XCTAssertEqual(openedCount, 1)
+        XCTAssertEqual(focusedCount, 1)
+        XCTAssertEqual(focusedDayCount, 1)
     }
 
     func testTodayViewModelRecordsDailyCompletionOncePerDay() async throws {

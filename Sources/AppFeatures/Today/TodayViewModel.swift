@@ -2,9 +2,6 @@ import Foundation
 import Observation
 import CoreModels
 import CoreDate
-#if canImport(WidgetKit)
-import WidgetKit
-#endif
 
 @MainActor
 @Observable
@@ -51,6 +48,7 @@ public final class TodayViewModel {
             refreshPrompts()
             await refreshDayShareState()
             try await refreshCompletionSummary()
+            refreshWidgets()
             await environment.analyticsStore.record(.todayScreenOpened)
             if flags.streaksEnabled {
                 _ = await environment.analyticsStore.recordOncePerDay(.completionRingViewed, dayKey: dayKey)
@@ -415,14 +413,11 @@ public final class TodayViewModel {
     }
 
     private func refreshWidgets() {
-        let defaults = UserDefaults.standard
-        defaults.set(completionSummary.isTodayComplete, forKey: "widget.today.complete")
-
-        #if canImport(WidgetKit)
-        if featureFlags.widgetsEnabled {
-            WidgetKit.WidgetCenter.shared.reloadAllTimelines()
-        }
-        #endif
+        WidgetSnapshotSync.syncTodayEntry(
+            entry,
+            dayDirectoryURL: environment.dayDirectoryURL(for: entry.dayKey),
+            widgetsEnabled: featureFlags.widgetsEnabled
+        )
     }
 
     private func refreshEngagementHub() async throws {

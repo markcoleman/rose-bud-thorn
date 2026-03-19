@@ -12,6 +12,7 @@ import PhotosUI
 public struct JournalView: View {
     @State private var viewModel: JournalViewModel
     @Binding private var captureLaunchRequest: CaptureLaunchRequest?
+    @Binding private var captureFocusLaunchRequest: CaptureFocusLaunchRequest?
     private let refreshTrigger: Int
 
     @State private var importerRequest: ImportRequest?
@@ -24,6 +25,7 @@ public struct JournalView: View {
 
     @State private var navigationSelection: JournalNavigationSelection?
     @State private var showJumpToToday = false
+    @State private var expandedTypeRequest: CaptureFocusLaunchRequest?
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -33,10 +35,12 @@ public struct JournalView: View {
     public init(
         environment: AppEnvironment,
         captureLaunchRequest: Binding<CaptureLaunchRequest?> = .constant(nil),
+        captureFocusLaunchRequest: Binding<CaptureFocusLaunchRequest?> = .constant(nil),
         refreshTrigger: Int = 0
     ) {
         _viewModel = State(initialValue: JournalViewModel(environment: environment))
         _captureLaunchRequest = captureLaunchRequest
+        _captureFocusLaunchRequest = captureFocusLaunchRequest
         self.refreshTrigger = refreshTrigger
     }
 
@@ -76,6 +80,10 @@ public struct JournalView: View {
                             },
                             onOpenCompletedDay: {
                                 navigationSelection = JournalNavigationSelection(dayKey: bindable.todayDayKey)
+                            },
+                            focusRequest: expandedTypeRequest,
+                            onConsumeFocusRequest: {
+                                expandedTypeRequest = nil
                             },
                             photoURL: { ref in
                                 bindable.photoURL(for: ref, day: bindable.todayDayKey)
@@ -170,9 +178,13 @@ public struct JournalView: View {
             .task {
                 await bindable.load()
                 consumeLaunchRequestIfNeeded(bindable)
+                consumeFocusLaunchRequestIfNeeded()
             }
             .onChange(of: captureLaunchRequest?.id) { _, _ in
                 consumeLaunchRequestIfNeeded(bindable)
+            }
+            .onChange(of: captureFocusLaunchRequest?.id) { _, _ in
+                consumeFocusLaunchRequestIfNeeded()
             }
             .onChange(of: refreshTrigger) { _, _ in
                 Task {
@@ -288,6 +300,12 @@ public struct JournalView: View {
         guard let request = captureLaunchRequest else { return }
         presentCapture(for: request.type, dayKey: model.todayDayKey)
         captureLaunchRequest = nil
+    }
+
+    private func consumeFocusLaunchRequestIfNeeded() {
+        guard let request = captureFocusLaunchRequest else { return }
+        expandedTypeRequest = request
+        captureFocusLaunchRequest = nil
     }
 
     private func presentCapture(for type: EntryType, dayKey: LocalDayKey) {

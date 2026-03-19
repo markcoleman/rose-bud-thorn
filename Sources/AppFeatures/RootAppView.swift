@@ -11,6 +11,7 @@ public struct RootAppView: View {
     @State private var isSettingsPresented = false
     @State private var isFloatingChromeHidden = false
     @State private var captureLaunchRequest: CaptureLaunchRequest?
+    @State private var captureFocusLaunchRequest: CaptureFocusLaunchRequest?
     @State private var journalRefreshToken = 0
     @State private var summaryLaunchRequest: SummaryLaunchRequest?
     @State private var onboardingPresentation: OnboardingPresentationSource?
@@ -61,6 +62,9 @@ public struct RootAppView: View {
             } else {
                 consumePendingIntentLaunchIfNeeded()
                 presentFirstLaunchOnboardingIfNeeded()
+                Task {
+                    await refreshWidgetSnapshotFromStore()
+                }
             }
         }
         .onOpenURL(perform: handleDeepLink)
@@ -69,6 +73,7 @@ public struct RootAppView: View {
             await seedJournalUITestDataIfNeeded()
             consumePendingIntentLaunchIfNeeded()
             presentFirstLaunchOnboardingIfNeeded()
+            await refreshWidgetSnapshotFromStore()
         }
     }
 
@@ -96,6 +101,7 @@ public struct RootAppView: View {
                 JournalView(
                     environment: environment,
                     captureLaunchRequest: $captureLaunchRequest,
+                    captureFocusLaunchRequest: $captureFocusLaunchRequest,
                     refreshTrigger: journalRefreshToken
                 )
             }
@@ -178,6 +184,7 @@ public struct RootAppView: View {
             JournalView(
                 environment: environment,
                 captureLaunchRequest: $captureLaunchRequest,
+                captureFocusLaunchRequest: $captureFocusLaunchRequest,
                 refreshTrigger: journalRefreshToken
             )
         case .insights:
@@ -221,6 +228,7 @@ public struct RootAppView: View {
 
         let route = (url.host?.lowercased() ?? url.pathComponents.dropFirst().first?.lowercased()) ?? ""
         let source = Self.source(from: url)
+        recordWidgetDeepLinkAnalytics(url: url, route: route, source: source)
         switch route {
         case "capture", "today", "browse", "search", "journal":
             selectSection(.journal)
@@ -228,6 +236,7 @@ public struct RootAppView: View {
                 journalRefreshToken &+= 1
             }
             captureLaunchRequest = Self.captureLaunchRequest(from: url)
+            captureFocusLaunchRequest = Self.captureFocusLaunchRequest(from: url)
         case "summaries", "summary", "insights", "engagement", "on-this-day", "resurfacing":
             selectSection(.insights)
             summaryLaunchRequest = Self.summaryLaunchRequest(from: url)
@@ -265,6 +274,14 @@ public struct RootAppView: View {
         }
 
         return CaptureLaunchRequest(type: type, source: source(from: url))
+    }
+
+    static func captureFocusLaunchRequest(from url: URL) -> CaptureFocusLaunchRequest? {
+        guard let type = focusType(from: url) else {
+            return nil
+        }
+
+        return CaptureFocusLaunchRequest(type: type, source: source(from: url))
     }
 
     static func summaryLaunchRequest(from url: URL) -> SummaryLaunchRequest? {
@@ -310,11 +327,50 @@ public struct RootAppView: View {
             .value
     }
 
+    private static func focusType(from url: URL) -> EntryType? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+
+        let focusValue = components.queryItems?
+            .first(where: { $0.name.lowercased() == "focus" })?
+            .value?
+            .lowercased()
+
+        guard let focusValue else { return nil }
+        return EntryType(rawValue: focusValue)
+    }
+
     private func consumePendingIntentLaunchIfNeeded() {
         guard let pendingURL = IntentLaunchStore.consumePendingURL() else {
             return
         }
         handleDeepLink(pendingURL)
+    }
+
+    private func refreshWidgetSnapshotFromStore() async {
+        let flags = environment.featureFlagStore.load(defaults: environment.featureFlags)
+        let dayKey = environment.dayCalculator.dayKey(for: .now, timeZone: .current)
+        guard let entry = try? await environment.entryStore.load(day: dayKey) else {
+            return
+        }
+        WidgetSnapshotSync.syncTodayEntry(
+            entry,
+            dayDirectoryURL: environment.dayDirectoryURL(for: dayKey),
+            widgetsEnabled: flags.widgetsEnabled
+        )
+    }
+
+    private func recordWidgetDeepLinkAnalytics(url: URL, route: String, source: String?) {
+        guard source == "widget" else { return }
+        guard ["capture", "today", "browse", "search", "journal"].contains(route) else { return }
+
+        Task {
+            await environment.analyticsStore.record(.widgetOpened)
+            if Self.focusType(from: url) != nil {
+                await environment.analyticsStore.record(.widgetSectionFocused)
+            }
+        }
     }
 
     private func applyLaunchOverridesIfNeeded() {
