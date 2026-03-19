@@ -47,16 +47,17 @@ enum WidgetSnapshotSync {
     }
 
     private static func sharedDefaults() -> UserDefaults {
-        if let testDefaults = isolatedTestDefaults {
+        if let suiteName = isolatedTestSuiteName,
+           let testDefaults = UserDefaults(suiteName: suiteName) {
             return testDefaults
         }
 
         return UserDefaults(suiteName: WidgetSharedDefaults.appGroupIdentifier) ?? .standard
     }
 
-    private static let isolatedTestDefaults: UserDefaults? = {
+    private static let isolatedTestSuiteName: String? = {
         guard isTestProcess else { return nil }
-        return UserDefaults(suiteName: "WidgetSnapshotSync.Tests.\(UUID().uuidString)")
+        return "WidgetSnapshotSync.Tests.\(ProcessInfo.processInfo.processIdentifier)"
     }()
 
     private static var isTestProcess: Bool {
