@@ -11,6 +11,8 @@ public struct JournalTodayCardView: View {
     public let onRemovePhoto: @MainActor @Sendable (EntryType, PhotoRef) -> Void
     public let onRemoveVideo: @MainActor @Sendable (EntryType, VideoRef) -> Void
     public let onOpenCompletedDay: @MainActor @Sendable () -> Void
+    public let focusRequest: CaptureFocusLaunchRequest?
+    public let onConsumeFocusRequest: @MainActor @Sendable () -> Void
     public let photoURL: @MainActor @Sendable (PhotoRef) -> URL
     public let videoURL: @MainActor @Sendable (VideoRef) -> URL
 
@@ -26,6 +28,8 @@ public struct JournalTodayCardView: View {
         onRemovePhoto: @escaping @MainActor @Sendable (EntryType, PhotoRef) -> Void,
         onRemoveVideo: @escaping @MainActor @Sendable (EntryType, VideoRef) -> Void,
         onOpenCompletedDay: @escaping @MainActor @Sendable () -> Void,
+        focusRequest: CaptureFocusLaunchRequest? = nil,
+        onConsumeFocusRequest: @escaping @MainActor @Sendable () -> Void = {},
         photoURL: @escaping @MainActor @Sendable (PhotoRef) -> URL,
         videoURL: @escaping @MainActor @Sendable (VideoRef) -> URL
     ) {
@@ -38,6 +42,8 @@ public struct JournalTodayCardView: View {
         self.onRemovePhoto = onRemovePhoto
         self.onRemoveVideo = onRemoveVideo
         self.onOpenCompletedDay = onOpenCompletedDay
+        self.focusRequest = focusRequest
+        self.onConsumeFocusRequest = onConsumeFocusRequest
         self.photoURL = photoURL
         self.videoURL = videoURL
     }
@@ -53,6 +59,12 @@ public struct JournalTodayCardView: View {
             }
         }
         .animation(MotionTokens.smooth, value: entry.isCompleteForDailyCapture)
+        .task {
+            consumeFocusRequestIfNeeded()
+        }
+        .onChange(of: focusRequest?.id) { _, _ in
+            consumeFocusRequestIfNeeded()
+        }
     }
 
     private var composer: some View {
@@ -211,6 +223,12 @@ public struct JournalTodayCardView: View {
         case .thorn:
             return DesignTokens.thorn
         }
+    }
+
+    private func consumeFocusRequestIfNeeded() {
+        guard let focusRequest else { return }
+        expandedTypes.insert(focusRequest.type)
+        onConsumeFocusRequest()
     }
 }
 

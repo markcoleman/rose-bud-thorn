@@ -29,6 +29,8 @@ public enum LocalAnalyticsEvent: String, CaseIterable, Codable, Sendable {
     case dayShareInitiated = "day_share_initiated"
     case dayShareSent = "day_share_sent"
     case dayShareFailed = "day_share_failed"
+    case widgetOpened = "widget_opened"
+    case widgetSectionFocused = "widget_section_focused"
 }
 
 public struct LocalAnalyticsSnapshot: Codable, Equatable, Sendable {

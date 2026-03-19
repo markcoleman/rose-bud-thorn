@@ -10,6 +10,7 @@ public final class PrivacyLockManager {
     public var isEnabled: Bool {
         didSet {
             UserDefaults.standard.set(isEnabled, forKey: Self.enabledDefaultsKey)
+            WidgetSnapshotSync.mirrorPrivacyLockEnabled(isEnabled, widgetsEnabled: widgetsEnabled)
             if !isEnabled {
                 isLocked = false
             }
@@ -23,6 +24,7 @@ public final class PrivacyLockManager {
         let enabled = UserDefaults.standard.bool(forKey: Self.enabledDefaultsKey)
         self.isEnabled = enabled
         self.isLocked = enabled
+        WidgetSnapshotSync.mirrorPrivacyLockEnabled(enabled, widgetsEnabled: widgetsEnabled)
     }
 
     public func lockIfNeeded() {
@@ -56,5 +58,11 @@ public final class PrivacyLockManager {
         } catch {
             lastError = error.localizedDescription
         }
+    }
+
+    private var widgetsEnabled: Bool {
+        FeatureFlagStore(defaults: .standard)
+            .load(defaults: AppFeatureFlags())
+            .widgetsEnabled
     }
 }

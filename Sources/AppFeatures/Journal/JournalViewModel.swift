@@ -217,6 +217,11 @@ public final class JournalViewModel {
             try await dataSource.saveToday(todayEntry)
             lastSavedAt = nowProvider()
             errorMessage = nil
+            WidgetSnapshotSync.syncTodayEntry(
+                todayEntry,
+                dayDirectoryURL: environment.dayDirectoryURL(for: todayEntry.dayKey),
+                widgetsEnabled: featureFlags.widgetsEnabled
+            )
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -247,6 +252,11 @@ public final class JournalViewModel {
             guard isCurrent(refreshID) else { return }
 
             todayEntry = loadedToday
+            WidgetSnapshotSync.syncTodayEntry(
+                todayEntry,
+                dayDirectoryURL: environment.dayDirectoryURL(for: todayEntry.dayKey),
+                widgetsEnabled: featureFlags.widgetsEnabled
+            )
             sourceDayKeys = try await dataSource.allPastDayKeys(excluding: loadedToday.dayKey)
 
             guard isCurrent(refreshID) else { return }
@@ -305,5 +315,9 @@ public final class JournalViewModel {
 
     private func isCurrent(_ refreshID: UUID) -> Bool {
         activeRefreshID == refreshID
+    }
+
+    private var featureFlags: AppFeatureFlags {
+        environment.featureFlagStore.load(defaults: environment.featureFlags)
     }
 }

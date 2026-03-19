@@ -12,6 +12,7 @@
 		A100000A00000000000000001 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A100001A00000000000000001 /* LaunchScreen.storyboard */; };
 		A10000090000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A10000190000000000000001 /* PrivacyInfo.xcprivacy */; };
 		A10000030000000000000001 /* AppFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = A10000310000000000000001 /* AppFeatures */; };
+		A10000040000000000000001 /* CoreModels in Frameworks */ = {isa = PBXBuildFile; productRef = A10000320000000000000001 /* CoreModels */; };
 		A10000070000000000000001 /* RoseBudThornWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000150000000000000001 /* RoseBudThornWidgets.swift */; };
 		A10000080000000000000001 /* RoseBudThorn Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A10000170000000000000001 /* RoseBudThorn Widgets.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B10000010000000000000001 /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000110000000000000001 /* AppGroupConstants.swift */; };
@@ -108,6 +109,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000040000000000000001 /* CoreModels in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -238,6 +240,7 @@
 			);
 			name = "RoseBudThorn Widgets";
 			packageProductDependencies = (
+				A10000320000000000000001 /* CoreModels */,
 			);
 			productName = "RoseBudThorn Widgets";
 			productReference = A10000170000000000000001 /* RoseBudThorn Widgets.appex */;
@@ -598,6 +601,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = App/Widgets/RoseBudThornWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = CUUXST9H3K;
@@ -627,6 +631,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = App/Widgets/RoseBudThornWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = CUUXST9H3K;
@@ -814,6 +819,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A10000300000000000000001 /* XCLocalSwiftPackageReference "" */;
 			productName = AppFeatures;
+		};
+		A10000320000000000000001 /* CoreModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000300000000000000001 /* XCLocalSwiftPackageReference "" */;
+			productName = CoreModels;
 		};
 		B10000310000000000000001 /* CoreModels */ = {
 			isa = XCSwiftPackageProductDependency;
