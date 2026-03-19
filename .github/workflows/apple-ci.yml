@@ -50,7 +50,7 @@ jobs:
 
       - name: Filter changed files
         id: filter
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         with:
           filters: |
             package:
@@ -83,7 +83,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@c51a66b42363123fa82a6cfe02c60af4281dab93 # v1
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1
         with:
           xcode-version: latest-stable
 
@@ -131,7 +131,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@c51a66b42363123fa82a6cfe02c60af4281dab93 # v1
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1
         with:
           xcode-version: latest-stable
 
@@ -157,7 +157,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@c51a66b42363123fa82a6cfe02c60af4281dab93 # v1
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1
         with:
           xcode-version: latest-stable
 
