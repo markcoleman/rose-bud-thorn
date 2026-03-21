@@ -14,14 +14,15 @@
 
 ## Primary Commands
 ```bash
-swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
-swift test --parallel -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+scripts/dev/package-build.sh
+scripts/dev/package-test.sh
 ```
 
 Representative app checks:
 ```bash
-xcodebuild -project "RoseBudThorn.xcodeproj" -scheme "RoseBudThorn Universal" -destination "generic/platform=iOS Simulator" -configuration Debug CODE_SIGNING_ALLOWED=NO build
-xcodebuild -project "RoseBudThorn.xcodeproj" -scheme "RoseBudThorn Universal" -destination "platform=macOS,variant=Mac Catalyst" -configuration Debug CODE_SIGNING_ALLOWED=NO build
+scripts/dev/app-build-ios.sh
+scripts/dev/app-build-maccatalyst.sh
+scripts/dev/ui-smoke.sh
 ```
 
 ## Regression List

@@ -10,8 +10,8 @@ Xcode Cloud helper scripts:
 - `ci_scripts/ci_pre_xcodebuild.sh`
 
 Script behavior:
-- Resolve Swift package dependencies.
-- Run a pre-archive `swift test --parallel` quality gate.
+- Resolve Swift package dependencies via `scripts/dev/bootstrap.sh`.
+- Run a pre-archive package test gate via `scripts/dev/package-test.sh`.
 - Exit safely when not running in Xcode Cloud (`CI_XCODE_CLOUD != TRUE`).
 
 ## Bundle IDs

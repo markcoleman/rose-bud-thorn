@@ -56,39 +56,30 @@ Requirements:
 - Xcode 26+
 - iOS 26 / iPadOS 26 / macOS 26 deployment targets
 
-Swift package checks:
+Canonical developer entrypoints:
 ```bash
-swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
-swift test --parallel -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+scripts/dev/help.sh
+scripts/dev/doctor.sh
+scripts/dev/bootstrap.sh
 ```
 
-Xcode app build checks:
+Package checks:
 ```bash
-xcodebuild \
-  -project "RoseBudThorn.xcodeproj" \
-  -scheme "RoseBudThorn Universal" \
-  -destination "generic/platform=iOS Simulator" \
-  -configuration Debug \
-  CODE_SIGNING_ALLOWED=NO \
-  build
-
-xcodebuild \
-  -project "RoseBudThorn.xcodeproj" \
-  -scheme "RoseBudThorn Universal" \
-  -destination "platform=macOS,variant=Mac Catalyst" \
-  -configuration Debug \
-  CODE_SIGNING_ALLOWED=NO \
-  build
+scripts/dev/package-build.sh
+scripts/dev/package-test.sh
 ```
 
-UI smoke test example:
+App build checks:
 ```bash
-xcodebuild \
-  -project "RoseBudThorn.xcodeproj" \
-  -scheme "RoseBudThorn Universal" \
-  -destination "platform=iOS Simulator,name=iPhone 16" \
-  -only-testing:RoseBudThornUITests/RoseBudThornUITests/testFirstLaunchShowsOnboardingThenSkipOpensToday \
-  test
+scripts/dev/app-build-ios.sh
+scripts/dev/app-build-maccatalyst.sh
+```
+
+Preflight and UI checks:
+```bash
+scripts/dev/preflight.sh --package-only
+scripts/dev/preflight.sh
+scripts/dev/ui-smoke.sh
 ```
 
 ## Repository Structure
