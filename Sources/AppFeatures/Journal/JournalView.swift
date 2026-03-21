@@ -14,6 +14,7 @@ public struct JournalView: View {
     @Binding private var captureLaunchRequest: CaptureLaunchRequest?
     @Binding private var captureFocusLaunchRequest: CaptureFocusLaunchRequest?
     private let refreshTrigger: Int
+    private let wrapsInNavigationStack: Bool
 
     @State private var importerRequest: ImportRequest?
     #if os(iOS) && !targetEnvironment(macCatalyst)
@@ -36,18 +37,20 @@ public struct JournalView: View {
         environment: AppEnvironment,
         captureLaunchRequest: Binding<CaptureLaunchRequest?> = .constant(nil),
         captureFocusLaunchRequest: Binding<CaptureFocusLaunchRequest?> = .constant(nil),
-        refreshTrigger: Int = 0
+        refreshTrigger: Int = 0,
+        wrapsInNavigationStack: Bool = true
     ) {
         _viewModel = State(initialValue: JournalViewModel(environment: environment))
         _captureLaunchRequest = captureLaunchRequest
         _captureFocusLaunchRequest = captureFocusLaunchRequest
         self.refreshTrigger = refreshTrigger
+        self.wrapsInNavigationStack = wrapsInNavigationStack
     }
 
     public var body: some View {
         @Bindable var bindable = viewModel
 
-        NavigationStack {
+        navigationContainer {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 10) {
@@ -170,7 +173,7 @@ public struct JournalView: View {
                 }
             }
             #if !os(macOS)
-            .toolbar(.hidden, for: .navigationBar)
+            .toolbar(wrapsInNavigationStack ? .hidden : .visible, for: .navigationBar)
             #endif
             .navigationDestination(item: $navigationSelection) { destination in
                 DayDetailView(environment: bindable.environment, dayKey: destination.dayKey)
@@ -258,6 +261,19 @@ public struct JournalView: View {
                 }
             }
             #endif
+        }
+    }
+
+    @ViewBuilder
+    private func navigationContainer<Content: View>(
+        @ViewBuilder _ content: () -> Content
+    ) -> some View {
+        if wrapsInNavigationStack {
+            NavigationStack {
+                content()
+            }
+        } else {
+            content()
         }
     }
 

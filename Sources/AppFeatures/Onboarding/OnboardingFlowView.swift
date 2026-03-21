@@ -28,29 +28,39 @@ public struct OnboardingFlowView: View {
     }
 
     public var body: some View {
-        ZStack {
-            if slides.isEmpty {
-                Color.clear
-                    .ignoresSafeArea()
-            } else {
-                slideBackground(currentSlide)
-                    .id(currentSlide.id)
-                    .transition(slideTransition)
-                    .animation(
-                        reduceMotion ? .easeInOut(duration: 0.14) : MotionTokens.tabSwitch,
-                        value: controller.selectedIndex
-                    )
-                    .ignoresSafeArea()
+        GeometryReader { geometry in
+            ZStack {
+                if slides.isEmpty {
+                    Color.clear
+                        .ignoresSafeArea()
+                } else {
+                    slideBackground(currentSlide)
+                        .id(currentSlide.id)
+                        .transition(slideTransition)
+                        .animation(
+                            reduceMotion ? .easeInOut(duration: 0.14) : MotionTokens.tabSwitch,
+                            value: controller.selectedIndex
+                        )
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                        .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    topBar
-                    Spacer(minLength: 0)
-                    bottomPanel
+                    VStack(spacing: 0) {
+                        topBar
+                        Spacer(minLength: 0)
+                        bottomPanel
+                    }
+                    .frame(
+                        maxWidth: contentContainerWidth(for: geometry.size.width),
+                        maxHeight: .infinity,
+                        alignment: .top
+                    )
+                    .padding(.horizontal, contentHorizontalPadding(for: geometry.size.width))
+                    .padding(.top, contentTopPadding(for: geometry.size.width))
+                    .padding(.bottom, contentBottomPadding(for: geometry.size.width))
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
-                .padding(.bottom, 22)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .contentShape(Rectangle())
         .gesture(swipeGesture)
@@ -196,6 +206,36 @@ public struct OnboardingFlowView: View {
 
     private var actionTitle: String {
         controller.isOnLastSlide ? "Start Reflecting" : "Next"
+    }
+
+    private func contentContainerWidth(for width: CGFloat) -> CGFloat {
+        switch width {
+        case ..<760:
+            return .infinity
+        case ..<1024:
+            return 620
+        default:
+            return 700
+        }
+    }
+
+    private func contentHorizontalPadding(for width: CGFloat) -> CGFloat {
+        switch width {
+        case ..<500:
+            return 20
+        case ..<900:
+            return 24
+        default:
+            return 32
+        }
+    }
+
+    private func contentTopPadding(for width: CGFloat) -> CGFloat {
+        width >= 900 ? 18 : 12
+    }
+
+    private func contentBottomPadding(for width: CGFloat) -> CGFloat {
+        width >= 900 ? 28 : 22
     }
 
     private func slideBackground(_ slide: OnboardingSlide) -> some View {
