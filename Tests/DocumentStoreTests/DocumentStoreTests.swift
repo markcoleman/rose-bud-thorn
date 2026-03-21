@@ -279,6 +279,55 @@ final class DocumentStoreTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: copiedSummaryMarkdown.path))
     }
 
+    func testMergeStoreContentsMergesExistingEntryJSONAndPreservesNewAttachmentReference() throws {
+        let source = try makeTempRoot()
+        let destination = try makeTempRoot()
+        let dayKey = LocalDayKey(isoDate: "2026-03-12", timeZoneID: "America/Los_Angeles")
+        let baseDate = Date(timeIntervalSince1970: 1_773_331_200)
+        let newerDate = Date(timeIntervalSince1970: 1_773_334_800)
+
+        let existingPhoto = PhotoRef(
+            id: UUID(),
+            relativePath: "rose/attachments/existing.jpg",
+            createdAt: baseDate
+        )
+        let sharedPhoto = PhotoRef(
+            id: UUID(),
+            relativePath: "rose/attachments/shared.jpg",
+            createdAt: newerDate
+        )
+
+        var destinationEntry = makeEntry(day: dayKey.isoDate, updatedAt: baseDate)
+        destinationEntry.roseItem.photos = [existingPhoto]
+        destinationEntry.roseItem.updatedAt = baseDate
+        destinationEntry.updatedAt = baseDate
+
+        var sourceEntry = makeEntry(day: dayKey.isoDate, updatedAt: newerDate)
+        sourceEntry.roseItem.photos = [existingPhoto, sharedPhoto]
+        sourceEntry.roseItem.updatedAt = newerDate
+        sourceEntry.updatedAt = newerDate
+
+        let sourceEntryURL = source.appendingPathComponent("Entries/2026/03/12/entry.json")
+        let destinationEntryURL = destination.appendingPathComponent("Entries/2026/03/12/entry.json")
+        try FileManager.default.createDirectory(at: sourceEntryURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: destinationEntryURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try writeEntry(sourceEntry, to: sourceEntryURL)
+        try writeEntry(destinationEntry, to: destinationEntryURL)
+
+        let sourceAttachmentURL = source.appendingPathComponent("Entries/2026/03/12/rose/attachments/shared.jpg")
+        try FileManager.default.createDirectory(at: sourceAttachmentURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data([0xFF, 0xD8, 0xFF, 0xD9]).write(to: sourceAttachmentURL)
+
+        try StoreLocationMigrator.mergeStoreContents(from: source, to: destination)
+
+        let mergedEntry = try decodeEntry(at: destinationEntryURL)
+        XCTAssertEqual(mergedEntry.roseItem.photos.count, 2)
+        XCTAssertTrue(mergedEntry.roseItem.photos.contains(where: { $0.id == sharedPhoto.id }))
+
+        let copiedAttachmentURL = destination.appendingPathComponent("Entries/2026/03/12/rose/attachments/shared.jpg")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: copiedAttachmentURL.path))
+    }
+
     func testStoreLocationMigratorHasCanonicalDataDetectsPayloadFiles() throws {
         let root = try makeTempRoot()
         XCTAssertFalse(StoreLocationMigrator.hasCanonicalData(at: root))
@@ -472,5 +521,19 @@ final class DocumentStoreTests: XCTestCase {
         ]
 
         return try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
+    }
+
+    private func writeEntry(_ entry: EntryDay, to url: URL) throws {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        try encoder.encode(entry).write(to: url)
+    }
+
+    private func decodeEntry(at url: URL) throws -> EntryDay {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let data = try Data(contentsOf: url)
+        return try decoder.decode(EntryDay.self, from: data)
     }
 }
