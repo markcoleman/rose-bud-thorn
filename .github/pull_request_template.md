@@ -15,11 +15,11 @@
 | `scripts/dev/app-build-maccatalyst.sh` |  |  |
 
 ## Required Check Mapping
-- [ ] `package-test` check remains valid
-- [ ] `build-app (iOS)` check remains valid
-- [ ] `build-app (Mac Catalyst)` check remains valid
-- [ ] `ui-smoke` check remains valid
-- [ ] `dependency-review` check remains valid
+- [ ] `Review dependency diffs` check remains valid (required branch-protection check)
+- [ ] `Swift package build + test` check name and lane behavior remain valid
+- [ ] `Build app (iOS)` check name and lane behavior remain valid
+- [ ] `Build app (Mac Catalyst)` check name and lane behavior remain valid
+- [ ] `UI smoke test` check name and lane behavior remain valid
 
 ## OS26 Compatibility Checklist
 - [ ] iOS/macOS deployment targets and APIs are OS26-compatible

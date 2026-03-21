@@ -35,9 +35,13 @@
 - Update docs when command surfaces, workflows, or contribution policy change.
 
 ## CI Check Names
-The branch protection required-check names should match these workflow job names:
-- `package-test`
-- `build-app (iOS)`
-- `build-app (Mac Catalyst)`
-- `ui-smoke`
-- `dependency-review`
+Use GitHub check context names from workflow job `name:` values:
+- `Swift package build + test`
+- `Build app (iOS)`
+- `Build app (Mac Catalyst)`
+- `UI smoke test`
+- `Review dependency diffs`
+
+Branch-protection requirement policy:
+- While Apple CI remains path-filtered in `.github/workflows/apple-ci.yml`, do not mark Apple CI checks as globally required.
+- Keep only always-on checks (currently `Review dependency diffs`) in the required-check list.
