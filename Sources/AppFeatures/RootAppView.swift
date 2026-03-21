@@ -22,10 +22,15 @@ public struct RootAppView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     private let environment: AppEnvironment
+    private let onWillBecomeActive: (() -> Void)?
     @State private var lockManager = PrivacyLockManager()
 
-    public init(environment: AppEnvironment) {
+    public init(
+        environment: AppEnvironment,
+        onWillBecomeActive: (() -> Void)? = nil
+    ) {
         self.environment = environment
+        self.onWillBecomeActive = onWillBecomeActive
     }
 
     public var body: some View {
@@ -60,6 +65,8 @@ public struct RootAppView: View {
             if newValue != .active {
                 lockManager.lockIfNeeded()
             } else {
+                onWillBecomeActive?()
+                journalRefreshToken &+= 1
                 consumePendingIntentLaunchIfNeeded()
                 presentFirstLaunchOnboardingIfNeeded()
                 Task {
@@ -71,6 +78,8 @@ public struct RootAppView: View {
         .task {
             applyLaunchOverridesIfNeeded()
             await seedJournalUITestDataIfNeeded()
+            onWillBecomeActive?()
+            journalRefreshToken &+= 1
             consumePendingIntentLaunchIfNeeded()
             presentFirstLaunchOnboardingIfNeeded()
             await refreshWidgetSnapshotFromStore()

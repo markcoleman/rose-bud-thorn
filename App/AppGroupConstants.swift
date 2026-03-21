@@ -2,5 +2,6 @@ import Foundation
 
 enum AppGroupConstants {
     static let appGroupIdentifier = "group.com.rosebudthorn.ios.shared"
-    static let migrationDefaultsKey = "document-store.app-group-migration.v1"
+    static let iCloudContainerIdentifier = "iCloud.com.rosebudthorn.ios"
+    static let iCloudMigrationDefaultsKey = "document-store.icloud-migration.v1"
 }
