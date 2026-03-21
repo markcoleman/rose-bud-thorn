@@ -6,10 +6,12 @@ final class RoseBudThornUITests: XCTestCase {
     }
 
     func testFirstLaunchShowsOnboardingThenSkipOpensToday() {
-        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 4)
+        let app = launchAppForUITests(resetOnboarding: true, onboardingCountdownSeconds: 20)
 
-        XCTAssertTrue(app.buttons["onboarding-skip"].waitForExistence(timeout: 4))
-        app.buttons["onboarding-skip"].tap()
+        let skipButton = app.buttons["onboarding-skip"]
+        XCTAssertTrue(skipButton.waitForExistence(timeout: 4))
+        XCTAssertTrue(skipButton.isHittable)
+        skipButton.tap()
 
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 6))
     }

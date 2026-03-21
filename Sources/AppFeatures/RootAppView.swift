@@ -175,7 +175,6 @@ public struct RootAppView: View {
                 Label(section.title, systemImage: section.systemImage)
                     .tag(section)
             }
-            .navigationTitle("Rose, Bud, Thorn")
             .safeAreaInset(edge: .top) {
                 BrandMarkView()
                     .padding(.horizontal)
@@ -194,7 +193,8 @@ public struct RootAppView: View {
                 environment: environment,
                 captureLaunchRequest: $captureLaunchRequest,
                 captureFocusLaunchRequest: $captureFocusLaunchRequest,
-                refreshTrigger: journalRefreshToken
+                refreshTrigger: journalRefreshToken,
+                wrapsInNavigationStack: false
             )
         case .insights:
             SummaryListView(
@@ -202,7 +202,8 @@ public struct RootAppView: View {
                 summaryLaunchRequest: $summaryLaunchRequest,
                 onOpenSettings: {
                     isSettingsPresented = true
-                }
+                },
+                wrapsInNavigationContainer: false
             )
         }
     }

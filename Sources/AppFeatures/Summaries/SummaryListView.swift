@@ -5,6 +5,7 @@ public struct SummaryListView: View {
     @State private var viewModel: SummaryViewModel
     @Binding private var summaryLaunchRequest: SummaryLaunchRequest?
     private let onOpenSettings: (() -> Void)?
+    private let wrapsInNavigationContainer: Bool
     @State private var isWeeklyReviewPresented = false
     @State private var compactNavigationPath: [SummaryCompactRoute] = []
     @State private var selectedMemoryDay: LocalDayKey?
@@ -14,55 +15,57 @@ public struct SummaryListView: View {
     public init(
         environment: AppEnvironment,
         summaryLaunchRequest: Binding<SummaryLaunchRequest?> = .constant(nil),
-        onOpenSettings: (() -> Void)? = nil
+        onOpenSettings: (() -> Void)? = nil,
+        wrapsInNavigationContainer: Bool = true
     ) {
         _viewModel = State(initialValue: SummaryViewModel(environment: environment))
         _summaryLaunchRequest = summaryLaunchRequest
         self.onOpenSettings = onOpenSettings
+        self.wrapsInNavigationContainer = wrapsInNavigationContainer
     }
 
     public var body: some View {
         @Bindable var bindable = viewModel
 
         Group {
-            if horizontalSizeClass == .compact {
-                NavigationStack(path: $compactNavigationPath) {
-                    compactSummaryList(bindable)
-                        .navigationTitle("Insights")
-                        .toolbar {
-                            insightsMoreToolbarItem
-                        }
-                        #if !os(macOS)
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-                        .toolbarBackground(.visible, for: .navigationBar)
-                        #endif
-                        .navigationDestination(for: SummaryCompactRoute.self) { route in
-                            switch route {
-                            case .artifact(let key):
-                                if let artifact = bindable.artifacts.first(where: { $0.key == key }) {
-                                    summaryDetail(artifact, model: bindable)
-                                } else {
-                                    ContentUnavailableView(
-                                        "No Summary",
-                                        systemImage: AppIcon.summaryDocument.systemName,
-                                        description: Text("Generate a summary to get started.")
-                                    )
-                                }
-                            case .day(let dayKey):
-                                DayDetailView(environment: bindable.environment, dayKey: dayKey)
+            if wrapsInNavigationContainer {
+                if horizontalSizeClass == .compact {
+                    NavigationStack(path: $compactNavigationPath) {
+                        compactNavigationContent(bindable)
+                    }
+                } else {
+                    NavigationSplitView {
+                        regularSummaryList(bindable)
+                            .navigationTitle("Insights")
+                            .toolbar {
+                                insightsMoreToolbarItem
                             }
-                        }
+                    } detail: {
+                        splitDetail(bindable)
+                    }
                 }
             } else {
-                NavigationSplitView {
-                    regularSummaryList(bindable)
-                        .navigationTitle("Insights")
-                        .toolbar {
-                            insightsMoreToolbarItem
-                        }
-                } detail: {
-                    splitDetail(bindable)
+                if horizontalSizeClass == .compact {
+                    compactNavigationContent(bindable)
+                } else {
+                    HStack(spacing: 0) {
+                        regularSummaryList(bindable)
+                            .frame(minWidth: 320, idealWidth: 360, maxWidth: 420, maxHeight: .infinity, alignment: .topLeading)
+
+                        Divider()
+
+                        splitDetail(bindable)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    }
+                    .navigationTitle("Insights")
+                    .toolbar {
+                        insightsMoreToolbarItem
+                    }
+                    #if !os(macOS)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+                    .toolbarBackground(.visible, for: .navigationBar)
+                    #endif
                 }
             }
         }
@@ -92,6 +95,36 @@ public struct SummaryListView: View {
         .onChange(of: summaryLaunchRequest?.id) { _, _ in
             consumeLaunchRequestIfNeeded(bindable)
         }
+    }
+
+    @ViewBuilder
+    private func compactNavigationContent(_ model: SummaryViewModel) -> some View {
+        compactSummaryList(model)
+            .navigationTitle("Insights")
+            .toolbar {
+                insightsMoreToolbarItem
+            }
+            #if !os(macOS)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            #endif
+            .navigationDestination(for: SummaryCompactRoute.self) { route in
+                switch route {
+                case .artifact(let key):
+                    if let artifact = model.artifacts.first(where: { $0.key == key }) {
+                        summaryDetail(artifact, model: model)
+                    } else {
+                        ContentUnavailableView(
+                            "No Summary",
+                            systemImage: AppIcon.summaryDocument.systemName,
+                            description: Text("Generate a summary to get started.")
+                        )
+                    }
+                case .day(let dayKey):
+                    DayDetailView(environment: model.environment, dayKey: dayKey)
+                }
+            }
     }
 
     @ViewBuilder
