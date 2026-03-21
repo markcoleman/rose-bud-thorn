@@ -4,8 +4,9 @@
 1. Install Xcode 26+.
 2. Clone repository.
 3. Run:
-   - `swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`
-   - `swift test --parallel -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`
+   - `scripts/dev/bootstrap.sh`
+   - `scripts/dev/doctor.sh`
+   - `scripts/dev/preflight.sh --package-only`
 
 ## Development Guidelines
 - Keep canonical user data in the document store (`Sources/DocumentStore`).
@@ -31,8 +32,9 @@
 - Follow the private reporting process in `.github/SECURITY.md`.
 
 ## PR Checklist
-- [ ] Build passes (`swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`)
-- [ ] Tests pass (`swift test --parallel -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`)
+- [ ] Build passes (`scripts/dev/package-build.sh`)
+- [ ] Tests pass (`scripts/dev/package-test.sh`)
+- [ ] App builds pass (`scripts/dev/app-build-ios.sh` and `scripts/dev/app-build-maccatalyst.sh`)
 - [ ] README/docs updated if behavior changed
 - [ ] New fields are migration-safe
 - [ ] No external server dependency introduced

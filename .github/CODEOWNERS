@@ -1,0 +1,13 @@
+* @markcoleman
+
+# Core app and package code
+/Package.swift @markcoleman
+/App/** @markcoleman
+/Sources/** @markcoleman
+/Tests/** @markcoleman
+/UITests/** @markcoleman
+
+# Delivery and developer tooling
+/.github/workflows/** @markcoleman
+/scripts/** @markcoleman
+/ci_scripts/** @markcoleman

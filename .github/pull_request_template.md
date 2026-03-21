@@ -1,10 +1,25 @@
 ## Summary
 - 
 
-## Validation
-- [ ] `swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`
-- [ ] `swift test --parallel -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`
-- [ ] iOS and macOS app builds pass
+## Incremental Step Traceability
+- Step ID: 
+- Scope boundary for this step:
+- Next planned step:
+
+## Validation Evidence
+| Command | Result | Notes |
+| --- | --- | --- |
+| `scripts/dev/package-build.sh` |  |  |
+| `scripts/dev/package-test.sh` |  |  |
+| `scripts/dev/app-build-ios.sh` |  |  |
+| `scripts/dev/app-build-maccatalyst.sh` |  |  |
+
+## Required Check Mapping
+- [ ] `Review dependency diffs` check remains valid (required branch-protection check)
+- [ ] `Swift package build + test` check name and lane behavior remain valid
+- [ ] `Build app (iOS)` check name and lane behavior remain valid
+- [ ] `Build app (Mac Catalyst)` check name and lane behavior remain valid
+- [ ] `UI smoke test` check name and lane behavior remain valid
 
 ## OS26 Compatibility Checklist
 - [ ] iOS/macOS deployment targets and APIs are OS26-compatible
