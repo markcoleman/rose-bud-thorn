@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${RBT_SKIP_PRE_PUSH:-0}" == "1" ]]; then
+  echo "pre-push: skipped because RBT_SKIP_PRE_PUSH=1"
+  exit 0
+fi
+
+readonly HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly REPO_ROOT="$(cd "${HOOK_DIR}/.." && pwd)"
+
+echo "pre-push: running package preflight checks"
+"${REPO_ROOT}/scripts/dev/preflight.sh" --package-only

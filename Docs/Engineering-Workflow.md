@@ -22,6 +22,9 @@
   - `scripts/dev/app-build-maccatalyst.sh`
 - UI smoke check (run when UI test lane logic changes):
   - `scripts/dev/ui-smoke.sh`
+- Optional local pre-push guardrail:
+  - `scripts/dev/install-hooks.sh` installs `.githooks/pre-push`
+  - Set `RBT_SKIP_PRE_PUSH=1` to skip once when needed
 
 ## Pull Request Expectations
 - Fill in the PR template with:

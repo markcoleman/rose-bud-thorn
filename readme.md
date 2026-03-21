@@ -61,6 +61,7 @@ Canonical developer entrypoints:
 scripts/dev/help.sh
 scripts/dev/doctor.sh
 scripts/dev/bootstrap.sh
+scripts/dev/install-hooks.sh
 ```
 
 Package checks:
@@ -81,6 +82,9 @@ scripts/dev/preflight.sh --package-only
 scripts/dev/preflight.sh
 scripts/dev/ui-smoke.sh
 ```
+
+Optional local guardrail:
+- Run `scripts/dev/install-hooks.sh` once per clone to enable an opt-in pre-push package preflight check.
 
 ## Repository Structure
 - `Package.swift`: module graph.
