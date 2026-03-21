@@ -248,6 +248,98 @@ final class DocumentStoreTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: secondSharedFile.path))
     }
 
+    func testMergeStoreContentsCopiesEntriesAttachmentsAndSummaryArtifacts() throws {
+        let source = try makeTempRoot()
+        let destination = try makeTempRoot()
+
+        let entryFile = source.appendingPathComponent("Entries/2026/03/10/entry.json")
+        let photoFile = source.appendingPathComponent("Entries/2026/03/10/rose/attachments/photo.jpg")
+        let summaryMetadata = source.appendingPathComponent("Summaries/weekly/2026-W11.json")
+        let summaryMarkdown = source.appendingPathComponent("Summaries/weekly/2026-W11.md")
+
+        try FileManager.default.createDirectory(at: entryFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: photoFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: summaryMetadata.deletingLastPathComponent(), withIntermediateDirectories: true)
+
+        try Data("{\"schemaVersion\":2}".utf8).write(to: entryFile)
+        try Data([0xFF, 0xD8, 0xFF, 0xD9]).write(to: photoFile)
+        try Data("{\"period\":\"week\"}".utf8).write(to: summaryMetadata)
+        try Data("# Weekly summary".utf8).write(to: summaryMarkdown)
+
+        try StoreLocationMigrator.mergeStoreContents(from: source, to: destination)
+
+        let copiedEntry = destination.appendingPathComponent("Entries/2026/03/10/entry.json")
+        let copiedPhoto = destination.appendingPathComponent("Entries/2026/03/10/rose/attachments/photo.jpg")
+        let copiedSummaryMetadata = destination.appendingPathComponent("Summaries/weekly/2026-W11.json")
+        let copiedSummaryMarkdown = destination.appendingPathComponent("Summaries/weekly/2026-W11.md")
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: copiedEntry.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: copiedPhoto.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: copiedSummaryMetadata.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: copiedSummaryMarkdown.path))
+    }
+
+    func testStoreLocationMigratorHasCanonicalDataDetectsPayloadFiles() throws {
+        let root = try makeTempRoot()
+        XCTAssertFalse(StoreLocationMigrator.hasCanonicalData(at: root))
+
+        let entryDirectory = root.appendingPathComponent("Entries/2026/03/11")
+        try FileManager.default.createDirectory(at: entryDirectory, withIntermediateDirectories: true)
+        XCTAssertFalse(StoreLocationMigrator.hasCanonicalData(at: root))
+
+        let entryFile = entryDirectory.appendingPathComponent("entry.json")
+        try Data("{}".utf8).write(to: entryFile)
+        XCTAssertTrue(StoreLocationMigrator.hasCanonicalData(at: root))
+    }
+
+    func testStoreLaunchPlannerUsesICloudWhenMigrationCompleted() {
+        let decision = StoreLaunchPlanner.decide(
+            iCloudAvailable: true,
+            migrationCompleted: true,
+            appGroupHasCanonicalData: true
+        )
+
+        XCTAssertEqual(decision.mode, .iCloud)
+        XCTAssertFalse(decision.shouldPromptMigration)
+        XCTAssertFalse(decision.shouldMarkMigrationComplete)
+    }
+
+    func testStoreLaunchPlannerPromptsWhenMigrationPendingAndAppGroupHasData() {
+        let decision = StoreLaunchPlanner.decide(
+            iCloudAvailable: true,
+            migrationCompleted: false,
+            appGroupHasCanonicalData: true
+        )
+
+        XCTAssertEqual(decision.mode, .appGroup)
+        XCTAssertTrue(decision.shouldPromptMigration)
+        XCTAssertFalse(decision.shouldMarkMigrationComplete)
+    }
+
+    func testStoreLaunchPlannerFallsBackToAppGroupWhenICloudUnavailable() {
+        let decision = StoreLaunchPlanner.decide(
+            iCloudAvailable: false,
+            migrationCompleted: false,
+            appGroupHasCanonicalData: true
+        )
+
+        XCTAssertEqual(decision.mode, .appGroup)
+        XCTAssertFalse(decision.shouldPromptMigration)
+        XCTAssertFalse(decision.shouldMarkMigrationComplete)
+    }
+
+    func testStoreLaunchPlannerMarksMigrationCompleteWhenNoLegacyDataExists() {
+        let decision = StoreLaunchPlanner.decide(
+            iCloudAvailable: true,
+            migrationCompleted: false,
+            appGroupHasCanonicalData: false
+        )
+
+        XCTAssertEqual(decision.mode, .iCloud)
+        XCTAssertFalse(decision.shouldPromptMigration)
+        XCTAssertTrue(decision.shouldMarkMigrationComplete)
+    }
+
     func testImageCaptureDateValidatorMatchesExpectedDay() throws {
         let imageURL = try makeTempRoot().appendingPathComponent("captured.jpg")
         try writeJPEG(

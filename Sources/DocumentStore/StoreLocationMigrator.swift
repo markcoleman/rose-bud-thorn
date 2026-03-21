@@ -17,16 +17,57 @@ public enum StoreLocationMigrator {
             return
         }
 
-        try fileManager.createDirectory(at: sharedRootURL, withIntermediateDirectories: true)
-
-        for folderName in canonicalFolderNames {
-            let legacyFolder = legacyRootURL.appendingPathComponent(folderName, isDirectory: true)
-            let sharedFolder = sharedRootURL.appendingPathComponent(folderName, isDirectory: true)
-            guard fileManager.fileExists(atPath: legacyFolder.path) else { continue }
-            try mergeDirectoryIfNeeded(from: legacyFolder, to: sharedFolder, fileManager: fileManager)
-        }
+        try mergeStoreContents(
+            from: legacyRootURL,
+            to: sharedRootURL,
+            fileManager: fileManager
+        )
 
         defaults.set(true, forKey: migrationKey)
+    }
+
+    public static func mergeStoreContents(
+        from sourceRootURL: URL,
+        to destinationRootURL: URL,
+        fileManager: FileManager = .default
+    ) throws {
+        if sourceRootURL.standardizedFileURL == destinationRootURL.standardizedFileURL {
+            return
+        }
+
+        try fileManager.createDirectory(at: destinationRootURL, withIntermediateDirectories: true)
+
+        for folderName in canonicalFolderNames {
+            let sourceFolder = sourceRootURL.appendingPathComponent(folderName, isDirectory: true)
+            let destinationFolder = destinationRootURL.appendingPathComponent(folderName, isDirectory: true)
+            guard fileManager.fileExists(atPath: sourceFolder.path) else { continue }
+            try mergeDirectoryIfNeeded(from: sourceFolder, to: destinationFolder, fileManager: fileManager)
+        }
+    }
+
+    public static func hasCanonicalData(
+        at rootURL: URL,
+        fileManager: FileManager = .default
+    ) -> Bool {
+        for folderName in canonicalFolderNames {
+            let folder = rootURL.appendingPathComponent(folderName, isDirectory: true)
+            guard fileManager.fileExists(atPath: folder.path) else { continue }
+
+            let enumerator = fileManager.enumerator(
+                at: folder,
+                includingPropertiesForKeys: [.isRegularFileKey],
+                options: [.skipsHiddenFiles]
+            )
+
+            while let candidateURL = enumerator?.nextObject() as? URL {
+                let values = try? candidateURL.resourceValues(forKeys: [.isRegularFileKey])
+                if values?.isRegularFile == true {
+                    return true
+                }
+            }
+        }
+
+        return false
     }
 
     private static let canonicalFolderNames = [

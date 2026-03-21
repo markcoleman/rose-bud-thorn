@@ -12,15 +12,26 @@ public struct DocumentStoreConfiguration: Sendable {
     }
 
     public static func legacyLive(fileManager: FileManager = .default) throws -> DocumentStoreConfiguration {
-        if let ubiquityRoot = fileManager.url(forUbiquityContainerIdentifier: nil) {
-            let documents = ubiquityRoot.appendingPathComponent("Documents", isDirectory: true)
-            try fileManager.createDirectory(at: documents, withIntermediateDirectories: true)
-            return DocumentStoreConfiguration(rootURL: documents)
+        if let iCloud = try iCloudDocuments(fileManager: fileManager) {
+            return iCloud
         }
 
         guard let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
             throw CocoaError(.fileNoSuchFile)
         }
+        return DocumentStoreConfiguration(rootURL: documents)
+    }
+
+    public static func iCloudDocuments(
+        containerIdentifier: String? = nil,
+        fileManager: FileManager = .default
+    ) throws -> DocumentStoreConfiguration? {
+        guard let ubiquityRoot = fileManager.url(forUbiquityContainerIdentifier: containerIdentifier) else {
+            return nil
+        }
+
+        let documents = ubiquityRoot.appendingPathComponent("Documents", isDirectory: true)
+        try fileManager.createDirectory(at: documents, withIntermediateDirectories: true)
         return DocumentStoreConfiguration(rootURL: documents)
     }
 
