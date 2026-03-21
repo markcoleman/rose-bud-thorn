@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/common.sh
+source "${SCRIPT_DIR}/../lib/common.sh"
+
+rbt::require_cmd xcodebuild
+rbt::cd_repo_root
+
+readonly RESULT_BUNDLE_PATH="${RBT_UI_FULL_RESULT_BUNDLE_PATH:-/tmp/RoseBudThorn-ui-nightly.xcresult}"
+
+rbt::run xcodebuild \
+  -project "${RBT_PROJECT}" \
+  -scheme "${RBT_SCHEME_UNIVERSAL}" \
+  -destination "${RBT_DEST_UI_SMOKE}" \
+  -parallel-testing-enabled NO \
+  -resultBundlePath "${RESULT_BUNDLE_PATH}" \
+  test

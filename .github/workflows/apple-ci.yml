@@ -8,6 +8,7 @@ on:
       - "Tests/**"
       - "Fixtures/**"
       - "App/**"
+      - "scripts/**"
       - "UITests/**"
       - "ci_scripts/**"
       - "RoseBudThorn.xcodeproj/**"
@@ -22,6 +23,7 @@ on:
       - "Tests/**"
       - "Fixtures/**"
       - "App/**"
+      - "scripts/**"
       - "UITests/**"
       - "ci_scripts/**"
       - "RoseBudThorn.xcodeproj/**"
@@ -58,15 +60,18 @@ jobs:
               - 'Sources/**'
               - 'Tests/**'
               - 'Fixtures/**'
+              - 'scripts/**'
             app:
               - 'App/**'
               - 'Sources/**'
+              - 'scripts/**'
               - 'RoseBudThorn.xcodeproj/**'
               - 'RoseBudThorn.xcworkspace/**'
               - 'ci_scripts/**'
             ui:
               - 'App/**'
               - 'Sources/**'
+              - 'scripts/**'
               - 'UITests/**'
               - 'RoseBudThorn.xcodeproj/**'
               - 'RoseBudThorn.xcworkspace/**'
@@ -102,14 +107,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-spm-
 
-      - name: Resolve package dependencies
-        run: swift package resolve
-
-      - name: Build package (strict)
-        run: swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
-
-      - name: Test package (strict)
-        run: swift test --parallel -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+      - name: Run package checks
+        run: scripts/ci/package-checks.sh
 
   build-app:
     name: Build app (${{ matrix.lane }})
@@ -122,9 +121,9 @@ jobs:
       matrix:
         include:
           - lane: iOS
-            destination: generic/platform=iOS Simulator
+            lane_id: ios
           - lane: Mac Catalyst
-            destination: platform=macOS,variant=Mac Catalyst
+            lane_id: maccatalyst
 
     steps:
       - name: Checkout
@@ -136,14 +135,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Build app
-        run: |
-          xcodebuild \
-            -project "RoseBudThorn.xcodeproj" \
-            -scheme "RoseBudThorn Universal" \
-            -destination "${{ matrix.destination }}" \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+        run: scripts/ci/app-build.sh "${{ matrix.lane_id }}"
 
   ui-smoke:
     name: UI smoke test
@@ -162,14 +154,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Run UI smoke test
-        run: |
-          xcodebuild \
-            -project "RoseBudThorn.xcodeproj" \
-            -scheme "RoseBudThorn Universal" \
-            -destination "platform=iOS Simulator,name=iPhone 17" \
-            -resultBundlePath "/tmp/RoseBudThorn-ui-smoke.xcresult" \
-            -only-testing:RoseBudThornUITests/RoseBudThornUITests/testFirstLaunchShowsOnboardingThenSkipOpensToday \
-            test
+        run: scripts/ci/ui-smoke.sh
 
       - name: Upload UI smoke xcresult on failure
         if: failure()

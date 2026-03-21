@@ -33,40 +33,16 @@ jobs:
           swift --version
 
       - name: Swift package checks (strict)
-        run: |
-          swift package resolve
-          swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
-          swift test --parallel -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+        run: scripts/ci/package-checks.sh
 
       - name: Build iOS app
-        run: |
-          xcodebuild \
-            -project "RoseBudThorn.xcodeproj" \
-            -scheme "RoseBudThorn Universal" \
-            -destination "generic/platform=iOS Simulator" \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+        run: scripts/ci/app-build.sh ios
 
       - name: Build Mac Catalyst app
-        run: |
-          xcodebuild \
-            -project "RoseBudThorn.xcodeproj" \
-            -scheme "RoseBudThorn Universal" \
-            -destination "platform=macOS,variant=Mac Catalyst" \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+        run: scripts/ci/app-build.sh maccatalyst
 
       - name: Run full UI suite
-        run: |
-          xcodebuild \
-            -project "RoseBudThorn.xcodeproj" \
-            -scheme "RoseBudThorn Universal" \
-            -destination "platform=iOS Simulator,name=iPhone 17" \
-            -parallel-testing-enabled NO \
-            -resultBundlePath "/tmp/RoseBudThorn-ui-nightly.xcresult" \
-            test
+        run: scripts/ci/ui-full.sh
 
       - name: Upload nightly UI xcresult on failure
         if: failure()
