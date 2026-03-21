@@ -1,19 +1,16 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -euo pipefail
 
-if [ -n "${CI_WORKSPACE:-}" ]; then
-  cd "${CI_WORKSPACE}"
-fi
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly REPO_ROOT_DEFAULT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+readonly REPO_ROOT="${CI_WORKSPACE:-${REPO_ROOT_DEFAULT}}"
 
-if [ "${CI_XCODE_CLOUD:-}" != "TRUE" ]; then
+cd "${REPO_ROOT}"
+
+if [[ "${CI_XCODE_CLOUD:-}" != "TRUE" ]]; then
   echo "Skipping ci_pre_xcodebuild.sh outside Xcode Cloud."
   exit 0
 fi
 
-CI_CACHE_ROOT="${TMPDIR:-/tmp}/rosebudthorn-ci-cache"
-mkdir -p "${CI_CACHE_ROOT}/ModuleCache"
-export CLANG_MODULE_CACHE_PATH="${CI_CACHE_ROOT}/ModuleCache"
-export SWIFTPM_MODULECACHE_OVERRIDE="${CI_CACHE_ROOT}/ModuleCache"
-
-echo "==> Quality gate: swift test --parallel"
-swift test --parallel --disable-sandbox
+echo "==> Xcode Cloud pre-xcodebuild gate"
+"${REPO_ROOT}/scripts/dev/package-test.sh"
