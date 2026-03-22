@@ -11,28 +11,32 @@ final class AccessibilitySmokeUITests: XCTestCase {
 
         XCTAssertTrue(app.textFields["Rose for today"].waitForExistence(timeout: 6))
         XCTAssertTrue(app.otherElements["today-completion-progress"].exists)
-        XCTAssertTrue(app.textFields["Bud for today"].exists)
-        XCTAssertTrue(app.textFields["Thorn for today"].exists)
-        let roseLibrary = app.buttons["reflection-rose-library-button"]
-        let roseCamera = app.buttons["reflection-rose-camera-button"]
-        let budLibrary = app.buttons["reflection-bud-library-button"]
-        let budCamera = app.buttons["reflection-bud-camera-button"]
-        let thornLibrary = app.buttons["reflection-thorn-library-button"]
-        let thornCamera = app.buttons["reflection-thorn-camera-button"]
+        XCTAssertTrue(element(withIdentifier: "journal-active-prompt", in: app).exists)
 
-        XCTAssertTrue(roseLibrary.exists)
-        XCTAssertTrue(roseCamera.exists)
-        XCTAssertTrue(budLibrary.exists)
-        XCTAssertTrue(budCamera.exists)
-        XCTAssertTrue(thornLibrary.exists)
-        XCTAssertTrue(thornCamera.exists)
+        let addPhoto = app.buttons["journal-add-photo-button"]
+        let camera = app.buttons["journal-camera-button"]
+        let voice = app.buttons["journal-voice-button"]
+        let continueButton = app.buttons["journal-continue-button"]
+        let rosePill = app.buttons["journal-type-pill-rose"]
+        let budPill = app.buttons["journal-type-pill-bud"]
+        let thornPill = app.buttons["journal-type-pill-thorn"]
 
-        XCTAssertTrue(roseLibrary.isHittable)
-        XCTAssertTrue(roseCamera.isHittable)
-        XCTAssertTrue(budLibrary.isHittable)
-        XCTAssertTrue(budCamera.isHittable)
-        XCTAssertTrue(thornLibrary.isHittable)
-        XCTAssertTrue(thornCamera.isHittable)
+        XCTAssertTrue(addPhoto.exists)
+        XCTAssertTrue(camera.exists)
+        XCTAssertTrue(voice.exists)
+        XCTAssertTrue(continueButton.exists)
+        XCTAssertTrue(rosePill.exists)
+        XCTAssertTrue(budPill.exists)
+        XCTAssertTrue(thornPill.exists)
+
+        XCTAssertTrue(addPhoto.isHittable)
+        XCTAssertTrue(camera.isHittable)
+        XCTAssertFalse(voice.isEnabled)
+
+        let roseField = app.textFields["Rose for today"]
+        roseField.tap()
+        roseField.typeText("Accessibility flow")
+        XCTAssertTrue(continueButton.isHittable)
     }
 
     func testCoreTabNavigationDiscoverability() {

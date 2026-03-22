@@ -43,11 +43,14 @@ final class CaptureDayFlowUITests: XCTestCase {
         )
         dismissOnboardingIfPresented(app)
 
-        let libraryButton = app.buttons["reflection-rose-library-button"]
-        let cameraButton = app.buttons["reflection-rose-camera-button"]
+        let libraryButton = app.buttons["journal-add-photo-button"]
+        let cameraButton = app.buttons["journal-camera-button"]
+        let voiceButton = app.buttons["journal-voice-button"]
 
         XCTAssertTrue(libraryButton.waitForExistence(timeout: 6))
         XCTAssertTrue(cameraButton.exists)
+        XCTAssertTrue(voiceButton.exists)
+        XCTAssertFalse(voiceButton.isEnabled)
 
         libraryButton.tap()
         XCTAssertTrue(app.otherElements["journal-photo-library-presented"].waitForExistence(timeout: 2))
@@ -71,6 +74,38 @@ final class CaptureDayFlowUITests: XCTestCase {
                 app.buttons["Import from Files"].waitForExistence(timeout: 1)
         }
         XCTAssertTrue(cameraPresented)
+    }
+
+    func testContinueAdvancesFromRoseToBudToThorn() {
+        let app = launchAppForUITests(
+            resetOnboarding: true,
+            onboardingCountdownSeconds: 6
+        )
+        dismissOnboardingIfPresented(app)
+
+        let continueButton = app.buttons["journal-continue-button"]
+        XCTAssertTrue(continueButton.waitForExistence(timeout: 6))
+
+        let roseField = app.textFields["Rose for today"]
+        XCTAssertTrue(roseField.exists)
+        roseField.tap()
+        roseField.typeText("Rose quick entry")
+        continueButton.tap()
+
+        let budField = app.textFields["Bud for today"]
+        XCTAssertTrue(budField.waitForExistence(timeout: 4))
+        budField.tap()
+        budField.typeText("Bud quick entry")
+        continueButton.tap()
+
+        let thornField = app.textFields["Thorn for today"]
+        XCTAssertTrue(thornField.waitForExistence(timeout: 4))
+        thornField.tap()
+        thornField.typeText("Thorn quick entry")
+        continueButton.tap()
+
+        XCTAssertTrue(app.otherElements["journal-capture-locked-state"].waitForExistence(timeout: 4))
+        XCTAssertFalse(app.buttons["journal-add-photo-button"].exists)
     }
 
     private func dismissPhotoPickerIfNeeded(_ app: XCUIApplication) {
