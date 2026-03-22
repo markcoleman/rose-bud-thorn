@@ -72,4 +72,68 @@ final class RoseBudThornUITests: XCTestCase {
 
         XCTAssertTrue(element(withIdentifier: "onboarding-page-indicator", in: app).waitForExistence(timeout: 4))
     }
+
+    func testCaptureAppStoreScreenshots() {
+        let app = launchAppForUITests(
+            resetOnboarding: true,
+            onboardingCountdownSeconds: 120,
+            seedJournalData: true
+        )
+
+        XCTAssertTrue(element(withIdentifier: "onboarding-page-indicator", in: app).waitForExistence(timeout: 6))
+        captureScreenshot(named: "01-onboarding-hero")
+
+        dismissOnboardingIfPresented(app)
+        let journalLoaded =
+            app.textFields["Rose for today"].waitForExistence(timeout: 10) ||
+            element(withIdentifier: "journal-active-prompt", in: app).waitForExistence(timeout: 2) ||
+            app.buttons["journal-continue-button"].waitForExistence(timeout: 2)
+        XCTAssertTrue(journalLoaded)
+        captureScreenshot(named: "02-today-capture")
+
+        app.swipeUp()
+        captureScreenshot(named: "03-journal-timeline")
+
+        var didOpenDayDetail = false
+        let openTodayDetail = app.buttons["journal-open-today-detail-button"].firstMatch
+        if openTodayDetail.waitForExistence(timeout: 3) {
+            openTodayDetail.tap()
+            didOpenDayDetail = dayPolaroidPager(in: app, timeout: 4).exists
+        } else {
+            let dayCard = journalDayCardButton(in: app, timeout: 2)
+            if dayCard.exists {
+                dayCard.tap()
+                didOpenDayDetail = dayPolaroidPager(in: app, timeout: 4).exists
+            }
+        }
+        captureScreenshot(named: "04-day-detail")
+
+        if didOpenDayDetail {
+            let backButton = app.navigationBars.buttons.element(boundBy: 0)
+            if backButton.waitForExistence(timeout: 3) {
+                backButton.tap()
+            }
+        }
+
+        let insightsCandidates: [XCUIElement] = [
+            app.buttons["floating-tab-insights"].firstMatch,
+            app.buttons.matching(NSPredicate(format: "label == %@", "Insights")).firstMatch,
+            app.staticTexts["Insights"].firstMatch,
+        ]
+        for candidate in insightsCandidates {
+            guard candidate.waitForExistence(timeout: 2), candidate.isHittable else { continue }
+            candidate.tap()
+            break
+        }
+        _ = app.navigationBars["Insights"].waitForExistence(timeout: 4)
+        captureScreenshot(named: "05-insights")
+    }
+
+    private func captureScreenshot(named name: String) {
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.4))
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
 }
