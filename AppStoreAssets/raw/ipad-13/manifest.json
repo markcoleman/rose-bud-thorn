@@ -1,0 +1,53 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "EBC4ED3F-916F-4AEA-89D9-5BF9417EB7F0",
+        "deviceName" : "iPad Pro 13-inch (M5)",
+        "exportedFileName" : "6C275F13-4B7A-4EB1-ADFA-C457F80912B5.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "05-insights_0_9561ABF7-F935-441A-8D94-1C46650F2BCB.png",
+        "timestamp" : 1774150541.655
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "EBC4ED3F-916F-4AEA-89D9-5BF9417EB7F0",
+        "deviceName" : "iPad Pro 13-inch (M5)",
+        "exportedFileName" : "80453832-BB0D-493D-AA09-43BB72384F6E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "04-day-detail_0_6DFC1331-E281-43BB-B037-A91584329E9E.png",
+        "timestamp" : 1774150533.276
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "EBC4ED3F-916F-4AEA-89D9-5BF9417EB7F0",
+        "deviceName" : "iPad Pro 13-inch (M5)",
+        "exportedFileName" : "FC5D90B6-BDCF-4CED-8040-4D93BCFB242E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "03-journal-timeline_0_C4D7A8C7-F025-41BE-A3C7-31A8D1DED0D8.png",
+        "timestamp" : 1774150519.028
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "EBC4ED3F-916F-4AEA-89D9-5BF9417EB7F0",
+        "deviceName" : "iPad Pro 13-inch (M5)",
+        "exportedFileName" : "51BBA3CE-2064-4BC9-AD22-ABA22F0F058D.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "02-today-capture_0_7AC211BD-0C3F-41E1-9CCE-3D3EEEA0FA62.png",
+        "timestamp" : 1774150517.262
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "EBC4ED3F-916F-4AEA-89D9-5BF9417EB7F0",
+        "deviceName" : "iPad Pro 13-inch (M5)",
+        "exportedFileName" : "81B4E1CB-17D0-47CA-8DCB-43F34E32F9BF.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "01-onboarding-hero_0_A3950FAA-84B0-4E37-94D3-566F13D52DA1.png",
+        "timestamp" : 1774150513.745
+      }
+    ],
+    "testIdentifier" : "RoseBudThornUITests/testCaptureAppStoreScreenshots()",
+    "testIdentifierURL" : "test://com.apple.xcode/RoseBudThorn/RoseBudThornUITests/RoseBudThornUITests/testCaptureAppStoreScreenshots"
+  }
+]
