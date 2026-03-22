@@ -7,6 +7,8 @@ import CoreModels
 public final class JournalViewModel {
     public private(set) var todayEntry: EntryDay
     public private(set) var timelineDays: [EntryDaySummary] = []
+    public private(set) var promptSelections: [EntryType: PromptSelection] = [:]
+    public private(set) var activeCaptureType: EntryType = .rose
 
     public private(set) var isLoading = false
     public private(set) var isLoadingMore = false
@@ -15,6 +17,8 @@ public final class JournalViewModel {
 
     public private(set) var isSavingToday = false
     public private(set) var lastSavedAt: Date?
+    public private(set) var os26UIEnabled = true
+    public private(set) var isCaptureFlowFinalized = false
 
     public let environment: AppEnvironment
     private let dataSource: JournalDataSource
@@ -55,6 +59,18 @@ public final class JournalViewModel {
         todayEntry.roseItem.hasAnyContent || todayEntry.budItem.hasAnyContent || todayEntry.thornItem.hasAnyContent
     }
 
+    public var activePromptSelection: PromptSelection? {
+        promptSelections[activeCaptureType]
+    }
+
+    public var canContinueActiveCapture: Bool {
+        todayEntry.item(for: activeCaptureType).hasAnyContent
+    }
+
+    public var continueButtonTitle: String {
+        isFinalContinueAction ? "Done" : "Continue"
+    }
+
     public var todaySaveFeedbackState: JournalSaveFeedbackState {
         if isSavingToday {
             return .saving
@@ -93,12 +109,36 @@ public final class JournalViewModel {
         await appendNextPage(for: activeRefreshID)
     }
 
+    public func setActiveCaptureType(_ type: EntryType) {
+        activeCaptureType = type
+    }
+
+    @discardableResult
+    public func continueToNextIncompleteCaptureStep() -> Bool {
+        guard canContinueActiveCapture else { return false }
+        if let nextType = firstIncompleteType() {
+            activeCaptureType = nextType
+            return true
+        }
+
+        guard todayEntry.isCompleteForDailyCapture else { return false }
+        isCaptureFlowFinalized = true
+        Task {
+            await saveTodayNow()
+        }
+
+        return true
+    }
+
     public func updateTodayShortText(_ text: String, for type: EntryType) {
         var item = todayEntry.item(for: type)
         item.shortText = text
         item.updatedAt = nowProvider()
         todayEntry.setItem(item, for: type)
         todayEntry.updatedAt = nowProvider()
+        if !todayEntry.isCompleteForDailyCapture {
+            isCaptureFlowFinalized = false
+        }
         scheduleTodayAutosave()
     }
 
@@ -108,6 +148,9 @@ public final class JournalViewModel {
         item.updatedAt = nowProvider()
         todayEntry.setItem(item, for: type)
         todayEntry.updatedAt = nowProvider()
+        if !todayEntry.isCompleteForDailyCapture {
+            isCaptureFlowFinalized = false
+        }
         scheduleTodayAutosave()
     }
 
@@ -124,6 +167,9 @@ public final class JournalViewModel {
                 item.updatedAt = nowProvider()
                 todayEntry.setItem(item, for: type)
                 todayEntry.updatedAt = nowProvider()
+                if !todayEntry.isCompleteForDailyCapture {
+                    isCaptureFlowFinalized = false
+                }
                 await saveTodayNow()
                 return
             }
@@ -154,6 +200,9 @@ public final class JournalViewModel {
                 item.updatedAt = nowProvider()
                 todayEntry.setItem(item, for: type)
                 todayEntry.updatedAt = nowProvider()
+                if !todayEntry.isCompleteForDailyCapture {
+                    isCaptureFlowFinalized = false
+                }
                 await saveTodayNow()
                 return
             }
@@ -179,6 +228,9 @@ public final class JournalViewModel {
             item.updatedAt = nowProvider()
             todayEntry.setItem(item, for: type)
             todayEntry.updatedAt = nowProvider()
+            if !todayEntry.isCompleteForDailyCapture {
+                isCaptureFlowFinalized = false
+            }
             await saveTodayNow()
         } catch {
             errorMessage = error.localizedDescription
@@ -193,6 +245,9 @@ public final class JournalViewModel {
             item.updatedAt = nowProvider()
             todayEntry.setItem(item, for: type)
             todayEntry.updatedAt = nowProvider()
+            if !todayEntry.isCompleteForDailyCapture {
+                isCaptureFlowFinalized = false
+            }
             await saveTodayNow()
         } catch {
             errorMessage = error.localizedDescription
@@ -242,6 +297,7 @@ public final class JournalViewModel {
         activeRefreshID = refreshID
         isLoading = true
         isLoadingMore = false
+        os26UIEnabled = featureFlags.os26UIEnabled
 
         if invalidateCache {
             await dataSource.invalidateDayCache()
@@ -252,6 +308,9 @@ public final class JournalViewModel {
             guard isCurrent(refreshID) else { return }
 
             todayEntry = loadedToday
+            refreshPromptSelections(for: loadedToday.dayKey)
+            resetActiveCaptureType()
+            isCaptureFlowFinalized = loadedToday.isCompleteForDailyCapture
             WidgetSnapshotSync.syncTodayEntry(
                 todayEntry,
                 dayDirectoryURL: environment.dayDirectoryURL(for: todayEntry.dayKey),
@@ -271,6 +330,9 @@ public final class JournalViewModel {
             sourceDayKeys = []
             sourceCursor = 0
             hasMoreDays = false
+            promptSelections = [:]
+            activeCaptureType = .rose
+            isCaptureFlowFinalized = false
             errorMessage = error.localizedDescription
         }
 
@@ -315,6 +377,27 @@ public final class JournalViewModel {
 
     private func isCurrent(_ refreshID: UUID) -> Bool {
         activeRefreshID == refreshID
+    }
+
+    private func refreshPromptSelections(for dayKey: LocalDayKey) {
+        let preferences = environment.promptPreferencesStore.load()
+        promptSelections = environment.promptSelector.prompts(for: dayKey, preferences: preferences)
+    }
+
+    private func resetActiveCaptureType() {
+        if let firstIncomplete = firstIncompleteType() {
+            activeCaptureType = firstIncomplete
+            return
+        }
+        activeCaptureType = EntryType.allCases.last ?? .thorn
+    }
+
+    private func firstIncompleteType() -> EntryType? {
+        EntryType.allCases.first(where: { !todayEntry.item(for: $0).hasAnyContent })
+    }
+
+    private var isFinalContinueAction: Bool {
+        canContinueActiveCapture && firstIncompleteType() == nil
     }
 
     private var featureFlags: AppFeatureFlags {

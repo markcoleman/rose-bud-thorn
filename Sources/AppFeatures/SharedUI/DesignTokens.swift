@@ -97,6 +97,48 @@ public enum DesignTokens {
         endPoint: .bottomTrailing
     )
 
+    public static let journalCompactBackgroundGradient = LinearGradient(
+        colors: [
+            platformColor(
+                light: (0.37, 0.19, 0.58),
+                dark: (0.21, 0.10, 0.32)
+            ),
+            platformColor(
+                light: (0.30, 0.16, 0.51),
+                dark: (0.16, 0.10, 0.28)
+            ),
+            platformColor(
+                light: (0.24, 0.14, 0.43),
+                dark: (0.11, 0.08, 0.23)
+            )
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    public static let journalCompactSurface = platformColor(
+        light: (0.27, 0.16, 0.41),
+        dark: (0.20, 0.12, 0.31),
+        lightAlpha: 0.82,
+        darkAlpha: 0.88
+    )
+
+    public static let journalCompactSurfaceElevated = platformColor(
+        light: (0.31, 0.19, 0.46),
+        dark: (0.23, 0.14, 0.35),
+        lightAlpha: 0.90,
+        darkAlpha: 0.92
+    )
+
+    public static let journalCompactProgressTrack = platformColor(
+        light: (0.41, 0.28, 0.56),
+        dark: (0.30, 0.20, 0.44),
+        lightAlpha: 0.85,
+        darkAlpha: 0.90
+    )
+
+    public static let journalCompactProgressFill = Color(red: 0.96, green: 0.56, blue: 0.83)
+
     public static func contentHorizontalPadding(for width: CGFloat) -> CGFloat {
         switch width {
         case ..<390:

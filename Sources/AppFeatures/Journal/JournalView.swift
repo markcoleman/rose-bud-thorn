@@ -26,7 +26,7 @@ public struct JournalView: View {
 
     @State private var navigationSelection: JournalNavigationSelection?
     @State private var showJumpToToday = false
-    @State private var expandedTypeRequest: CaptureFocusLaunchRequest?
+    @State private var compactSelectedType: EntryType = .rose
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -56,51 +56,60 @@ public struct JournalView: View {
                     LazyVStack(alignment: .leading, spacing: 10) {
                         topAnchorMarker
 
-                        JournalTodayCardView(
-                            entry: bindable.todayEntry,
-                            saveFeedbackState: bindable.todaySaveFeedbackState,
-                            onShortTextChange: { type, text in
-                                bindable.updateTodayShortText(text, for: type)
-                            },
-                            onJournalTextChange: { type, text in
-                                bindable.updateTodayJournalText(text, for: type)
-                            },
-                            onOpenPhotoLibrary: { type in
-                                presentCapture(for: type, dayKey: bindable.todayDayKey)
-                            },
-                            onOpenCamera: { type in
-                                presentCameraCapture(for: type, dayKey: bindable.todayDayKey)
-                            },
-                            onRemovePhoto: { type, ref in
-                                Task {
-                                    await bindable.removeTodayPhoto(ref, for: type)
+                        if usesCompactTimelineConcept(bindable) {
+                            compactHeader(bindable)
+                            compactProgressRow(bindable)
+                            compactTodayCaptureCard(bindable)
+                                .id(scrollTopID)
+                        } else {
+                            JournalTodayCardView(
+                                entry: bindable.todayEntry,
+                                saveFeedbackState: bindable.todaySaveFeedbackState,
+                                onShortTextChange: { type, text in
+                                    bindable.updateTodayShortText(text, for: type)
+                                },
+                                onJournalTextChange: { type, text in
+                                    bindable.updateTodayJournalText(text, for: type)
+                                },
+                                onOpenPhotoLibrary: { type in
+                                    presentCapture(for: type, dayKey: bindable.todayDayKey)
+                                },
+                                onOpenCamera: { type in
+                                    presentCameraCapture(for: type, dayKey: bindable.todayDayKey)
+                                },
+                                onRemovePhoto: { type, ref in
+                                    Task {
+                                        await bindable.removeTodayPhoto(ref, for: type)
+                                    }
+                                },
+                                onRemoveVideo: { type, ref in
+                                    Task {
+                                        await bindable.removeTodayVideo(ref, for: type)
+                                    }
+                                },
+                                onOpenCompletedDay: {
+                                    openDayDetail(bindable.todayDayKey)
+                                },
+                                focusRequest: nil,
+                                onConsumeFocusRequest: {},
+                                photoURL: { ref in
+                                    bindable.photoURL(for: ref, day: bindable.todayDayKey)
+                                },
+                                videoURL: { ref in
+                                    bindable.videoURL(for: ref, day: bindable.todayDayKey)
                                 }
-                            },
-                            onRemoveVideo: { type, ref in
-                                Task {
-                                    await bindable.removeTodayVideo(ref, for: type)
-                                }
-                            },
-                            onOpenCompletedDay: {
-                                navigationSelection = JournalNavigationSelection(dayKey: bindable.todayDayKey)
-                            },
-                            focusRequest: expandedTypeRequest,
-                            onConsumeFocusRequest: {
-                                expandedTypeRequest = nil
-                            },
-                            photoURL: { ref in
-                                bindable.photoURL(for: ref, day: bindable.todayDayKey)
-                            },
-                            videoURL: { ref in
-                                bindable.videoURL(for: ref, day: bindable.todayDayKey)
-                            }
-                        )
-                        .id(scrollTopID)
+                            )
+                            .id(scrollTopID)
+                        }
 
                         if !bindable.timelineDays.isEmpty {
                             Text("Memories")
                                 .font(.headline)
-                                .foregroundStyle(DesignTokens.textPrimaryOnSurface)
+                                .foregroundStyle(
+                                    usesCompactTimelineConcept(bindable)
+                                    ? Color.white.opacity(0.92)
+                                    : DesignTokens.textPrimaryOnSurface
+                                )
                                 .padding(.top, 2)
                         }
 
@@ -111,9 +120,10 @@ public struct JournalView: View {
                                     bindable.photoURL(for: ref, day: summary.dayKey)
                                 },
                                 onOpen: {
-                                    navigationSelection = JournalNavigationSelection(dayKey: summary.dayKey)
+                                    openDayDetail(summary.dayKey)
                                 }
                             )
+                            .accessibilityIdentifier("journal-timeline-row-\(summary.dayKey.isoDate)")
                             .onAppear {
                                 Task {
                                     await bindable.loadMoreIfNeeded(currentDayKey: summary.dayKey)
@@ -139,7 +149,14 @@ public struct JournalView: View {
                 }
                 .coordinateSpace(name: scrollCoordinateSpace)
                 .scrollDismissesKeyboard(.interactively)
-                .background(DesignTokens.backgroundGradient.ignoresSafeArea())
+                .background(
+                    (
+                        usesCompactTimelineConcept(bindable)
+                        ? DesignTokens.journalCompactBackgroundGradient
+                        : DesignTokens.backgroundGradient
+                    )
+                    .ignoresSafeArea()
+                )
                 .onPreferenceChange(JournalTopOffsetPreferenceKey.self) { value in
                     withAnimation(MotionTokens.quick) {
                         showJumpToToday = value < -180
@@ -181,13 +198,13 @@ public struct JournalView: View {
             .task {
                 await bindable.load()
                 consumeLaunchRequestIfNeeded(bindable)
-                consumeFocusLaunchRequestIfNeeded()
+                consumeFocusLaunchRequestIfNeeded(bindable)
             }
             .onChange(of: captureLaunchRequest?.id) { _, _ in
                 consumeLaunchRequestIfNeeded(bindable)
             }
             .onChange(of: captureFocusLaunchRequest?.id) { _, _ in
-                consumeFocusLaunchRequestIfNeeded()
+                consumeFocusLaunchRequestIfNeeded(bindable)
             }
             .onChange(of: refreshTrigger) { _, _ in
                 Task {
@@ -312,15 +329,150 @@ public struct JournalView: View {
         dismissKeyboard()
     }
 
+    private func openDayDetail(_ dayKey: LocalDayKey) {
+        let destination = JournalNavigationSelection(dayKey: dayKey)
+        if navigationSelection == destination {
+            navigationSelection = nil
+            Task { @MainActor in
+                navigationSelection = destination
+            }
+            return
+        }
+        navigationSelection = destination
+    }
+
+    private func compactHeader(_ model: JournalViewModel) -> some View {
+        HStack(spacing: 8) {
+            Text("Today")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.98))
+            Text("•")
+                .foregroundStyle(.white.opacity(0.66))
+            Text(monthDayText(for: model.todayDayKey, model: model))
+                .font(.title3.weight(.regular))
+                .foregroundStyle(.white.opacity(0.90))
+
+            Spacer(minLength: 0)
+
+            Button {
+                openDayDetail(model.todayDayKey)
+            } label: {
+                Image(systemName: AppIcon.navigateForward.systemName)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.94))
+                    .frame(width: 34, height: 34)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(DesignTokens.journalCompactSurface)
+                    )
+            }
+            .buttonStyle(.plain)
+            .touchTargetMinSize(ControlTokens.minTouchTarget)
+            .accessibilityIdentifier("journal-open-today-detail-button")
+            .accessibilityLabel("Open today's detail")
+        }
+    }
+
+    private func compactProgressRow(_ model: JournalViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: "heart.fill")
+                    .foregroundStyle(DesignTokens.journalCompactProgressFill)
+                Text("\(model.todayCompletionCount) of 3 completed")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.white.opacity(0.90))
+            }
+
+            ProgressView(
+                value: Double(model.todayCompletionCount),
+                total: Double(EntryType.allCases.count)
+            )
+            .tint(DesignTokens.journalCompactProgressFill)
+            .background(
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(DesignTokens.journalCompactProgressTrack)
+            )
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Today progress \(model.todayCompletionCount) of 3")
+        .accessibilityIdentifier("today-completion-progress")
+    }
+
+    private func compactTodayCaptureCard(_ model: JournalViewModel) -> some View {
+        let activeType = compactSelectedType
+        let item = model.todayEntry.item(for: activeType)
+        let prompt = model.promptSelections[activeType]?.text ?? fallbackPrompt(for: activeType)
+        let completionStates = Dictionary(
+            uniqueKeysWithValues: EntryType.allCases.map { entryType in
+                (entryType, model.todayEntry.item(for: entryType).hasAnyContent)
+            }
+        )
+
+        return CompactJournalTodayCardView(
+            activeType: activeType,
+            completionStates: completionStates,
+            promptText: prompt,
+            shortText: item.shortText,
+            photos: item.photos,
+            videos: item.videos,
+            continueTitle: model.continueButtonTitle,
+            canContinue: model.canContinueActiveCapture,
+            isLocked: model.isCaptureFlowFinalized,
+            onShortTextChange: { text in
+                model.updateTodayShortText(text, for: activeType)
+            },
+            onSelectType: { entryType in
+                compactSelectedType = entryType
+                model.setActiveCaptureType(entryType)
+            },
+            onOpenPhotoLibrary: {
+                presentCapture(for: compactSelectedType, dayKey: model.todayDayKey)
+            },
+            onOpenCamera: {
+                presentCameraCapture(for: compactSelectedType, dayKey: model.todayDayKey)
+            },
+            onRemovePhoto: { ref in
+                Task {
+                    await model.removeTodayPhoto(ref, for: compactSelectedType)
+                }
+            },
+            onRemoveVideo: { ref in
+                Task {
+                    await model.removeTodayVideo(ref, for: compactSelectedType)
+                }
+            },
+            onContinue: {
+                _ = model.continueToNextIncompleteCaptureStep()
+            },
+            onOpenFullEditor: {
+                openDayDetail(model.todayDayKey)
+            },
+            photoURL: { ref in
+                model.photoURL(for: ref, day: model.todayDayKey)
+            },
+            videoURL: { ref in
+                model.videoURL(for: ref, day: model.todayDayKey)
+            }
+        )
+        .onAppear {
+            compactSelectedType = model.activeCaptureType
+        }
+        .onChange(of: model.activeCaptureType) { _, newType in
+            compactSelectedType = newType
+        }
+    }
+
     private func consumeLaunchRequestIfNeeded(_ model: JournalViewModel) {
         guard let request = captureLaunchRequest else { return }
         presentCapture(for: request.type, dayKey: model.todayDayKey)
         captureLaunchRequest = nil
     }
 
-    private func consumeFocusLaunchRequestIfNeeded() {
+    private func consumeFocusLaunchRequestIfNeeded(_ model: JournalViewModel) {
         guard let request = captureFocusLaunchRequest else { return }
-        expandedTypeRequest = request
+        model.setActiveCaptureType(request.type)
+        compactSelectedType = request.type
         captureFocusLaunchRequest = nil
     }
 
@@ -440,6 +592,34 @@ public struct JournalView: View {
         #else
         return false
         #endif
+    }
+
+    private func usesCompactTimelineConcept(_ model: JournalViewModel) -> Bool {
+        #if os(iOS)
+        return horizontalSizeClass == .compact &&
+            !PlatformCapabilities.isMacCatalyst &&
+            model.os26UIEnabled
+        #else
+        return false
+        #endif
+    }
+
+    private func monthDayText(for dayKey: LocalDayKey, model: JournalViewModel) -> String {
+        guard let date = model.environment.dayCalculator.date(for: dayKey) else {
+            return dayKey.isoDate
+        }
+        return date.formatted(.dateTime.month(.wide).day())
+    }
+
+    private func fallbackPrompt(for type: EntryType) -> String {
+        switch type {
+        case .rose:
+            return "What was the best part of today?"
+        case .bud:
+            return "What are you looking forward to next?"
+        case .thorn:
+            return "What challenged you today?"
+        }
     }
 
     private func dismissKeyboard() {

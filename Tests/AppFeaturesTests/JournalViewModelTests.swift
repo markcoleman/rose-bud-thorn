@@ -146,6 +146,103 @@ final class JournalViewModelTests: XCTestCase {
         XCTAssertTrue(persisted.roseItem.photos.isEmpty)
     }
 
+    func testActiveCaptureTypeDefaultsToFirstIncompleteOnLoad() async throws {
+        let environment = try makeEnvironment()
+        let now = Date(timeIntervalSince1970: 1_772_201_600) // 2026-03-05
+        let dayKey = DayKeyCalculator().dayKey(for: now, timeZone: .current)
+        try await environment.entryStore.save(makeEntry(dayKey: dayKey, rose: "Completed rose"))
+
+        let model = JournalViewModel(environment: environment, nowProvider: { now }, pageSize: 20)
+        await model.load()
+
+        XCTAssertEqual(model.activeCaptureType, .bud)
+    }
+
+    func testActiveCaptureTypeDefaultsToLastTypeWhenComplete() async throws {
+        let environment = try makeEnvironment()
+        let now = Date(timeIntervalSince1970: 1_772_201_600) // 2026-03-05
+        let dayKey = DayKeyCalculator().dayKey(for: now, timeZone: .current)
+        try await environment.entryStore.save(
+            makeEntry(
+                dayKey: dayKey,
+                rose: "Done",
+                bud: "Done",
+                thorn: "Done"
+            )
+        )
+
+        let model = JournalViewModel(environment: environment, nowProvider: { now }, pageSize: 20)
+        await model.load()
+
+        XCTAssertEqual(model.activeCaptureType, .thorn)
+    }
+
+    func testContinueAdvancesToNextIncompleteType() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, pageSize: 20)
+        await model.load()
+
+        XCTAssertEqual(model.activeCaptureType, .rose)
+        XCTAssertFalse(model.continueToNextIncompleteCaptureStep())
+
+        model.updateTodayShortText("Rose complete", for: .rose)
+        XCTAssertTrue(model.continueToNextIncompleteCaptureStep())
+        XCTAssertEqual(model.activeCaptureType, .bud)
+
+        model.updateTodayShortText("Bud complete", for: .bud)
+        XCTAssertTrue(model.continueToNextIncompleteCaptureStep())
+        XCTAssertEqual(model.activeCaptureType, .thorn)
+    }
+
+    func testContinueAdvancesToFirstIncompleteWhenViewingDifferentPill() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, pageSize: 20)
+        await model.load()
+
+        model.updateTodayShortText("Rose complete", for: .rose)
+        model.setActiveCaptureType(.thorn)
+        model.updateTodayShortText("Thorn complete", for: .thorn)
+
+        XCTAssertEqual(model.continueButtonTitle, "Continue")
+        XCTAssertTrue(model.continueToNextIncompleteCaptureStep())
+        XCTAssertEqual(model.activeCaptureType, .bud)
+    }
+
+    func testPromptSelectionLoadsForActiveType() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, pageSize: 20)
+
+        await model.load()
+
+        XCTAssertNotNil(model.activePromptSelection)
+    }
+
+    func testSetActiveCaptureTypeUpdatesFocusTarget() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, pageSize: 20)
+        await model.load()
+
+        model.setActiveCaptureType(.thorn)
+
+        XCTAssertEqual(model.activeCaptureType, .thorn)
+    }
+
+    func testContinueOnFinalStepTriggersCompletionSave() async throws {
+        let environment = try makeEnvironment()
+        let model = JournalViewModel(environment: environment, pageSize: 20)
+        await model.load()
+
+        model.updateTodayShortText("Rose", for: .rose)
+        model.updateTodayShortText("Bud", for: .bud)
+        model.updateTodayShortText("Thorn", for: .thorn)
+        model.setActiveCaptureType(.thorn)
+
+        XCTAssertEqual(model.continueButtonTitle, "Done")
+        XCTAssertTrue(model.continueToNextIncompleteCaptureStep())
+        XCTAssertTrue(model.isCaptureFlowFinalized)
+        await waitUntil { model.lastSavedAt != nil }
+    }
+
     private func waitUntil(
         timeout: TimeInterval = 2.0,
         condition: @escaping @MainActor () -> Bool
