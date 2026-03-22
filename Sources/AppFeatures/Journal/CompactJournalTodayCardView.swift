@@ -76,7 +76,7 @@ public struct CompactJournalTodayCardView: View {
                 Spacer(minLength: 4)
 
                 Button {
-                    performPrimaryAction(onOpenFullEditor)
+                    onOpenFullEditor()
                 } label: {
                     Label(
                         isLocked ? "Edit" : "Details",
@@ -359,8 +359,11 @@ public struct CompactJournalTodayCardView: View {
         let color = typeColor(for: type)
 
         return Button {
-            performPrimaryAction {
-                onSelectType(type)
+            onSelectType(type)
+            guard !isLocked else { return }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(40))
+                isShortTextFocused = true
             }
         } label: {
             HStack(spacing: 6) {

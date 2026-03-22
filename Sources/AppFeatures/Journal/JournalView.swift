@@ -26,6 +26,7 @@ public struct JournalView: View {
 
     @State private var navigationSelection: JournalNavigationSelection?
     @State private var showJumpToToday = false
+    @State private var compactSelectedType: EntryType = .rose
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -87,7 +88,7 @@ public struct JournalView: View {
                                     }
                                 },
                                 onOpenCompletedDay: {
-                                    navigationSelection = JournalNavigationSelection(dayKey: bindable.todayDayKey)
+                                    openDayDetail(bindable.todayDayKey)
                                 },
                                 focusRequest: nil,
                                 onConsumeFocusRequest: {},
@@ -119,7 +120,7 @@ public struct JournalView: View {
                                     bindable.photoURL(for: ref, day: summary.dayKey)
                                 },
                                 onOpen: {
-                                    navigationSelection = JournalNavigationSelection(dayKey: summary.dayKey)
+                                    openDayDetail(summary.dayKey)
                                 }
                             )
                             .accessibilityIdentifier("journal-timeline-row-\(summary.dayKey.isoDate)")
@@ -328,6 +329,18 @@ public struct JournalView: View {
         dismissKeyboard()
     }
 
+    private func openDayDetail(_ dayKey: LocalDayKey) {
+        let destination = JournalNavigationSelection(dayKey: dayKey)
+        if navigationSelection == destination {
+            navigationSelection = nil
+            Task { @MainActor in
+                navigationSelection = destination
+            }
+            return
+        }
+        navigationSelection = destination
+    }
+
     private func compactHeader(_ model: JournalViewModel) -> some View {
         HStack(spacing: 8) {
             Text("Today")
@@ -342,7 +355,7 @@ public struct JournalView: View {
             Spacer(minLength: 0)
 
             Button {
-                navigationSelection = JournalNavigationSelection(dayKey: model.todayDayKey)
+                openDayDetail(model.todayDayKey)
             } label: {
                 Image(systemName: AppIcon.navigateForward.systemName)
                     .font(.subheadline.weight(.semibold))
@@ -387,9 +400,9 @@ public struct JournalView: View {
     }
 
     private func compactTodayCaptureCard(_ model: JournalViewModel) -> some View {
-        let activeType = model.activeCaptureType
+        let activeType = compactSelectedType
         let item = model.todayEntry.item(for: activeType)
-        let prompt = model.activePromptSelection?.text ?? fallbackPrompt(for: activeType)
+        let prompt = model.promptSelections[activeType]?.text ?? fallbackPrompt(for: activeType)
         let completionStates = Dictionary(
             uniqueKeysWithValues: EntryType.allCases.map { entryType in
                 (entryType, model.todayEntry.item(for: entryType).hasAnyContent)
@@ -410,29 +423,30 @@ public struct JournalView: View {
                 model.updateTodayShortText(text, for: activeType)
             },
             onSelectType: { entryType in
+                compactSelectedType = entryType
                 model.setActiveCaptureType(entryType)
             },
             onOpenPhotoLibrary: {
-                presentCapture(for: model.activeCaptureType, dayKey: model.todayDayKey)
+                presentCapture(for: compactSelectedType, dayKey: model.todayDayKey)
             },
             onOpenCamera: {
-                presentCameraCapture(for: model.activeCaptureType, dayKey: model.todayDayKey)
+                presentCameraCapture(for: compactSelectedType, dayKey: model.todayDayKey)
             },
             onRemovePhoto: { ref in
                 Task {
-                    await model.removeTodayPhoto(ref, for: model.activeCaptureType)
+                    await model.removeTodayPhoto(ref, for: compactSelectedType)
                 }
             },
             onRemoveVideo: { ref in
                 Task {
-                    await model.removeTodayVideo(ref, for: model.activeCaptureType)
+                    await model.removeTodayVideo(ref, for: compactSelectedType)
                 }
             },
             onContinue: {
                 _ = model.continueToNextIncompleteCaptureStep()
             },
             onOpenFullEditor: {
-                navigationSelection = JournalNavigationSelection(dayKey: model.todayDayKey)
+                openDayDetail(model.todayDayKey)
             },
             photoURL: { ref in
                 model.photoURL(for: ref, day: model.todayDayKey)
@@ -441,6 +455,12 @@ public struct JournalView: View {
                 model.videoURL(for: ref, day: model.todayDayKey)
             }
         )
+        .onAppear {
+            compactSelectedType = model.activeCaptureType
+        }
+        .onChange(of: model.activeCaptureType) { _, newType in
+            compactSelectedType = newType
+        }
     }
 
     private func consumeLaunchRequestIfNeeded(_ model: JournalViewModel) {
@@ -452,6 +472,7 @@ public struct JournalView: View {
     private func consumeFocusLaunchRequestIfNeeded(_ model: JournalViewModel) {
         guard let request = captureFocusLaunchRequest else { return }
         model.setActiveCaptureType(request.type)
+        compactSelectedType = request.type
         captureFocusLaunchRequest = nil
     }
 
