@@ -6,6 +6,7 @@ import Foundation
 enum ComposeError: Error, CustomStringConvertible {
     case missingArgument(String)
     case invalidDevice(String)
+    case invalidDimension(String)
     case missingScene(String)
     case imageLoadFailed(String)
     case contextCreationFailed
@@ -17,6 +18,8 @@ enum ComposeError: Error, CustomStringConvertible {
             return "Missing required argument: \(flag)"
         case .invalidDevice(let value):
             return "Unsupported --device value '\(value)'. Use 'iphone' or 'ipad'."
+        case .invalidDimension(let message):
+            return "Invalid custom dimensions: \(message)"
         case .missingScene(let scene):
             return "No source screenshot found for scene '\(scene)'."
         case .imageLoadFailed(let path):
@@ -100,6 +103,13 @@ func argumentValue(_ name: String, in arguments: [String]) -> String? {
     let valueIndex = arguments.index(after: index)
     guard valueIndex < arguments.count else { return nil }
     return arguments[valueIndex]
+}
+
+func parsePositiveInt(_ value: String, argumentName: String) throws -> Int {
+    guard let parsed = Int(value), parsed > 0 else {
+        throw ComposeError.invalidDimension("\(argumentName) must be a positive integer.")
+    }
+    return parsed
 }
 
 func hex(_ value: Int, alpha: CGFloat = 1) -> NSColor {
@@ -482,13 +492,14 @@ func renderScene(
     scene: SceneStyle,
     sourcePath: URL,
     outputPath: URL,
-    device: DeviceKind
+    device: DeviceKind,
+    outputSize: CGSize
 ) throws {
     guard let screenshot = NSImage(contentsOf: sourcePath) else {
         throw ComposeError.imageLoadFailed(sourcePath.path)
     }
 
-    let canvasSize = device.outputSize
+    let canvasSize = outputSize
     guard let bitmap = createCanvas(size: canvasSize) else {
         throw ComposeError.contextCreationFailed
     }
@@ -529,6 +540,20 @@ func run() throws {
         throw ComposeError.invalidDevice(deviceRaw)
     }
 
+    let widthRaw = argumentValue("--width", in: arguments)
+    let heightRaw = argumentValue("--height", in: arguments)
+    let outputSize: CGSize
+    switch (widthRaw, heightRaw) {
+    case (nil, nil):
+        outputSize = device.outputSize
+    case let (w?, h?):
+        let width = try parsePositiveInt(w, argumentName: "--width")
+        let height = try parsePositiveInt(h, argumentName: "--height")
+        outputSize = CGSize(width: width, height: height)
+    default:
+        throw ComposeError.invalidDimension("Provide both --width and --height together.")
+    }
+
     let inputDirectory = URL(fileURLWithPath: inputDir, isDirectory: true)
     let outputDirectory = URL(fileURLWithPath: outputDir, isDirectory: true)
     try FileManager.default.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
@@ -538,7 +563,13 @@ func run() throws {
             throw ComposeError.missingScene(scene.sourceKey)
         }
         let outputPath = outputDirectory.appendingPathComponent("\(scene.outputName).png")
-        try renderScene(scene: scene, sourcePath: sourceImagePath, outputPath: outputPath, device: device)
+        try renderScene(
+            scene: scene,
+            sourcePath: sourceImagePath,
+            outputPath: outputPath,
+            device: device,
+            outputSize: outputSize
+        )
         print("Generated: \(outputPath.path)")
     }
 }
