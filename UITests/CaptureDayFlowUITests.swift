@@ -106,6 +106,14 @@ final class CaptureDayFlowUITests: XCTestCase {
 
         XCTAssertTrue(app.otherElements["journal-capture-locked-state"].waitForExistence(timeout: 4))
         XCTAssertFalse(app.buttons["journal-add-photo-button"].exists)
+        XCTAssertFalse(app.buttons["journal-open-full-editor-button"].exists)
+
+        XCTAssertTrue(app.staticTexts["Thorn quick entry"].waitForExistence(timeout: 2))
+        app.buttons["journal-type-pill-rose"].tap()
+        XCTAssertTrue(app.staticTexts["Rose quick entry"].waitForExistence(timeout: 2))
+
+        app.buttons["journal-type-pill-bud"].tap()
+        XCTAssertTrue(app.staticTexts["Bud quick entry"].waitForExistence(timeout: 2))
     }
 
     private func dismissPhotoPickerIfNeeded(_ app: XCUIApplication) {
