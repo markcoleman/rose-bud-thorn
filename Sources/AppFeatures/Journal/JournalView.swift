@@ -26,7 +26,6 @@ public struct JournalView: View {
 
     @State private var navigationSelection: JournalNavigationSelection?
     @State private var showJumpToToday = false
-    @State private var compactSelectedType: EntryType = .rose
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -59,6 +58,7 @@ public struct JournalView: View {
                         if usesCompactTimelineConcept(bindable) {
                             compactHeader(bindable)
                             compactProgressRow(bindable)
+                            compactTypeSelector(bindable)
                             compactTodayCaptureCard(bindable)
                                 .id(scrollTopID)
                         } else {
@@ -399,8 +399,34 @@ public struct JournalView: View {
         .accessibilityIdentifier("today-completion-progress")
     }
 
+    private func compactTypeSelector(_ model: JournalViewModel) -> some View {
+        let activeType = model.activeCaptureType
+        let completionStates = Dictionary(
+            uniqueKeysWithValues: EntryType.allCases.map { entryType in
+                (entryType, model.todayEntry.item(for: entryType).hasAnyContent)
+            }
+        )
+
+        return HStack(spacing: 8) {
+            ForEach(EntryType.allCases, id: \.self) { type in
+                compactTypePill(
+                    for: type,
+                    isActive: type == activeType,
+                    isComplete: completionStates[type] ?? false
+                ) {
+                    applyCaptureFocusRequest(
+                        CaptureFocusLaunchRequest(type: type, source: "pill"),
+                        model: model
+                    )
+                }
+            }
+        }
+        .padding(.top, 2)
+        .zIndex(30)
+    }
+
     private func compactTodayCaptureCard(_ model: JournalViewModel) -> some View {
-        let activeType = compactSelectedType
+        let activeType = model.activeCaptureType
         let item = model.todayEntry.item(for: activeType)
         let prompt = model.promptSelections[activeType]?.text ?? fallbackPrompt(for: activeType)
         let completionStates = Dictionary(
@@ -419,34 +445,34 @@ public struct JournalView: View {
             continueTitle: model.continueButtonTitle,
             canContinue: model.canContinueActiveCapture,
             isLocked: model.isCaptureFlowFinalized,
+            showsTypeSelector: false,
             onShortTextChange: { text in
                 model.updateTodayShortText(text, for: activeType)
             },
             onSelectType: { entryType in
-                compactSelectedType = entryType
-                model.setActiveCaptureType(entryType)
+                applyCaptureFocusRequest(
+                    CaptureFocusLaunchRequest(type: entryType, source: "pill"),
+                    model: model
+                )
             },
             onOpenPhotoLibrary: {
-                presentCapture(for: compactSelectedType, dayKey: model.todayDayKey)
+                presentCapture(for: activeType, dayKey: model.todayDayKey)
             },
             onOpenCamera: {
-                presentCameraCapture(for: compactSelectedType, dayKey: model.todayDayKey)
+                presentCameraCapture(for: activeType, dayKey: model.todayDayKey)
             },
             onRemovePhoto: { ref in
                 Task {
-                    await model.removeTodayPhoto(ref, for: compactSelectedType)
+                    await model.removeTodayPhoto(ref, for: activeType)
                 }
             },
             onRemoveVideo: { ref in
                 Task {
-                    await model.removeTodayVideo(ref, for: compactSelectedType)
+                    await model.removeTodayVideo(ref, for: activeType)
                 }
             },
             onContinue: {
                 _ = model.continueToNextIncompleteCaptureStep()
-            },
-            onOpenFullEditor: {
-                openDayDetail(model.todayDayKey)
             },
             photoURL: { ref in
                 model.photoURL(for: ref, day: model.todayDayKey)
@@ -455,11 +481,52 @@ public struct JournalView: View {
                 model.videoURL(for: ref, day: model.todayDayKey)
             }
         )
-        .onAppear {
-            compactSelectedType = model.activeCaptureType
+        .zIndex(20)
+    }
+
+    private func compactTypePill(
+        for type: EntryType,
+        isActive: Bool,
+        isComplete: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        let color = compactTypeColor(for: type)
+
+        return Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: isComplete ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isComplete ? color : .white.opacity(0.68))
+                Text(type.title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(isActive ? 0.98 : 0.88))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(color.opacity(isActive ? 0.28 : 0.14))
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .stroke(.white.opacity(isActive ? 0.28 : 0.12), lineWidth: 1)
+            )
+            .frame(minWidth: ControlTokens.minCompactTouchTarget, minHeight: ControlTokens.minCompactTouchTarget)
+            .contentShape(Capsule(style: .continuous))
         }
-        .onChange(of: model.activeCaptureType) { _, newType in
-            compactSelectedType = newType
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("journal-type-pill-\(type.rawValue)")
+        .accessibilityLabel("\(type.title) \(isComplete ? "complete" : "incomplete")")
+    }
+
+    private func compactTypeColor(for type: EntryType) -> Color {
+        switch type {
+        case .rose:
+            return DesignTokens.rose
+        case .bud:
+            return DesignTokens.bud
+        case .thorn:
+            return DesignTokens.thorn
         }
     }
 
@@ -471,9 +538,15 @@ public struct JournalView: View {
 
     private func consumeFocusLaunchRequestIfNeeded(_ model: JournalViewModel) {
         guard let request = captureFocusLaunchRequest else { return }
-        model.setActiveCaptureType(request.type)
-        compactSelectedType = request.type
+        applyCaptureFocusRequest(request, model: model)
         captureFocusLaunchRequest = nil
+    }
+
+    private func applyCaptureFocusRequest(
+        _ request: CaptureFocusLaunchRequest,
+        model: JournalViewModel
+    ) {
+        model.setActiveCaptureType(request.type)
     }
 
     private func presentCapture(for type: EntryType, dayKey: LocalDayKey) {

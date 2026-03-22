@@ -92,7 +92,10 @@ private struct TodayReflectionWidgetView: View {
     let entry: TodayReflectionEntry
 
     private var todayURL: URL {
-        URL(string: "rosebudthorn://today?source=widget")!
+        if let focusType = widgetTapFocusType {
+            return focusURL(focusType)
+        }
+        return URL(string: "rosebudthorn://today?source=widget")!
     }
 
     private func focusURL(_ type: EntryType) -> URL {
@@ -128,6 +131,21 @@ private struct TodayReflectionWidgetView: View {
               !snapshot.photos.isEmpty else { return nil }
         let index = entry.currentPhotoIndex % snapshot.photos.count
         return snapshot.photo(at: index)
+    }
+
+    private var widgetTapFocusType: EntryType? {
+        guard displayContent.state != .privacyLocked,
+              displayContent.state != .notStarted else {
+            return nil
+        }
+
+        if let currentPhoto {
+            return currentPhoto.type
+        }
+
+        return EntryType.allCases.first { type in
+            !displayContent.excerpt(for: type).isEmpty
+        }
     }
 
     var body: some View {

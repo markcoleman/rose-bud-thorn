@@ -31,6 +31,7 @@ public final class JournalViewModel {
 
     private var saveTask: Task<Void, Never>?
     private var activeRefreshID = UUID()
+    private var hasPinnedActiveCaptureType = false
 
     public init(
         environment: AppEnvironment,
@@ -111,11 +112,13 @@ public final class JournalViewModel {
 
     public func setActiveCaptureType(_ type: EntryType) {
         activeCaptureType = type
+        hasPinnedActiveCaptureType = true
     }
 
     @discardableResult
     public func continueToNextIncompleteCaptureStep() -> Bool {
         guard canContinueActiveCapture else { return false }
+        hasPinnedActiveCaptureType = false
         if let nextType = firstIncompleteType() {
             activeCaptureType = nextType
             return true
@@ -304,10 +307,14 @@ public final class JournalViewModel {
         }
 
         do {
+            let previousDayKey = todayEntry.dayKey
             let loadedToday = try await dataSource.loadToday()
             guard isCurrent(refreshID) else { return }
 
             todayEntry = loadedToday
+            if loadedToday.dayKey != previousDayKey {
+                hasPinnedActiveCaptureType = false
+            }
             refreshPromptSelections(for: loadedToday.dayKey)
             resetActiveCaptureType()
             isCaptureFlowFinalized = loadedToday.isCompleteForDailyCapture
@@ -332,6 +339,7 @@ public final class JournalViewModel {
             hasMoreDays = false
             promptSelections = [:]
             activeCaptureType = .rose
+            hasPinnedActiveCaptureType = false
             isCaptureFlowFinalized = false
             errorMessage = error.localizedDescription
         }
@@ -385,6 +393,9 @@ public final class JournalViewModel {
     }
 
     private func resetActiveCaptureType() {
+        if hasPinnedActiveCaptureType {
+            return
+        }
         if let firstIncomplete = firstIncompleteType() {
             activeCaptureType = firstIncomplete
             return

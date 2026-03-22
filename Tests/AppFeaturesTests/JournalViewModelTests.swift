@@ -177,6 +177,30 @@ final class JournalViewModelTests: XCTestCase {
         XCTAssertEqual(model.activeCaptureType, .thorn)
     }
 
+    func testPinnedActiveCaptureTypePersistsAcrossReloadWhenComplete() async throws {
+        let environment = try makeEnvironment()
+        let now = Date(timeIntervalSince1970: 1_772_201_600) // 2026-03-05
+        let dayKey = DayKeyCalculator().dayKey(for: now, timeZone: .current)
+        try await environment.entryStore.save(
+            makeEntry(
+                dayKey: dayKey,
+                rose: "Done",
+                bud: "Done",
+                thorn: "Done"
+            )
+        )
+
+        let model = JournalViewModel(environment: environment, nowProvider: { now }, pageSize: 20)
+        await model.load()
+        XCTAssertEqual(model.activeCaptureType, .thorn)
+
+        model.setActiveCaptureType(.rose)
+        XCTAssertEqual(model.activeCaptureType, .rose)
+
+        await model.reloadFromExternalChange()
+        XCTAssertEqual(model.activeCaptureType, .rose)
+    }
+
     func testContinueAdvancesToNextIncompleteType() async throws {
         let environment = try makeEnvironment()
         let model = JournalViewModel(environment: environment, pageSize: 20)

@@ -13,6 +13,7 @@ public struct CompactJournalTodayCardView: View {
     public let continueTitle: String
     public let canContinue: Bool
     public let isLocked: Bool
+    public let showsTypeSelector: Bool
     public let onShortTextChange: @MainActor @Sendable (String) -> Void
     public let onSelectType: @MainActor @Sendable (EntryType) -> Void
     public let onOpenPhotoLibrary: @MainActor @Sendable () -> Void
@@ -20,7 +21,6 @@ public struct CompactJournalTodayCardView: View {
     public let onRemovePhoto: @MainActor @Sendable (PhotoRef) -> Void
     public let onRemoveVideo: @MainActor @Sendable (VideoRef) -> Void
     public let onContinue: @MainActor @Sendable () -> Void
-    public let onOpenFullEditor: @MainActor @Sendable () -> Void
     public let photoURL: @MainActor @Sendable (PhotoRef) -> URL
     public let videoURL: @MainActor @Sendable (VideoRef) -> URL
 
@@ -34,6 +34,7 @@ public struct CompactJournalTodayCardView: View {
         continueTitle: String = "Continue",
         canContinue: Bool,
         isLocked: Bool = false,
+        showsTypeSelector: Bool = true,
         onShortTextChange: @escaping @MainActor @Sendable (String) -> Void,
         onSelectType: @escaping @MainActor @Sendable (EntryType) -> Void,
         onOpenPhotoLibrary: @escaping @MainActor @Sendable () -> Void,
@@ -41,7 +42,6 @@ public struct CompactJournalTodayCardView: View {
         onRemovePhoto: @escaping @MainActor @Sendable (PhotoRef) -> Void,
         onRemoveVideo: @escaping @MainActor @Sendable (VideoRef) -> Void,
         onContinue: @escaping @MainActor @Sendable () -> Void,
-        onOpenFullEditor: @escaping @MainActor @Sendable () -> Void,
         photoURL: @escaping @MainActor @Sendable (PhotoRef) -> URL,
         videoURL: @escaping @MainActor @Sendable (VideoRef) -> URL
     ) {
@@ -54,6 +54,7 @@ public struct CompactJournalTodayCardView: View {
         self.continueTitle = continueTitle
         self.canContinue = canContinue
         self.isLocked = isLocked
+        self.showsTypeSelector = showsTypeSelector
         self.onShortTextChange = onShortTextChange
         self.onSelectType = onSelectType
         self.onOpenPhotoLibrary = onOpenPhotoLibrary
@@ -61,33 +62,18 @@ public struct CompactJournalTodayCardView: View {
         self.onRemovePhoto = onRemovePhoto
         self.onRemoveVideo = onRemoveVideo
         self.onContinue = onContinue
-        self.onOpenFullEditor = onOpenFullEditor
         self.photoURL = photoURL
         self.videoURL = videoURL
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                ForEach(EntryType.allCases, id: \.self) { type in
-                    typePill(for: type)
+            if showsTypeSelector {
+                HStack(spacing: 8) {
+                    ForEach(EntryType.allCases, id: \.self) { type in
+                        typePill(for: type)
+                    }
                 }
-
-                Spacer(minLength: 4)
-
-                Button {
-                    onOpenFullEditor()
-                } label: {
-                    Label(
-                        isLocked ? "Edit" : "Details",
-                        systemImage: isLocked ? AppIcon.editDay.systemName : AppIcon.navigateForward.systemName
-                    )
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.92))
-                }
-                .buttonStyle(.plain)
-                .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
-                .accessibilityIdentifier("journal-open-full-editor-button")
             }
 
             Text(promptText)
@@ -138,7 +124,7 @@ public struct CompactJournalTodayCardView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")
                         .foregroundStyle(DesignTokens.journalCompactProgressFill)
-                    Text("Captured. Use Edit for updates.")
+                    Text("Captured for today.")
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.white.opacity(0.92))
                 }
@@ -357,38 +343,48 @@ public struct CompactJournalTodayCardView: View {
         let isActive = type == activeType
         let isComplete = completionStates[type] ?? false
         let color = typeColor(for: type)
+        let selectType = { handleTypeSelection(type) }
 
-        return Button {
-            onSelectType(type)
-            guard !isLocked else { return }
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(40))
-                isShortTextFocused = true
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: isComplete ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isComplete ? color : .white.opacity(0.68))
-                Text(type.title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(isActive ? 0.98 : 0.88))
-                    .lineLimit(1)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(color.opacity(isActive ? 0.28 : 0.14))
-            )
-            .overlay(
-                Capsule(style: .continuous)
-                    .stroke(.white.opacity(isActive ? 0.28 : 0.12), lineWidth: 1)
-            )
+        return HStack(spacing: 6) {
+            Image(systemName: isComplete ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isComplete ? color : .white.opacity(0.68))
+            Text(type.title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white.opacity(isActive ? 0.98 : 0.88))
+                .lineLimit(1)
         }
-        .buttonStyle(.plain)
-        .touchTargetMinSize(ControlTokens.minCompactTouchTarget)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .frame(minWidth: ControlTokens.minCompactTouchTarget, minHeight: ControlTokens.minCompactTouchTarget)
+        .background(
+            Capsule(style: .continuous)
+                .fill(color.opacity(isActive ? 0.28 : 0.14))
+                .allowsHitTesting(false)
+        )
+        .overlay(
+            Capsule(style: .continuous)
+                .stroke(.white.opacity(isActive ? 0.28 : 0.12), lineWidth: 1)
+                .allowsHitTesting(false)
+        )
+        .contentShape(Capsule(style: .continuous))
+        .highPriorityGesture(
+            TapGesture()
+                .onEnded(selectType)
+        )
+        .onTapGesture(perform: selectType)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("journal-type-pill-\(type.rawValue)")
         .accessibilityLabel("\(type.title) \(isComplete ? "complete" : "incomplete")")
+    }
+
+    private func handleTypeSelection(_ type: EntryType) {
+        onSelectType(type)
+        guard !isLocked else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(40))
+            isShortTextFocused = true
+        }
     }
 
     private func actionChip(
